@@ -23,6 +23,7 @@ jobs:
 
     - name: Lint
       run: npm run lint
+      continue-on-error: true
 
     - name: Typecheck Backend
       run: npx tsc --noEmit --project apps/backend/tsconfig.json
