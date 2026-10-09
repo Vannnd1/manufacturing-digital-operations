@@ -69,7 +69,7 @@ export class QualityService {
       .select(
         "quality_inspections.*",
         "production_records.prodo_id",
-        "users.username as inspector_name"
+        "users.name as inspector_name"
       )
       .orderBy("quality_inspections.inspection_date", "desc");
   }
@@ -82,7 +82,7 @@ export class QualityService {
       .select(
         "quality_inspections.*",
         "production_records.prodo_id",
-        "users.username as inspector_name"
+        "users.name as inspector_name"
       )
       .first();
 
