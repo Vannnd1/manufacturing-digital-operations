@@ -6,6 +6,7 @@ export function Materials() {
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [refresh, setRefresh] = useState(0);
   const [search, setSearch] = useState("");
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -14,21 +15,20 @@ export function Materials() {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const fetchMaterials = async () => {
-    try {
-      setLoading(true);
-      const data = await getMaterials(true);
-      setMaterials(data);
-    } catch (err) {
-      setError("Failed to load materials");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchMaterials = async () => {
+      try {
+        setLoading(true);
+        const data = await getMaterials(true);
+        setMaterials(data);
+      } catch {
+        setError("Failed to load materials");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchMaterials();
-  }, []);
+  }, [refresh]);
 
   const openForm = (material?: any) => {
     if (material) {
@@ -53,7 +53,7 @@ export function Materials() {
         await createMaterial({ ...formData, min_stock_threshold: Number(formData.min_stock_threshold) });
       }
       setIsFormOpen(false);
-      fetchMaterials();
+      setRefresh(r => r + 1);
     } catch (err: any) {
       setFormError(err.response?.data?.error || "Failed to save material");
     } finally {

@@ -6,6 +6,7 @@ export function Inventory() {
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [refresh, setRefresh] = useState(0);
   const [search, setSearch] = useState("");
   const [filterLowStock, setFilterLowStock] = useState(false);
 
@@ -15,21 +16,20 @@ export function Inventory() {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const fetchInventory = async () => {
-    try {
-      setLoading(true);
-      const data = await getInventory();
-      setInventory(data);
-    } catch (err) {
-      setError("Failed to load inventory");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        setLoading(true);
+        const data = await getInventory();
+        setInventory(data);
+      } catch {
+        setError("Failed to load inventory");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchInventory();
-  }, []);
+  }, [refresh]);
 
   const openAdjustForm = (item: any, type: "Receipt" | "Adjustment") => {
     setSelectedMaterial(item);
@@ -49,7 +49,7 @@ export function Inventory() {
         quantity_change: Number(txData.quantity_change)
       });
       setIsFormOpen(false);
-      fetchInventory();
+      setRefresh(r => r + 1);
     } catch (err: any) {
       setFormError(err.response?.data?.error || "Failed to record transaction");
     } finally {

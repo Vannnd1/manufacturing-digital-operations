@@ -11,6 +11,7 @@ export function Quality() {
   const [pending, setPending] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [refresh, setRefresh] = useState(0);
 
   const [activeModal, setActiveModal] = useState<"inspect" | "details" | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
@@ -22,21 +23,20 @@ export function Quality() {
   const [defectReason, setDefectReason] = useState("");
   const [formLoading, setFormLoading] = useState(false);
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      if (activeTab === "Inspections") setInspections(await getInspections());
-      if (activeTab === "Pending") setPending(await getPendingInspections());
-    } catch (err) {
-      setError("Failed to load data");
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        if (activeTab === "Inspections") setInspections(await getInspections());
+        if (activeTab === "Pending") setPending(await getPendingInspections());
+      } catch {
+        setError("Failed to load data");
+      }
+      setLoading(false);
+    };
     fetchData();
-  }, [activeTab]);
+  }, [activeTab, refresh]);
 
   const openInspect = (record: any) => {
     setSelectedRecord(record);
@@ -52,7 +52,7 @@ export function Quality() {
     try {
       const data = await getInspectionDetails(inspection.id);
       setDetails(data);
-    } catch (err) {
+    } catch {
       alert("Failed to load details");
     }
   };
@@ -76,7 +76,7 @@ export function Quality() {
       
       await createInspection(payload);
       setActiveModal(null);
-      fetchData();
+      setRefresh(r => r + 1);
     } catch (err: any) {
       alert(err.response?.data?.error || "Failed to create inspection");
     }

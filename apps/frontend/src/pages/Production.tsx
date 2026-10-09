@@ -6,6 +6,7 @@ export function Production() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [refresh, setRefresh] = useState(0);
 
   const [activeModal, setActiveModal] = useState<"check" | "record" | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -17,19 +18,19 @@ export function Production() {
   const [actualQty, setActualQty] = useState<number>(0);
   const [recordLoading, setRecordLoading] = useState(false);
 
-  const fetchOrders = async () => {
-    setLoading(true);
-    try {
-      setOrders(await getProductionOrders());
-    } catch (err) {
-      setError("Failed to load production orders");
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        setOrders(await getProductionOrders());
+      } catch {
+        setError("Failed to load production orders");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchOrders();
-  }, []);
+  }, [refresh]);
 
   const openCheck = async (order: any) => {
     setSelectedOrder(order);
@@ -39,7 +40,7 @@ export function Production() {
     try {
       const data = await checkAvailability(order.id);
       setAvailabilityCheck(data);
-    } catch (err) {
+    } catch {
       alert("Failed to check availability");
     }
     setCheckLoading(false);
@@ -50,7 +51,7 @@ export function Production() {
     try {
       await reserveMaterials(selectedOrder.id);
       setActiveModal(null);
-      fetchOrders();
+      setRefresh(r => r + 1);
     } catch (err: any) {
       alert(err.response?.data?.error || "Failed to reserve materials");
     }
@@ -69,7 +70,7 @@ export function Production() {
     try {
       await recordProduction(selectedOrder.id, actualQty);
       setActiveModal(null);
-      fetchOrders();
+      setRefresh(r => r + 1);
     } catch (err: any) {
       alert(err.response?.data?.error || "Failed to record production");
     }

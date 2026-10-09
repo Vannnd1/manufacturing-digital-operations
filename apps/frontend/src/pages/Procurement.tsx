@@ -11,28 +11,28 @@ export function Procurement() {
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const fetchData = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      if (activeTab === "PR") setPrs(await getPRs());
-      if (activeTab === "PO") setPos(await getPOs());
-      if (activeTab === "Supplier") setSuppliers(await getSuppliers());
-    } catch (err) {
-      setError("Failed to load data");
-    }
-    setLoading(false);
-  };
+  const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        if (activeTab === "PR") setPrs(await getPRs());
+        if (activeTab === "PO") setPos(await getPOs());
+        if (activeTab === "Supplier") setSuppliers(await getSuppliers());
+      } catch {
+        setError("Failed to load data");
+      }
+      setLoading(false);
+    };
     fetchData();
-  }, [activeTab]);
+  }, [activeTab, refresh]);
 
   const handleApprovePR = async (id: string, status: "Approved" | "Rejected") => {
     try {
       await approvePR(id, status);
-      fetchData();
+      setRefresh(r => r + 1);
     } catch (err: any) {
       alert(err.response?.data?.error || "Failed to update PR");
     }

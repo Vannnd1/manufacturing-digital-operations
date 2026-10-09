@@ -12,7 +12,7 @@ export function Dashboard() {
     const fetchSummary = async () => {
       try {
         setSummary(await getDashboardSummary());
-      } catch (err) {
+      } catch {
         setError("Failed to load dashboard data");
       }
       setLoading(false);
