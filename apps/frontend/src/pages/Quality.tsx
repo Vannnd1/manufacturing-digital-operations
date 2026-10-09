@@ -40,7 +40,7 @@ export function Quality() {
 
   const openInspect = (record: any) => {
     setSelectedRecord(record);
-    setPassQty(record.actual_quantity_produced);
+    setPassQty(Number(record.actual_quantity_produced));
     setFailQty(0);
     setDefectReason("");
     setActiveModal("inspect");
@@ -181,7 +181,7 @@ export function Quality() {
                       onChange={e => {
                         const val = Number(e.target.value);
                         setPassQty(val);
-                        setFailQty(selectedRecord.actual_quantity_produced - val);
+                        setFailQty(Number(selectedRecord.actual_quantity_produced) - val);
                       }} />
                   </div>
                   <div className="flex-1">
@@ -191,7 +191,7 @@ export function Quality() {
                       onChange={e => {
                         const val = Number(e.target.value);
                         setFailQty(val);
-                        setPassQty(selectedRecord.actual_quantity_produced - val);
+                        setPassQty(Number(selectedRecord.actual_quantity_produced) - val);
                       }} />
                   </div>
                 </div>
@@ -212,7 +212,7 @@ export function Quality() {
             </div>
             <div className="p-4 border-t border-slate-200 flex justify-end space-x-2">
               <button onClick={() => setActiveModal(null)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-sm">Cancel</button>
-              <button form="inspect-form" type="submit" disabled={formLoading || passQty + failQty !== selectedRecord.actual_quantity_produced} className="px-4 py-2 text-sm bg-slate-900 text-white hover:bg-slate-800 rounded-sm disabled:opacity-70">
+              <button form="inspect-form" type="submit" disabled={formLoading || passQty + failQty !== Number(selectedRecord.actual_quantity_produced)} className="px-4 py-2 text-sm bg-slate-900 text-white hover:bg-slate-800 rounded-sm disabled:opacity-70">
                 {formLoading ? 'Saving...' : 'Submit Inspection'}
               </button>
             </div>
