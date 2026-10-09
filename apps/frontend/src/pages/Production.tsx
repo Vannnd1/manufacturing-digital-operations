@@ -60,7 +60,7 @@ export function Production() {
 
   const openRecord = (order: any) => {
     setSelectedOrder(order);
-    setActualQty(order.planned_quantity);
+    setActualQty(Number(order.planned_quantity));
     setActiveModal("record");
   };
 
@@ -68,7 +68,7 @@ export function Production() {
     e.preventDefault();
     setRecordLoading(true);
     try {
-      await recordProduction(selectedOrder.id, actualQty);
+      await recordProduction(selectedOrder.id, Number(actualQty));
       setActiveModal(null);
       setRefresh(r => r + 1);
     } catch (err: any) {
