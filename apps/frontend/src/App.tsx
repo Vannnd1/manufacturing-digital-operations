@@ -21,32 +21,50 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function MainLayout() {
   const { user, logout } = useAuthStore();
+  const location = useLocation();
+
+  const navItem = (path: string, label: string) => {
+    const isActive = location.pathname === path;
+    return (
+      <Link 
+        to={path} 
+        className={`block px-4 py-2 text-sm transition-colors border-l-2 ${isActive ? 'bg-white/10 text-white border-amber-500 font-medium' : 'text-slate-400 border-transparent hover:bg-white/5 hover:text-slate-200'}`}
+      >
+        {label}
+      </Link>
+    );
+  };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
+    <div className="min-h-screen flex flex-col md:flex-row bg-[var(--color-background)]">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-slate-900 text-slate-50 border-r border-slate-800 p-4 flex flex-col">
-        <div className="font-bold text-lg mb-6 tracking-tight">MfgOps System</div>
-        <nav className="space-y-1 flex-1">
-          <Link to="/" className="block px-3 py-2 rounded-sm hover:bg-slate-800 text-sm">Dashboard</Link>
-          <Link to="/materials" className="block px-3 py-2 rounded-sm hover:bg-slate-800 text-sm">Material Master</Link>
-          <Link to="/inventory" className="block px-3 py-2 rounded-sm hover:bg-slate-800 text-sm">Inventory</Link>
-          <Link to="/procurement" className="block px-3 py-2 rounded-sm hover:bg-slate-800 text-sm">Procurement</Link>
-          <Link to="/production" className="block px-3 py-2 rounded-sm hover:bg-slate-800 text-sm">Production</Link>
-          <Link to="/quality" className="block px-3 py-2 rounded-sm hover:bg-slate-800 text-sm">Quality Control</Link>
+      <aside className="w-full md:w-64 bg-slate-950 text-slate-50 border-r border-slate-800 flex flex-col shadow-xl z-10">
+        <div className="px-6 py-5 border-b border-slate-800/50 mb-4 flex items-center gap-3">
+          <div className="w-6 h-6 bg-amber-600 rounded-sm"></div>
+          <div className="font-bold text-base tracking-tight uppercase">MfgOps System</div>
+        </div>
+        
+        <div className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Operations</div>
+        <nav className="space-y-0.5 flex-1">
+          {navItem("/", "Command Center")}
+          {navItem("/materials", "Material Master")}
+          {navItem("/inventory", "Inventory Management")}
+          {navItem("/procurement", "Procurement")}
+          {navItem("/production", "Production Orders")}
+          {navItem("/quality", "Quality Control")}
         </nav>
         
         {/* User Profile Snippet */}
-        <div className="pt-4 mt-4 border-t border-slate-800">
-          <div className="flex items-center px-2 py-2">
-            <div className="w-8 h-8 rounded-sm bg-slate-800 flex items-center justify-center mr-3">
-              <User className="w-4 h-4 text-slate-400" />
+        <div className="p-4 mt-auto border-t border-slate-800/50 bg-slate-900/50">
+          <div className="flex items-center">
+            <div className="w-9 h-9 rounded-sm bg-slate-800 flex items-center justify-center mr-3 border border-slate-700">
+              <User className="w-4 h-4 text-slate-300" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-              <p className="text-xs text-slate-400 truncate">{user?.role}</p>
+              <p className="text-sm font-medium text-slate-100 truncate">{user?.name}</p>
+              <p className="text-xs text-amber-500/90 font-medium truncate">{user?.role}</p>
             </div>
-            <button onClick={logout} className="p-1 hover:bg-slate-800 rounded-sm text-slate-400 hover:text-white" title="Sign out">
+            <button onClick={logout} className="p-2 hover:bg-slate-800 rounded-sm text-slate-400 hover:text-white transition-colors" title="Sign out">
               <LogOut className="w-4 h-4" />
             </button>
           </div>
@@ -54,11 +72,11 @@ function MainLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 bg-slate-50">
-        <header className="h-14 border-b border-slate-200 bg-white flex items-center px-6">
-          <div className="text-sm font-medium text-slate-600">Manufacturing Operations (MVP)</div>
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header className="h-16 border-b border-slate-200 bg-white flex justify-between items-center px-8 shadow-sm z-0">
+          <div className="text-sm font-medium text-slate-500 uppercase tracking-wider">Manufacturing Digital Operations MVP</div>
         </header>
-        <div className="p-6">
+        <div className="flex-1 p-8 overflow-y-auto">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/materials" element={<Materials />} />

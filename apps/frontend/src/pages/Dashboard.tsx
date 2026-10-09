@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { getDashboardSummary } from "../api/dashboard";
-import { AlertTriangle, ShoppingCart, Target, ShieldAlert } from "lucide-react";
+import { AlertTriangle, ShoppingCart, Target, ShieldAlert, TrendingDown } from "lucide-react";
 import { Link } from "react-router-dom";
+import { PageHeader, Card, CardHeader, Table, Th, Td } from "../components/ui";
 
 export function Dashboard() {
   const [summary, setSummary] = useState<any>(null);
@@ -20,126 +21,157 @@ export function Dashboard() {
     fetchSummary();
   }, []);
 
-  if (loading) return <div className="text-sm text-slate-500">Loading dashboard...</div>;
-  if (error) return <div className="p-3 bg-red-50 text-red-700 text-sm border border-red-200">{error}</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center h-64 text-slate-500 animate-pulse">
+      Loading command center data...
+    </div>
+  );
+  if (error) return (
+    <div className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{error}</div>
+  );
   if (!summary) return null;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-slate-900">Operational Overview</h2>
-      </div>
+    <div className="space-y-8 max-w-7xl">
+      <PageHeader 
+        title="Operational Command Center" 
+        description="Real-time overview of manufacturing operations and critical alerts."
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Inventory Alert */}
-        <div className="p-4 bg-white border border-slate-200 rounded-sm">
-          <div className="flex items-center mb-2">
-            <AlertTriangle className="w-4 h-4 text-amber-500 mr-2" />
-            <h3 className="font-semibold text-sm text-slate-900">Low Stock Materials</h3>
+        <Card className="flex flex-col relative overflow-hidden group hover:border-amber-400 transition-colors">
+          <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
+          <div className="p-5 flex-1">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">Low Stock</h3>
+              <div className="p-2 bg-amber-50 text-amber-600">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-4xl font-bold text-slate-900 tracking-tight">{summary.inventory.low_stock_items.length}</p>
+            <p className="text-xs text-slate-500 mt-2 font-medium">Materials below threshold</p>
           </div>
-          <p className="text-3xl font-bold text-slate-900">{summary.inventory.low_stock_items.length}</p>
-          <p className="text-xs text-slate-500 mt-1">Below minimum threshold</p>
-          <div className="mt-3">
-            <Link to="/inventory" className="text-xs font-medium text-slate-900 underline hover:text-slate-700">View Inventory</Link>
+          <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 mt-auto group-hover:bg-amber-50/30 transition-colors">
+            <Link to="/inventory" className="text-xs font-semibold text-amber-700 uppercase tracking-wider hover:text-amber-800 flex justify-between items-center">
+              View Inventory <span>&rarr;</span>
+            </Link>
           </div>
-        </div>
+        </Card>
 
         {/* Procurement Alert */}
-        <div className="p-4 bg-white border border-slate-200 rounded-sm">
-          <div className="flex items-center mb-2">
-            <ShoppingCart className="w-4 h-4 text-blue-500 mr-2" />
-            <h3 className="font-semibold text-sm text-slate-900">Pending PRs</h3>
+        <Card className="flex flex-col relative overflow-hidden group hover:border-slate-400 transition-colors">
+          <div className="absolute top-0 left-0 w-1 h-full bg-slate-400"></div>
+          <div className="p-5 flex-1">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">Pending PRs</h3>
+              <div className="p-2 bg-slate-100 text-slate-600">
+                <ShoppingCart className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-4xl font-bold text-slate-900 tracking-tight">{summary.procurement.pr_status_counts['Pending'] || 0}</p>
+            <p className="text-xs text-slate-500 mt-2 font-medium">Awaiting manager approval</p>
           </div>
-          <p className="text-3xl font-bold text-slate-900">{summary.procurement.pr_status_counts['Pending'] || 0}</p>
-          <p className="text-xs text-slate-500 mt-1">Awaiting manager approval</p>
-          <div className="mt-3">
-            <Link to="/procurement" className="text-xs font-medium text-slate-900 underline hover:text-slate-700">View Requests</Link>
+          <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 mt-auto group-hover:bg-slate-100/50 transition-colors">
+            <Link to="/procurement" className="text-xs font-semibold text-slate-700 uppercase tracking-wider hover:text-slate-900 flex justify-between items-center">
+              Review Requests <span>&rarr;</span>
+            </Link>
           </div>
-        </div>
+        </Card>
 
         {/* Production Alert */}
-        <div className="p-4 bg-white border border-slate-200 rounded-sm">
-          <div className="flex items-center mb-2">
-            <Target className="w-4 h-4 text-emerald-500 mr-2" />
-            <h3 className="font-semibold text-sm text-slate-900">Active Production</h3>
+        <Card className="flex flex-col relative overflow-hidden group hover:border-blue-400 transition-colors">
+          <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+          <div className="p-5 flex-1">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">Active Prod</h3>
+              <div className="p-2 bg-blue-50 text-blue-600">
+                <Target className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-4xl font-bold text-slate-900 tracking-tight">
+              {(summary.production.order_status_counts['Ready'] || 0) + (summary.production.order_status_counts['In_Progress'] || 0)}
+            </p>
+            <p className="text-xs text-slate-500 mt-2 font-medium">Orders in queue or processing</p>
           </div>
-          <p className="text-3xl font-bold text-slate-900">
-            {(summary.production.order_status_counts['Ready'] || 0) + (summary.production.order_status_counts['In_Progress'] || 0)}
-          </p>
-          <p className="text-xs text-slate-500 mt-1">Orders in queue or processing</p>
-          <div className="mt-3">
-            <Link to="/production" className="text-xs font-medium text-slate-900 underline hover:text-slate-700">View Orders</Link>
+          <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 mt-auto group-hover:bg-blue-50/30 transition-colors">
+            <Link to="/production" className="text-xs font-semibold text-blue-700 uppercase tracking-wider hover:text-blue-800 flex justify-between items-center">
+              Manage Orders <span>&rarr;</span>
+            </Link>
           </div>
-        </div>
+        </Card>
 
         {/* Quality Alert */}
-        <div className="p-4 bg-white border border-slate-200 rounded-sm">
-          <div className="flex items-center mb-2">
-            <ShieldAlert className="w-4 h-4 text-red-500 mr-2" />
-            <h3 className="font-semibold text-sm text-slate-900">Recent Defects</h3>
+        <Card className="flex flex-col relative overflow-hidden group hover:border-red-400 transition-colors">
+          <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
+          <div className="p-5 flex-1">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">QC Defects</h3>
+              <div className="p-2 bg-red-50 text-red-600">
+                <ShieldAlert className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-4xl font-bold text-slate-900 tracking-tight">{summary.quality.recent_failed_inspections.length}</p>
+            <p className="text-xs text-slate-500 mt-2 font-medium">Recent failed inspections</p>
           </div>
-          <p className="text-3xl font-bold text-slate-900">{summary.quality.recent_failed_inspections.length}</p>
-          <p className="text-xs text-slate-500 mt-1">Recent failed inspections</p>
-          <div className="mt-3">
-            <Link to="/quality" className="text-xs font-medium text-slate-900 underline hover:text-slate-700">View QC Log</Link>
+          <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 mt-auto group-hover:bg-red-50/30 transition-colors">
+            <Link to="/quality" className="text-xs font-semibold text-red-700 uppercase tracking-wider hover:text-red-800 flex justify-between items-center">
+              View QC Logs <span>&rarr;</span>
+            </Link>
           </div>
-        </div>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Low Stock Detailed List */}
-        <div className="bg-white border border-slate-200 rounded-sm">
-          <div className="p-3 border-b border-slate-200 bg-slate-50">
-            <h3 className="text-sm font-bold text-slate-900">Critical Inventory Shortages</h3>
-          </div>
-          <table className="w-full text-sm text-left">
-            <thead className="text-slate-500 border-b border-slate-100">
+        <Card>
+          <CardHeader title="Critical Inventory Shortages" action={<TrendingDown className="w-4 h-4 text-amber-500" />} />
+          <Table>
+            <thead>
               <tr>
-                <th className="px-3 py-2 font-medium">Material</th>
-                <th className="px-3 py-2 font-medium text-right">Available</th>
-                <th className="px-3 py-2 font-medium text-right">Min Threshold</th>
+                <Th>Material</Th>
+                <Th className="text-right">Available</Th>
+                <Th className="text-right">Min Threshold</Th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {summary.inventory.low_stock_items.length === 0 ? (
-                <tr><td colSpan={3} className="px-3 py-4 text-center text-slate-500">Stock levels are healthy.</td></tr>
+                <tr><Td colSpan={3} className="text-center italic">Stock levels are healthy.</Td></tr>
               ) : summary.inventory.low_stock_items.map((item: any) => (
-                <tr key={item.id}>
-                  <td className="px-3 py-2 font-medium text-slate-900">{item.name}</td>
-                  <td className="px-3 py-2 text-right text-red-600 font-bold">{item.available_stock}</td>
-                  <td className="px-3 py-2 text-right text-slate-500">{item.min_stock_threshold}</td>
+                <tr key={item.id} className="hover:bg-slate-50/50">
+                  <Td className="font-semibold">{item.name}</Td>
+                  <Td className="text-right text-amber-600 font-bold">{item.available_stock} {item.unit}</Td>
+                  <Td className="text-right text-slate-400">{item.min_stock_threshold} {item.unit}</Td>
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
+          </Table>
+        </Card>
 
         {/* Recent QC Failures */}
-        <div className="bg-white border border-slate-200 rounded-sm">
-          <div className="p-3 border-b border-slate-200 bg-slate-50">
-            <h3 className="text-sm font-bold text-slate-900">Recent Quality Failures</h3>
-          </div>
-          <table className="w-full text-sm text-left">
-            <thead className="text-slate-500 border-b border-slate-100">
+        <Card>
+          <CardHeader title="Recent Quality Failures" action={<ShieldAlert className="w-4 h-4 text-red-500" />} />
+          <Table>
+            <thead>
               <tr>
-                <th className="px-3 py-2 font-medium">Date</th>
-                <th className="px-3 py-2 font-medium">Product</th>
-                <th className="px-3 py-2 font-medium text-right">Failed Qty</th>
+                <Th>Date</Th>
+                <Th>Product</Th>
+                <Th className="text-right">Failed Qty</Th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {summary.quality.recent_failed_inspections.length === 0 ? (
-                <tr><td colSpan={3} className="px-3 py-4 text-center text-slate-500">No recent failures.</td></tr>
+                <tr><Td colSpan={3} className="text-center italic">No recent failures.</Td></tr>
               ) : summary.quality.recent_failed_inspections.map((item: any) => (
-                <tr key={item.id}>
-                  <td className="px-3 py-2 text-slate-500">{new Date(item.inspection_date).toLocaleDateString()}</td>
-                  <td className="px-3 py-2 font-medium text-slate-900">{item.product_name}</td>
-                  <td className="px-3 py-2 text-right text-red-600 font-bold">{item.fail_quantity}</td>
+                <tr key={item.id} className="hover:bg-slate-50/50">
+                  <Td className="text-slate-500 font-mono text-xs">{new Date(item.inspection_date).toLocaleDateString()}</Td>
+                  <Td className="font-semibold">{item.product_name}</Td>
+                  <Td className="text-right text-red-600 font-bold">{item.fail_quantity} units</Td>
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
+          </Table>
+        </Card>
       </div>
     </div>
   );

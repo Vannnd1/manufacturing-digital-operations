@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { getInventory, adjustInventory } from "../api/inventory";
-import { Search, AlertTriangle, X } from "lucide-react";
+import { Search, AlertTriangle, X, PackagePlus } from "lucide-react";
+import { PageHeader, Card, Table, Th, Td, Button, Input, Label, Badge } from "../components/ui";
 
 export function Inventory() {
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [refresh, setRefresh] = useState(0);
   const [search, setSearch] = useState("");
   const [filterLowStock, setFilterLowStock] = useState(false);
+  const [refresh, setRefresh] = useState(0);
 
+  // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
-  const [txData, setTxData] = useState({ quantity_change: 0, type: "Receipt", reference_id: "" });
+  const [txData, setTxData] = useState({ quantity_change: 1, type: "Receipt", reference_id: "" });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -63,109 +65,125 @@ export function Inventory() {
     return matchesSearch && matchesLowStock;
   });
 
-  if (loading) return <div className="p-4 text-sm text-slate-500">Loading inventory...</div>;
-  if (error) return <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-sm">{error}</div>;
+  if (loading) return <div className="p-8 text-slate-500 animate-pulse">Loading inventory records...</div>;
+  if (error) return <div className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{error}</div>;
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-bold text-slate-900">Inventory Management</h2>
-      </div>
+    <div className="space-y-6 max-w-7xl">
+      <PageHeader 
+        title="Inventory Management" 
+        description="Monitor warehouse stock levels and record manual receipts." 
+      />
 
-      <div className="flex flex-col sm:flex-row gap-2">
-        <div className="flex items-center space-x-2 bg-white border border-slate-200 px-3 py-2 rounded-sm w-full sm:max-w-sm">
-          <Search className="w-4 h-4 text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="Search inventory..." 
-            className="bg-transparent border-none focus:outline-none text-sm w-full"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+      <Card>
+        <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row gap-3 items-center">
+          <div className="relative w-full max-w-md">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <Input 
+              type="text" 
+              placeholder="Search by SKU or material name..." 
+              className="pl-9"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <Button 
+            variant={filterLowStock ? "accent" : "secondary"}
+            onClick={() => setFilterLowStock(!filterLowStock)}
+            className="w-full sm:w-auto"
+          >
+            <AlertTriangle className="w-4 h-4 mr-2" />
+            Low Stock Only
+          </Button>
         </div>
-        <button 
-          onClick={() => setFilterLowStock(!filterLowStock)}
-          className={`px-3 py-2 text-sm rounded-sm border ${filterLowStock ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-white border-slate-200 text-slate-700'} hover:bg-slate-50 flex items-center transition-colors`}
-        >
-          <AlertTriangle className={`w-4 h-4 mr-2 ${filterLowStock ? 'text-amber-600' : 'text-slate-400'}`} />
-          Low Stock Only
-        </button>
-      </div>
 
-      <div className="bg-white border border-slate-200 rounded-sm overflow-hidden">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
+        <Table>
+          <thead>
             <tr>
-              <th className="px-4 py-3 font-medium">SKU</th>
-              <th className="px-4 py-3 font-medium">Material</th>
-              <th className="px-4 py-3 font-medium text-right">Available Stock</th>
-              <th className="px-4 py-3 font-medium text-right">Reserved</th>
-              <th className="px-4 py-3 font-medium text-right">Min Threshold</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium text-right">Actions</th>
+              <Th>SKU</Th>
+              <Th>Material</Th>
+              <Th className="text-right">Available Stock</Th>
+              <Th className="text-right">Reserved</Th>
+              <Th className="text-right">Min Threshold</Th>
+              <Th>Status</Th>
+              <Th className="text-right">Actions</Th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">No inventory records found.</td></tr>
+              <tr><Td colSpan={7} className="text-center py-8 text-slate-500 italic">No inventory records found.</Td></tr>
             ) : (
               filtered.map(m => (
-                <tr key={m.material_id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-mono text-slate-700">{m.sku}</td>
-                  <td className="px-4 py-3 font-medium text-slate-900">{m.name}</td>
-                  <td className="px-4 py-3 text-right font-medium text-slate-900">{m.available_stock} <span className="text-slate-500 text-xs font-normal">{m.unit}</span></td>
-                  <td className="px-4 py-3 text-right text-slate-600">{m.reserved_stock}</td>
-                  <td className="px-4 py-3 text-right text-slate-600">{m.min_stock_threshold}</td>
-                  <td className="px-4 py-3">
+                <tr key={m.material_id} className="hover:bg-slate-50/50 transition-colors">
+                  <Td className="font-mono text-xs font-semibold text-slate-600">{m.sku}</Td>
+                  <Td className="font-medium text-slate-900">{m.name}</Td>
+                  <Td className="text-right">
+                    <span className="font-bold text-slate-900">{m.available_stock}</span> 
+                    <span className="text-slate-500 ml-1 text-xs">{m.unit}</span>
+                  </Td>
+                  <Td className="text-right text-slate-500">{m.reserved_stock}</Td>
+                  <Td className="text-right text-slate-400">{m.min_stock_threshold}</Td>
+                  <Td>
                     {m.status === "Low Stock" ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">Low Stock</span>
+                      <Badge variant="warning">Low Stock</Badge>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700">Healthy</span>
+                      <Badge variant="success">Healthy</Badge>
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-right space-x-2">
-                    <button onClick={() => openAdjustForm(m, "Receipt")} className="text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-sm text-xs border border-slate-200" title="Receive Stock">
-                      + Receive
-                    </button>
-                  </td>
+                  </Td>
+                  <Td className="text-right">
+                    <Button onClick={() => openAdjustForm(m, "Receipt")} variant="secondary" className="px-2.5 py-1 text-xs">
+                      <PackagePlus className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
+                      Receive
+                    </Button>
+                  </Td>
                 </tr>
               ))
             )}
           </tbody>
-        </table>
-      </div>
+        </Table>
+      </Card>
 
       {isFormOpen && selectedMaterial && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-sm shadow-lg w-full max-w-sm flex flex-col max-h-full">
-            <div className="flex items-center justify-between p-4 border-b border-slate-200">
-              <h3 className="font-bold text-slate-900">Manual Receipt: {selectedMaterial.name}</h3>
-              <button onClick={() => setIsFormOpen(false)} className="text-slate-400 hover:text-slate-900">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white shadow-xl w-full max-w-md flex flex-col border border-slate-200 rounded-sm">
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50">
+              <h3 className="font-semibold text-slate-900 tracking-tight">Manual Receipt: {selectedMaterial.name}</h3>
+              <button onClick={() => setIsFormOpen(false)} className="text-slate-400 hover:text-slate-900 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-4">
-              {formError && <div className="mb-4 p-2 bg-red-50 border border-red-200 text-red-600 text-sm rounded-sm">{formError}</div>}
-              <div className="mb-4 p-3 bg-slate-50 border border-slate-200 rounded-sm text-sm">
-                <div className="flex justify-between mb-1"><span className="text-slate-500">Current Stock:</span> <span className="font-medium text-slate-900">{selectedMaterial.available_stock} {selectedMaterial.unit}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Min Threshold:</span> <span className="text-slate-900">{selectedMaterial.min_stock_threshold} {selectedMaterial.unit}</span></div>
+            
+            <div className="p-6">
+              {formError && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm font-medium">{formError}</div>}
+              
+              <div className="mb-5 p-4 bg-slate-50 border border-slate-200 rounded-sm text-sm">
+                <div className="flex justify-between mb-2">
+                  <span className="text-slate-500 font-medium">Current Stock:</span> 
+                  <span className="font-bold text-slate-900">{selectedMaterial.available_stock} {selectedMaterial.unit}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500 font-medium">Min Threshold:</span> 
+                  <span className="text-slate-600">{selectedMaterial.min_stock_threshold} {selectedMaterial.unit}</span>
+                </div>
               </div>
+              
               <form id="tx-form" onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-900 mb-1">Quantity to Receive ({selectedMaterial.unit})</label>
-                  <input required type="number" min="0.01" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm" value={txData.quantity_change} onChange={e => setTxData({...txData, quantity_change: Number(e.target.value)})} />
+                  <Label>Quantity to Receive ({selectedMaterial.unit})</Label>
+                  <Input required type="number" min="0.01" step="0.01" value={txData.quantity_change} onChange={e => setTxData({...txData, quantity_change: Number(e.target.value)})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-900 mb-1">Reference ID (Optional)</label>
-                  <input type="text" placeholder="e.g. Manual count doc" className="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm" value={txData.reference_id} onChange={e => setTxData({...txData, reference_id: e.target.value})} />
+                  <Label>Reference ID (Optional)</Label>
+                  <Input type="text" placeholder="e.g. Manual count doc" value={txData.reference_id} onChange={e => setTxData({...txData, reference_id: e.target.value})} />
                 </div>
               </form>
             </div>
-            <div className="p-4 border-t border-slate-200 flex justify-end space-x-2">
-              <button onClick={() => setIsFormOpen(false)} type="button" className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-sm">Cancel</button>
-              <button form="tx-form" type="submit" disabled={formLoading} className="px-4 py-2 text-sm bg-slate-900 text-white hover:bg-slate-800 rounded-sm disabled:opacity-70">
-                {formLoading ? 'Saving...' : 'Confirm'}
-              </button>
+            
+            <div className="p-5 border-t border-slate-200 flex justify-end space-x-3 bg-slate-50/50">
+              <Button onClick={() => setIsFormOpen(false)} type="button" variant="ghost">Cancel</Button>
+              <Button form="tx-form" type="submit" variant="primary" disabled={formLoading}>
+                {formLoading ? 'Saving...' : 'Confirm Receipt'}
+              </Button>
             </div>
           </div>
         </div>
