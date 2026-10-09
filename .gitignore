@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+apps/backend/manufacturing.sqlite
+apps/backend/manufacturing.sqlite-journal
+coverage/
