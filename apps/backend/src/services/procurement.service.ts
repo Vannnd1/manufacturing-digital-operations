@@ -38,9 +38,9 @@ export class ProcurementService {
     const prIds = prs.map(pr => pr.id);
     const items = await db("purchase_request_items")
       .join("materials", "purchase_request_items.material_id", "materials.id")
-      .whereIn("purchase_request_id", prIds)
+      .whereIn("pr_id", prIds)
       .select(
-        "purchase_request_items.purchase_request_id", 
+        "purchase_request_items.pr_id", 
         "purchase_request_items.quantity", 
         "materials.name as material_name", 
         "materials.unit"
@@ -48,7 +48,7 @@ export class ProcurementService {
 
     return prs.map(pr => ({
       ...pr,
-      items: items.filter(i => i.purchase_request_id === pr.id)
+      items: items.filter(i => i.pr_id === pr.id)
     }));
   }
 
