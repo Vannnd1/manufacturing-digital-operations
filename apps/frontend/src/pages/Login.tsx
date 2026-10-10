@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { apiClient } from "../api/client";
-import { Factory, LogIn } from "lucide-react";
+import { Factory, LogIn, Eye, EyeOff } from "lucide-react";
 import { Button, Input, Label } from "../components/ui";
 
 const currentYear = new Date().getFullYear();
@@ -10,6 +10,7 @@ const currentYear = new Date().getFullYear();
 export function Login() {
   const [email, setEmail] = useState("admin@mfg.com");
   const [password, setPassword] = useState("admin123");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -62,14 +63,25 @@ export function Login() {
           </div>
           <div>
             <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              className="py-2.5"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required
+                className="py-2.5 pr-10"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
           <Button
             type="submit"
