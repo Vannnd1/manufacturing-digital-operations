@@ -19,7 +19,7 @@ export class AuthController {
 
   static async seedDemoUsers(req: Request, res: Response) {
     try {
-      const db = (await import("../db")).default;
+      const db = (await import("../db.js")).default;
       const bcrypt = (await import("bcrypt")).default;
       const crypto = (await import("crypto")).default;
       
