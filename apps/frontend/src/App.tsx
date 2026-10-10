@@ -57,6 +57,7 @@ function MainLayout() {
   // Refs for focus management
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
 
   const toggleSidebar = () => {
     const newState = !isCollapsed;
@@ -74,12 +75,49 @@ function MainLayout() {
     requestAnimationFrame(() => menuButtonRef.current?.focus());
   }, []);
 
-  // Escape key closes mobile drawer
+  // Escape key and Tab focus-trap while drawer is open
   useEffect(() => {
     if (!isMobileOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeMobileDrawer();
+
+    const getFocusable = (): HTMLElement[] => {
+      if (!sidebarRef.current) return [];
+      return Array.from(
+        sidebarRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => !el.closest("[inert]") && el.offsetParent !== null);
     };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeMobileDrawer();
+        return;
+      }
+
+      if (e.key === "Tab") {
+        const focusable = getFocusable();
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = document.activeElement as HTMLElement;
+
+        if (e.shiftKey) {
+          // Shift+Tab from first element → wrap to last
+          if (active === first || !sidebarRef.current?.contains(active)) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          // Tab from last element → wrap to first
+          if (active === last || !sidebarRef.current?.contains(active)) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isMobileOpen, closeMobileDrawer]);
@@ -141,6 +179,7 @@ function MainLayout() {
 
       {/* ── Sidebar ── */}
       <aside
+        ref={sidebarRef}
         id="main-sidebar"
         aria-label="Main navigation"
         // inert makes hidden sidebar invisible to keyboard / AT on mobile
@@ -224,8 +263,11 @@ function MainLayout() {
         </div>
       </aside>
 
-      {/* ── Main content ── */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      {/* ── Main content — inert while mobile drawer is open so background is unreachable ── */}
+      <main
+        className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden"
+        {...(isMobileOpen ? { inert: "" as unknown as boolean } : {})}
+      >
 
         {/* ── Header ── */}
         <header className="h-16 shrink-0 border-b border-slate-200 bg-white flex justify-between items-center px-4 md:px-8 shadow-sm z-10">
