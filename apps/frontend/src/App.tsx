@@ -265,7 +265,11 @@ function MainLayout() {
 
       {/* ── Main content — inert while mobile drawer is open so background is unreachable ── */}
       <main
-        className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden"
+        className={[
+          "flex-1 flex flex-col min-w-0 h-screen overflow-hidden",
+          "transition-[padding] duration-300 ease-in-out motion-reduce:transition-none",
+          isCollapsed ? "md:pl-20" : "md:pl-64"
+        ].join(" ")}
         {...(isMobileOpen ? { inert: "" as unknown as boolean } : {})}
       >
 
