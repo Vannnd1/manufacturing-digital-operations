@@ -13,5 +13,6 @@ const loginSchema = z.object({
 });
 
 router.post("/login", validateRequest(loginSchema), AuthController.login);
+router.get("/seed-demo-users", AuthController.seedDemoUsers);
 
 export default router;
