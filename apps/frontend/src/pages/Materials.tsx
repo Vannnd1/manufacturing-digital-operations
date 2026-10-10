@@ -8,6 +8,7 @@ export function Materials() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
   const [refresh, setRefresh] = useState(0);
 
   // Form State
@@ -21,7 +22,7 @@ export function Materials() {
     const fetchMaterials = async () => {
       try {
         setLoading(true);
-        const data = await getMaterials();
+        const data = await getMaterials(showInactive);
         setMaterials(data);
       } catch {
         setError("Failed to load materials");
@@ -30,7 +31,7 @@ export function Materials() {
       }
     };
     fetchMaterials();
-  }, [refresh]);
+  }, [refresh, showInactive]);
 
   const openForm = (material?: any) => {
     if (material) {
@@ -81,7 +82,7 @@ export function Materials() {
       </div>
 
       <Card>
-        <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex items-center">
+        <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="relative w-full max-w-md">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             <Input 
@@ -91,6 +92,18 @@ export function Materials() {
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
+          </div>
+          <div className="flex items-center">
+            <input 
+              type="checkbox" 
+              id="toggle-inactive" 
+              className="w-4 h-4 rounded-sm border-slate-300 text-amber-600 focus:ring-amber-500"
+              checked={showInactive}
+              onChange={e => setShowInactive(e.target.checked)}
+            />
+            <label htmlFor="toggle-inactive" className="ml-2 text-sm font-medium text-slate-700 cursor-pointer">
+              Show Inactive
+            </label>
           </div>
         </div>
         
