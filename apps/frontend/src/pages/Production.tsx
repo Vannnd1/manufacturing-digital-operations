@@ -176,23 +176,57 @@ export function Production() {
                     <Table>
                       <thead>
                         <tr>
-                          <Th>Material ID</Th>
+                          <Th>Material</Th>
                           <Th className="text-right">Required</Th>
                           <Th className="text-right">Available</Th>
+                          <Th className="text-right">Shortage</Th>
                           <Th className="text-center">Status</Th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                        {availabilityCheck.materials.map((m: any) => (
-                          <tr key={m.material_id}>
-                            <Td className="font-mono text-xs">{m.material_id.substring(0,8)}...</Td>
-                            <Td className="text-right font-medium">{m.required}</Td>
-                            <Td className="text-right font-medium">{m.available}</Td>
-                            <Td className="text-center">
-                              {m.is_sufficient ? <span className="text-emerald-600 font-bold text-xs uppercase">OK</span> : <span className="text-red-600 font-bold text-xs uppercase">Short</span>}
-                            </Td>
-                          </tr>
-                        ))}
+                        {availabilityCheck.materials.map((m: any) => {
+                          const shortage = m.is_sufficient ? 0 : m.required - m.available;
+                          const unit = m.unit ?? "";
+                          return (
+                            <tr key={m.material_id}>
+                              <Td>
+                                {m.material_name
+                                  ? (
+                                    <div>
+                                      <div className="font-medium text-slate-900">{m.material_name}</div>
+                                      {m.material_sku && (
+                                        <div className="font-mono text-xs text-slate-500 mt-0.5">{m.material_sku}</div>
+                                      )}
+                                    </div>
+                                  )
+                                  : (
+                                    <span className="font-mono text-xs text-slate-400" title={m.material_id}>
+                                      {m.material_id.substring(0, 8)}… <span className="text-slate-300">(name unavailable)</span>
+                                    </span>
+                                  )
+                                }
+                              </Td>
+                              <Td className="text-right font-medium tabular-nums">
+                                {m.required} <span className="text-slate-400 text-xs">{unit}</span>
+                              </Td>
+                              <Td className="text-right font-medium tabular-nums">
+                                {m.available} <span className="text-slate-400 text-xs">{unit}</span>
+                              </Td>
+                              <Td className="text-right tabular-nums">
+                                {m.is_sufficient
+                                  ? <span className="text-slate-300 text-xs">—</span>
+                                  : <span className="text-red-600 font-semibold">−{shortage} <span className="font-normal text-xs">{unit}</span></span>
+                                }
+                              </Td>
+                              <Td className="text-center">
+                                {m.is_sufficient
+                                  ? <span className="text-emerald-600 font-bold text-xs uppercase">OK</span>
+                                  : <span className="text-red-600 font-bold text-xs uppercase">Short</span>
+                                }
+                              </Td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </Table>
                   </div>

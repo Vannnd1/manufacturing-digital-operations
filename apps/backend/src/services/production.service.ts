@@ -70,6 +70,9 @@ export class ProductionService {
       if (!isAvailable) allAvailable = false;
       return {
         material_id: m.material_id,
+        material_name: m.name ?? null,
+        material_sku: m.sku ?? null,
+        unit: m.unit ?? null,
         required: Number(m.required_quantity),
         available: Number(m.available_stock),
         is_sufficient: isAvailable,
