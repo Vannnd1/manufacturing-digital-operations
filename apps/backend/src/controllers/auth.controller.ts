@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
-import db from "../db.js";
+import db from "../db";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 
