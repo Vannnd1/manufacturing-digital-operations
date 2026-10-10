@@ -77,12 +77,14 @@ The application has a solid functional foundation. The most recent redesign (Pha
 | P1 | Top header bar shows only "Manufacturing Digital Operations MVP" — no page context, no breadcrumbs | App.tsx:55-57 |
 | P1 | Sidebar has no visual separation between nav groups — "Operations" label exists but all 6 items are in one group with no sub-labeling | App.tsx:47-54 |
 | P1 | On mobile, sidebar is `w-full` at top which stacks above content — no hamburger menu, no collapsing. All 6 nav items appear above the page on every mobile load | App.tsx:37-38 |
+| P1 | On desktop, the sidebar is fixed at `w-64` and cannot be collapsed. A collapsible sidebar (icons only) would improve screen real estate for dense operational tables | App.tsx:37-38 |
 | P2 | Nav item "Command Center" maps to `/` (root) — a slightly abstract label; "Dashboard" would be more standard | App.tsx:48 |
 | P2 | Header bar has no secondary content right-side (could show current user role or quick status) | App.tsx:55 |
 
 **Recommendations:**
 - P1: Add current page title to the top header bar (read from the current route).
-- P1: Implement mobile hamburger/collapse for the sidebar. The current full-width stacked behavior is unusable on phones.
+- P1: Implement desktop collapsible sidebar state (toggle button, `w-64` expanded vs `w-16` collapsed). Add accessible tooltips for icons when collapsed. Consider persisting this state using `localStorage` or `useAuthStore` to remember user preference.
+- P1: Implement mobile hamburger/collapse for the sidebar. Use a proper slide-over drawer interaction rather than stacking above content.
 - P2: Rename "Command Center" to "Dashboard" in the nav for clarity, or keep it but add a sub-label.
 
 **Priority:** P1 (mobile nav), P1 (header context)
@@ -287,6 +289,7 @@ The application has a solid functional foundation. The most recent redesign (Pha
 | P1-8 | Top header bar provides no page context | App.tsx | Orientation loss, especially on operational sub-pages |
 | P1-9 | Inventory reserved/threshold columns missing unit labels | Inventory | Ambiguous numbers |
 | P1-10 | No Goods Receipt workflow surfaced in UI | Inventory / Procurement | PO → GR → Inventory flow is invisible to warehouse staff |
+| P1-11 | Desktop sidebar lacks collapsible state | App.tsx | Decreases screen real estate for dense operational tables |
 
 ### P2 — Polish
 
@@ -401,9 +404,10 @@ In `App.tsx`, read `location.pathname` and map to a human-readable page title. R
 
 ---
 
-### Step 8: P1 — Mobile sidebar collapse (Est: 2-3 hours)
+### Step 8: P1 — Sidebar Navigation Upgrade (Est: 3-4 hours)
 
-Add hamburger button on mobile. Use React state to toggle sidebar open/closed. Sidebar should overlay content on mobile rather than stacking above it.
+- **Desktop (Collapsible):** Add a toggle button inside the sidebar to switch between `w-64` (expanded) and `w-16` (collapsed). In collapsed mode, render only icons with accessible `<title>` tooltips. Use a smooth CSS transition for width. Integrate with `useAuthStore` or `localStorage` to persist the collapsed state across sessions.
+- **Mobile (Drawer):** Add a hamburger menu in the top header (visible only on `md:hidden`). Clicking it opens a `w-full` or `w-64` sidebar that slides over the content (`fixed z-50` with backdrop).
 
 ---
 

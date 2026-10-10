@@ -160,11 +160,19 @@ Avatar/icon containers only: 2px (--radius-md: 2px)
 
 ### 7.1 Sidebar
 
-- Background: `bg-slate-950` (near-black)
-- Active state: `bg-white/10 text-white border-l-2 border-amber-500` — left amber bar is the primary active indicator
-- Inactive: `text-slate-400 border-transparent hover:bg-white/5 hover:text-slate-200`
-- Logo area: amber square + bold uppercase product name
-- User profile at bottom: name + role label in amber-500
+- **Background:** `bg-slate-950` (near-black)
+- **Active state:** `bg-white/10 text-white border-l-2 border-amber-500` — left amber bar is the primary active indicator.
+- **Inactive:** `text-slate-400 border-transparent hover:bg-white/5 hover:text-slate-200`
+- **Desktop Behavior (Collapsible):** 
+  - Must include an accessible toggle button to expand/collapse.
+  - **Expanded:** Displays navigation icons and labels (`w-64`).
+  - **Collapsed:** Displays icons only (`w-16` or similar) with accessible tooltips for labels. Active state must remain clearly identifiable (e.g., maintaining the amber border).
+  - Main content must resize smoothly on toggle without causing horizontal overflow.
+  - State persistence (e.g., localStorage via Zustand) should be evaluated to remember user preference.
+- **Mobile Behavior:** 
+  - Must use a drawer interaction (slide-over with backdrop) triggered by a hamburger menu in the top header, rather than stacking above content or using the desktop collapsed layout.
+- **Logo area:** amber square + bold uppercase product name (hidden or abbreviated in collapsed mode).
+- **User profile at bottom:** name + role label in amber-500 (hidden in collapsed mode, leaving only the avatar/icon).
 
 ### 7.2 Page Header Component
 
