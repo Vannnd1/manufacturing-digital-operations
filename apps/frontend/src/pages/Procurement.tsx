@@ -226,8 +226,19 @@ export function Procurement() {
                   <Td className="font-mono text-xs text-slate-500 font-medium">{pr.id.substring(0, 8)}…</Td>
                   <Td className="text-slate-700">{new Date(pr.request_date).toLocaleDateString()}</Td>
                   <Td className="font-medium text-slate-900">{pr.requester_name}</Td>
-                  <Td className="text-sm text-slate-600 max-w-xs truncate" title={pr.items?.map((it: any) => `${it.material_name} (${it.quantity}${it.unit})`).join(', ')}>
-                    {pr.items?.map((it: any) => `${it.material_name} (${it.quantity}${it.unit})`).join(', ') || '-'}
+                  <Td className="text-xs text-slate-600">
+                    {pr.items && pr.items.length > 0 ? (
+                      <ul className="list-disc pl-3 space-y-0.5 max-h-32 overflow-y-auto">
+                        {pr.items.map((it: any, idx: number) => (
+                          <li key={idx}>
+                            <span className="font-medium text-slate-700">{it.material_name}</span>
+                            <span className="text-slate-400 ml-1">({it.quantity} {it.unit})</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "-"
+                    )}
                   </Td>
                   <Td>{getStatusBadge(pr.status)}</Td>
                   <Td className="text-right space-x-2">
