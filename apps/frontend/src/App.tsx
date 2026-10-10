@@ -83,11 +83,22 @@ function MainLayout() {
           </button>
         </div>
         
-        <div className={`px-5 py-5 border-b border-slate-800/50 mb-4 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+        <div className={`p-4 border-b border-slate-800/50 mb-4 flex ${isCollapsed ? 'flex-col items-center gap-4' : 'items-center justify-between'}`}>
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-6 h-6 bg-amber-600 rounded-sm shrink-0"></div>
             {!isCollapsed && <div className="font-bold text-base tracking-tight uppercase whitespace-nowrap">MfgOps System</div>}
           </div>
+          
+          {/* Desktop collapse toggle */}
+          <button 
+            onClick={toggleSidebar}
+            className="hidden md:flex items-center justify-center p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-sm transition-colors shrink-0"
+            aria-expanded={!isCollapsed}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+          </button>
         </div>
         
         {!isCollapsed && <div className="px-5 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Operations</div>}
@@ -114,19 +125,6 @@ function MainLayout() {
             );
           })}
         </nav>
-        
-        {/* Desktop collapse toggle */}
-        <div className="hidden md:block border-t border-slate-800/50 p-2">
-          <button 
-            onClick={toggleSidebar}
-            className="w-full flex items-center justify-center p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-sm transition-colors"
-            aria-expanded={!isCollapsed}
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
-          </button>
-        </div>
 
         {/* User Profile Snippet */}
         <div className="p-4 border-t border-slate-800/50 bg-slate-900/50">
