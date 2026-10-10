@@ -278,3 +278,74 @@ describe("GET /api/production/:id/availability — BOM material identification",
     expect(res.body.all_available).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// New: POST /api/production — Create Production Order
+// ---------------------------------------------------------------------------
+describe("POST /api/production — Create Production Order form contract", () => {
+  const prodToken    = jwt.sign({ userId: "user-p", role: "Production" }, process.env.JWT_SECRET || "supersecretjwtkey_for_mvp_only");
+  const warehouseToken = jwt.sign({ userId: "user-w", role: "Warehouse" }, process.env.JWT_SECRET || "supersecretjwtkey_for_mvp_only");
+
+  const validProdId = "11111111-1111-1111-1111-111111111111";
+  const validMatId  = "22222222-2222-2222-2222-222222222222";
+
+  const validBody = {
+    product_id: validProdId,
+    planned_quantity: 50,
+    materials: [{ material_id: validMatId, required_quantity: 10 }],
+  };
+
+  it("returns 401 when unauthenticated", async () => {
+    const res = await request(app).post("/api/production").send(validBody);
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 403 when role is not Admin/Manager/Production (Warehouse blocked)", async () => {
+    const res = await request(app)
+      .post("/api/production")
+      .set("Authorization", `Bearer ${warehouseToken}`)
+      .send(validBody);
+    expect(res.status).toBe(403);
+  });
+
+  it("returns 201 with an id on valid request from Production role", async () => {
+    const res = await request(app)
+      .post("/api/production")
+      .set("Authorization", `Bearer ${prodToken}`)
+      .send(validBody);
+    expect(res.status).toBe(201);
+    expect(res.body).toHaveProperty("id");
+  });
+
+  it("returns 422 when product_id is missing", async () => {
+    const res = await request(app)
+      .post("/api/production")
+      .set("Authorization", `Bearer ${prodToken}`)
+      .send({ planned_quantity: 50, materials: [{ material_id: validMatId, required_quantity: 10 }] });
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when planned_quantity is zero", async () => {
+    const res = await request(app)
+      .post("/api/production")
+      .set("Authorization", `Bearer ${prodToken}`)
+      .send({ product_id: validProdId, planned_quantity: 0, materials: [{ material_id: validMatId, required_quantity: 10 }] });
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when materials array is empty", async () => {
+    const res = await request(app)
+      .post("/api/production")
+      .set("Authorization", `Bearer ${prodToken}`)
+      .send({ product_id: validProdId, planned_quantity: 50, materials: [] });
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when a material item is missing required_quantity", async () => {
+    const res = await request(app)
+      .post("/api/production")
+      .set("Authorization", `Bearer ${prodToken}`)
+      .send({ product_id: validProdId, planned_quantity: 50, materials: [{ material_id: validMatId }] });
+    expect(res.status).toBe(400);
+  });
+});
