@@ -12,12 +12,14 @@ export function Procurement() {
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError("");
+      setActionError("");
       try {
         if (activeTab === "PR") setPrs(await getPRs());
         if (activeTab === "PO") setPos(await getPOs());
@@ -31,11 +33,12 @@ export function Procurement() {
   }, [activeTab, refresh]);
 
   const handleApprovePR = async (id: string, status: "Approved" | "Rejected") => {
+    setActionError("");
     try {
       await approvePR(id, status);
       setRefresh(r => r + 1);
     } catch (err: any) {
-      alert(err.response?.data?.error || "Failed to update PR");
+      setActionError(err.response?.data?.error || "Failed to update PR status. Please try again.");
     }
   };
 
@@ -78,6 +81,12 @@ export function Procurement() {
 
       {loading && <div className="p-8 text-slate-500 animate-pulse">Loading procurement data...</div>}
       {error && <div className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{error}</div>}
+      {actionError && (
+        <div role="alert" aria-live="assertive" className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500 flex items-start justify-between">
+          <span>{actionError}</span>
+          <button onClick={() => setActionError("")} className="ml-4 text-red-500 hover:text-red-800 font-bold leading-none shrink-0" aria-label="Dismiss error">×</button>
+        </div>
+      )}
 
       {!loading && !error && activeTab === "PR" && (
         <Card>

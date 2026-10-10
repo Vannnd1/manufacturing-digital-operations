@@ -14,10 +14,13 @@ export function Production() {
   
   const [availabilityCheck, setAvailabilityCheck] = useState<any>(null);
   const [checkLoading, setCheckLoading] = useState(false);
+  const [checkError, setCheckError] = useState("");
   const [reserveLoading, setReserveLoading] = useState(false);
+  const [reserveError, setReserveError] = useState("");
   
   const [actualQty, setActualQty] = useState<number>(0);
   const [recordLoading, setRecordLoading] = useState(false);
+  const [recordError, setRecordError] = useState("");
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -35,24 +38,28 @@ export function Production() {
 
   const openCheck = async (order: any) => {
     setSelectedOrder(order);
+    setAvailabilityCheck(null);
+    setCheckError("");
+    setReserveError("");
     setActiveModal("check");
     setCheckLoading(true);
     try {
       setAvailabilityCheck(await checkAvailability(order.id));
     } catch {
-      alert("Failed to check availability");
+      setCheckError("Failed to check material availability. Please try again.");
     }
     setCheckLoading(false);
   };
 
   const handleReserve = async () => {
     setReserveLoading(true);
+    setReserveError("");
     try {
       await reserveMaterials(selectedOrder.id);
       setActiveModal(null);
       setRefresh(r => r + 1);
     } catch (err: any) {
-      alert(err.response?.data?.error || "Failed to reserve materials");
+      setReserveError(err.response?.data?.error || "Failed to reserve materials. Please try again.");
     }
     setReserveLoading(false);
   };
@@ -60,18 +67,20 @@ export function Production() {
   const openRecord = (order: any) => {
     setSelectedOrder(order);
     setActualQty(Number(order.planned_quantity));
+    setRecordError("");
     setActiveModal("record");
   };
 
   const handleRecord = async (e: React.FormEvent) => {
     e.preventDefault();
     setRecordLoading(true);
+    setRecordError("");
     try {
       await recordProduction(selectedOrder.id, Number(actualQty));
       setActiveModal(null);
       setRefresh(r => r + 1);
     } catch (err: any) {
-      alert(err.response?.data?.error || "Failed to record production");
+      setRecordError(err.response?.data?.error || "Failed to record production output. Please try again.");
     }
     setRecordLoading(false);
   };
@@ -154,6 +163,8 @@ export function Production() {
               
               {checkLoading ? (
                 <div className="text-sm text-slate-500 py-8 text-center animate-pulse">Running inventory allocation check...</div>
+              ) : checkError ? (
+                <div role="alert" aria-live="assertive" className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{checkError}</div>
               ) : availabilityCheck ? (
                 <div className="space-y-4">
                   <div className={`p-4 rounded-sm text-sm border flex items-center font-medium ${availabilityCheck.all_available ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
@@ -188,13 +199,18 @@ export function Production() {
                 </div>
               ) : null}
             </div>
-            <div className="p-5 border-t border-slate-200 flex justify-end space-x-3 bg-slate-50/50">
-              <Button onClick={() => setActiveModal(null)} variant="ghost">Cancel</Button>
-              {availabilityCheck?.all_available && (
-                <Button onClick={handleReserve} variant="primary" disabled={reserveLoading}>
-                  {reserveLoading ? 'Reserving...' : 'Reserve & Confirm Ready'}
-                </Button>
+            <div className="p-5 border-t border-slate-200 bg-slate-50/50 space-y-3">
+              {reserveError && (
+                <div role="alert" aria-live="assertive" className="p-3 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{reserveError}</div>
               )}
+              <div className="flex justify-end space-x-3">
+                <Button onClick={() => setActiveModal(null)} variant="ghost">Cancel</Button>
+                {availabilityCheck?.all_available && (
+                  <Button onClick={handleReserve} variant="primary" disabled={reserveLoading}>
+                    {reserveLoading ? 'Reserving...' : 'Reserve & Confirm Ready'}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -219,11 +235,16 @@ export function Production() {
                 </div>
               </form>
             </div>
-            <div className="p-5 border-t border-slate-200 flex justify-end space-x-3 bg-slate-50/50">
-              <Button onClick={() => setActiveModal(null)} variant="ghost">Cancel</Button>
-              <Button form="record-form" type="submit" variant="primary" disabled={recordLoading}>
-                {recordLoading ? 'Saving...' : 'Complete Output'}
-              </Button>
+            <div className="p-5 border-t border-slate-200 bg-slate-50/50 space-y-3">
+              {recordError && (
+                <div role="alert" aria-live="assertive" className="p-3 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{recordError}</div>
+              )}
+              <div className="flex justify-end space-x-3">
+                <Button onClick={() => setActiveModal(null)} variant="ghost">Cancel</Button>
+                <Button form="record-form" type="submit" variant="primary" disabled={recordLoading}>
+                  {recordLoading ? 'Saving...' : 'Complete Output'}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

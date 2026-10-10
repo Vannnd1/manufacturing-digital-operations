@@ -21,6 +21,8 @@ export function Quality() {
   const [failQty, setFailQty] = useState(0);
   const [defectReason, setDefectReason] = useState("");
   const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [detailsError, setDetailsError] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,22 +44,25 @@ export function Quality() {
     setPassQty(Number(record.actual_quantity_produced));
     setFailQty(0);
     setDefectReason("");
+    setFormError("");
     setActiveModal("inspect");
   };
 
   const openDetails = async (inspection: any) => {
     setActiveModal("details");
     setDetails(null);
+    setDetailsError("");
     try {
       setDetails(await getInspectionDetails(inspection.id));
     } catch {
-      alert("Failed to load details");
+      setDetailsError("Failed to load inspection details. Please try again.");
     }
   };
 
   const handleInspectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormLoading(true);
+    setFormError("");
     try {
       const payload: any = {
         production_record_id: selectedRecord.id,
@@ -71,7 +76,7 @@ export function Quality() {
       setActiveModal(null);
       setRefresh(r => r + 1);
     } catch (err: any) {
-      alert(err.response?.data?.error || "Failed to create inspection");
+      setFormError(err.response?.data?.error || "Failed to create inspection record. Please try again.");
     }
     setFormLoading(false);
   };
@@ -229,11 +234,16 @@ export function Quality() {
                 )}
               </form>
             </div>
-            <div className="p-5 border-t border-slate-200 flex justify-end space-x-3 bg-slate-50/50">
-              <Button onClick={() => setActiveModal(null)} variant="ghost">Cancel</Button>
-              <Button form="inspect-form" type="submit" variant="primary" disabled={formLoading || Math.abs(Number(passQty) + Number(failQty) - Number(selectedRecord.actual_quantity_produced)) > 0.001}>
-                {formLoading ? 'Saving...' : 'Submit Inspection'}
-              </Button>
+            <div className="p-5 border-t border-slate-200 bg-slate-50/50 space-y-3">
+              {formError && (
+                <div role="alert" aria-live="assertive" className="p-3 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{formError}</div>
+              )}
+              <div className="flex justify-end space-x-3">
+                <Button onClick={() => setActiveModal(null)} variant="ghost">Cancel</Button>
+                <Button form="inspect-form" type="submit" variant="primary" disabled={formLoading || Math.abs(Number(passQty) + Number(failQty) - Number(selectedRecord.actual_quantity_produced)) > 0.001}>
+                  {formLoading ? 'Saving...' : 'Submit Inspection'}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -250,7 +260,9 @@ export function Quality() {
               </button>
             </div>
             <div className="p-6 overflow-y-auto">
-              {!details ? (
+              {detailsError ? (
+                <div role="alert" aria-live="assertive" className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{detailsError}</div>
+              ) : !details ? (
                 <div className="text-sm text-slate-500 animate-pulse py-8 text-center">Loading details...</div>
               ) : (
                 <div className="space-y-6">
