@@ -5,6 +5,8 @@ import { apiClient } from "../api/client";
 import { Factory, LogIn } from "lucide-react";
 import { Button, Input, Label } from "../components/ui";
 
+const currentYear = new Date().getFullYear();
+
 export function Login() {
   const [email, setEmail] = useState("admin@mfg.com");
   const [password, setPassword] = useState("admin123");
@@ -31,12 +33,6 @@ export function Login() {
 
   return (
     <div className="min-h-screen bg-[var(--color-sidebar)] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      {/* Abstract Background Element */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-10 pointer-events-none">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] border-[40px] border-amber-500 rounded-full blur-3xl"></div>
-        <div className="absolute top-[80%] right-[10%] w-[30%] h-[30%] border-[20px] border-slate-500 rounded-full blur-2xl"></div>
-      </div>
-
       <div className="w-full max-w-md bg-white border border-slate-200 shadow-2xl p-10 z-10 rounded-sm">
         <div className="flex items-center justify-center mb-8">
           <div className="bg-amber-600 p-3 rounded-sm shadow-sm">
@@ -91,7 +87,7 @@ export function Login() {
         </form>
       </div>
       <div className="mt-8 text-slate-400 text-xs tracking-wider z-10">
-        &copy; {new Date().getFullYear()} MfgOps Inc. All rights reserved.
+        &copy; {currentYear} MfgOps Inc. All rights reserved.
       </div>
     </div>
   );
