@@ -86,8 +86,23 @@ export function Login() {
           </Button>
         </form>
       </div>
-      <div className="mt-8 text-slate-400 text-xs tracking-wider z-10">
-        &copy; {currentYear} MfgOps Inc. All rights reserved.
+      <div className="mt-8 text-slate-400 text-xs tracking-wider z-10 flex flex-col items-center gap-4">
+        <div>&copy; {currentYear} MfgOps Inc. All rights reserved.</div>
+        <button 
+          type="button" 
+          onClick={async () => {
+            try {
+              const { apiClient } = await import("../api/client");
+              const res = await apiClient.get("/auth/seed-demo-users");
+              alert(res.data.message || "Success!");
+            } catch (err: any) {
+              alert("Failed: " + (err.response?.data?.error || err.message));
+            }
+          }}
+          className="text-amber-500/70 hover:text-amber-500 underline transition-colors"
+        >
+          Developer: Auto-Generate Test Accounts
+        </button>
       </div>
     </div>
   );
