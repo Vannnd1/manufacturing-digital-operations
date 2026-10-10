@@ -28,10 +28,28 @@ export class ProcurementService {
   }
 
   static async getPRs() {
-    return await db("purchase_requests")
+    const prs = await db("purchase_requests")
       .join("users", "purchase_requests.user_id", "users.id")
       .select("purchase_requests.*", "users.name as requester_name")
       .orderBy("request_date", "desc");
+
+    if (prs.length === 0) return prs;
+
+    const prIds = prs.map(pr => pr.id);
+    const items = await db("purchase_request_items")
+      .join("materials", "purchase_request_items.material_id", "materials.id")
+      .whereIn("purchase_request_id", prIds)
+      .select(
+        "purchase_request_items.purchase_request_id", 
+        "purchase_request_items.quantity", 
+        "materials.name as material_name", 
+        "materials.unit"
+      );
+
+    return prs.map(pr => ({
+      ...pr,
+      items: items.filter(i => i.purchase_request_id === pr.id)
+    }));
   }
 
   static async approvePR(prId: string, status: "Approved" | "Rejected", userId: string) {

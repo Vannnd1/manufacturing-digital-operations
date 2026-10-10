@@ -213,18 +213,22 @@ export function Procurement() {
                 <Th>PR ID</Th>
                 <Th>Date</Th>
                 <Th>Requester</Th>
+                <Th>Items</Th>
                 <Th>Status</Th>
                 <Th className="text-right">Actions</Th>
               </tr>
             </thead>
             <tbody>
               {prs.length === 0 ? (
-                <tr><Td colSpan={5} className="text-center py-8 text-slate-500 italic">No Purchase Requests found.</Td></tr>
+                <tr><Td colSpan={6} className="text-center py-8 text-slate-500 italic">No Purchase Requests found.</Td></tr>
               ) : prs.map(pr => (
                 <tr key={pr.id} className="hover:bg-slate-50/50 transition-colors">
                   <Td className="font-mono text-xs text-slate-500 font-medium">{pr.id.substring(0, 8)}…</Td>
                   <Td className="text-slate-700">{new Date(pr.request_date).toLocaleDateString()}</Td>
                   <Td className="font-medium text-slate-900">{pr.requester_name}</Td>
+                  <Td className="text-sm text-slate-600 max-w-xs truncate" title={pr.items?.map((it: any) => `${it.material_name} (${it.quantity}${it.unit})`).join(', ')}>
+                    {pr.items?.map((it: any) => `${it.material_name} (${it.quantity}${it.unit})`).join(', ') || '-'}
+                  </Td>
                   <Td>{getStatusBadge(pr.status)}</Td>
                   <Td className="text-right space-x-2">
                     {pr.status === "Pending" && (user?.role === "Admin" || user?.role === "Manager") && (
