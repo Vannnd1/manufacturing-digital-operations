@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
+import db from "../db.js";
+import bcrypt from "bcrypt";
+import crypto from "crypto";
 
 export class AuthController {
   static async login(req: Request, res: Response) {
@@ -19,10 +22,6 @@ export class AuthController {
 
   static async seedDemoUsers(req: Request, res: Response) {
     try {
-      const db = (await import("../db.js")).default;
-      const bcrypt = (await import("bcrypt")).default;
-      const crypto = (await import("crypto")).default;
-      
       const roles = await db("roles").select("id", "name");
       const passwordHash = await bcrypt.hash("demo123", 10);
       const newUsers = [];
