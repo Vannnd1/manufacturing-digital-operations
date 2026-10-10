@@ -148,20 +148,20 @@ export function Materials() {
               )}
               <form id="material-form" onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <Label>SKU</Label>
-                  <Input required disabled={!!editingId} type="text" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className={editingId ? "bg-slate-100 text-slate-500" : ""} />
+                  <Label htmlFor="mat-sku">SKU</Label>
+                  <Input id="mat-sku" required disabled={!!editingId} type="text" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className={editingId ? "bg-slate-100 text-slate-500" : ""} />
                 </div>
                 <div>
-                  <Label>Material Name</Label>
-                  <Input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                  <Label htmlFor="mat-name">Material Name</Label>
+                  <Input id="mat-name" required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                 </div>
                 <div>
-                  <Label>Unit of Measure</Label>
-                  <Input required type="text" value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} placeholder="e.g. kg, pcs, liters" />
+                  <Label htmlFor="mat-unit">Unit of Measure</Label>
+                  <Input id="mat-unit" required type="text" value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} placeholder="e.g. kg, pcs, liters" />
                 </div>
                 <div>
-                  <Label>Minimum Stock Threshold</Label>
-                  <Input required type="number" min="0" value={formData.min_stock_threshold} onChange={e => setFormData({...formData, min_stock_threshold: Number(e.target.value)})} />
+                  <Label htmlFor="mat-threshold">Minimum Stock Threshold</Label>
+                  <Input id="mat-threshold" required type="number" min="0" value={formData.min_stock_threshold} onChange={e => setFormData({...formData, min_stock_threshold: Number(e.target.value)})} />
                 </div>
                 <div className="flex items-center pt-2">
                   <input type="checkbox" id="is_active" className="w-4 h-4 rounded-sm border-slate-300 text-amber-600 focus:ring-amber-500" checked={formData.is_active} onChange={e => setFormData({...formData, is_active: e.target.checked})} />
