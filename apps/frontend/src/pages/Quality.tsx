@@ -231,7 +231,7 @@ export function Quality() {
             </div>
             <div className="p-5 border-t border-slate-200 flex justify-end space-x-3 bg-slate-50/50">
               <Button onClick={() => setActiveModal(null)} variant="ghost">Cancel</Button>
-              <Button form="inspect-form" type="submit" variant="primary" disabled={formLoading || passQty + failQty !== Number(selectedRecord.actual_quantity_produced)}>
+              <Button form="inspect-form" type="submit" variant="primary" disabled={formLoading || Math.abs(Number(passQty) + Number(failQty) - Number(selectedRecord.actual_quantity_produced)) > 0.001}>
                 {formLoading ? 'Saving...' : 'Submit Inspection'}
               </Button>
             </div>
