@@ -31,7 +31,7 @@ export class DashboardService {
     return await db("inventory")
       .join("materials", "inventory.material_id", "materials.id")
       .whereRaw("inventory.available_stock < materials.min_stock_threshold")
-      .select("materials.id", "materials.sku", "materials.name", "inventory.available_stock", "materials.min_stock_threshold")
+      .select("materials.id", "materials.sku", "materials.name", "materials.unit", "inventory.available_stock", "materials.min_stock_threshold")
       .limit(10);
   }
 

@@ -64,7 +64,7 @@ export function Dashboard() {
           <div className="absolute top-0 left-0 w-1 h-full bg-slate-400"></div>
           <div className="p-5 flex-1">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">Pending PRs</h3>
+              <h3 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">Purchase Requests</h3>
               <div className="p-2 bg-slate-100 text-slate-600">
                 <ShoppingCart className="w-4 h-4" />
               </div>
@@ -84,7 +84,7 @@ export function Dashboard() {
           <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
           <div className="p-5 flex-1">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">Active Prod</h3>
+              <h3 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">Production Orders</h3>
               <div className="p-2 bg-blue-50 text-blue-600">
                 <Target className="w-4 h-4" />
               </div>
@@ -132,18 +132,35 @@ export function Dashboard() {
                 <Th>Material</Th>
                 <Th className="text-right">Available</Th>
                 <Th className="text-right">Min Threshold</Th>
+                <Th className="text-right">Deficit</Th>
               </tr>
             </thead>
             <tbody>
               {summary.inventory.low_stock_items.length === 0 ? (
-                <tr><Td colSpan={3} className="text-center italic">Stock levels are healthy.</Td></tr>
-              ) : summary.inventory.low_stock_items.map((item: any) => (
-                <tr key={item.id} className="hover:bg-slate-50/50">
-                  <Td className="font-semibold">{item.name}</Td>
-                  <Td className="text-right text-amber-600 font-bold">{item.available_stock} {item.unit}</Td>
-                  <Td className="text-right text-slate-400">{item.min_stock_threshold} {item.unit}</Td>
-                </tr>
-              ))}
+                <tr><Td colSpan={4} className="text-center italic">Stock levels are healthy.</Td></tr>
+              ) : summary.inventory.low_stock_items.map((item: any) => {
+                const deficit = item.min_stock_threshold - item.available_stock;
+                return (
+                  <tr key={item.id} className="hover:bg-slate-50/50">
+                    <Td>
+                      <div className="font-medium text-slate-900">{item.name}</div>
+                      {item.sku && <div className="font-mono text-xs text-slate-400 mt-0.5">{item.sku}</div>}
+                    </Td>
+                    <Td className="text-right tabular-nums">
+                      <span className="font-bold text-amber-600">{item.available_stock}</span>
+                      <span className="text-slate-400 text-xs ml-1">{item.unit}</span>
+                    </Td>
+                    <Td className="text-right tabular-nums text-slate-400">
+                      {item.min_stock_threshold}
+                      <span className="text-xs ml-1">{item.unit}</span>
+                    </Td>
+                    <Td className="text-right tabular-nums">
+                      <span className="font-semibold text-red-600">−{deficit}</span>
+                      <span className="text-slate-400 text-xs ml-1">{item.unit}</span>
+                    </Td>
+                  </tr>
+                );
+              })}
             </tbody>
           </Table>
         </Card>
@@ -164,9 +181,15 @@ export function Dashboard() {
                 <tr><Td colSpan={3} className="text-center italic">No recent failures.</Td></tr>
               ) : summary.quality.recent_failed_inspections.map((item: any) => (
                 <tr key={item.id} className="hover:bg-slate-50/50">
-                  <Td className="text-slate-500 font-mono text-xs">{new Date(item.inspection_date).toLocaleDateString()}</Td>
-                  <Td className="font-semibold">{item.product_name}</Td>
-                  <Td className="text-right text-red-600 font-bold">{item.fail_quantity} units</Td>
+                  <Td className="text-slate-500 font-mono text-xs whitespace-nowrap">{new Date(item.inspection_date).toLocaleDateString()}</Td>
+                  <Td>
+                    <div className="font-medium text-slate-900">{item.product_name}</div>
+                    {item.product_sku && <div className="font-mono text-xs text-slate-400 mt-0.5">{item.product_sku}</div>}
+                  </Td>
+                  <Td className="text-right tabular-nums">
+                    <span className="font-bold text-red-600">{item.fail_quantity}</span>
+                    <span className="text-slate-400 text-xs ml-1">units</span>
+                  </Td>
                 </tr>
               ))}
             </tbody>

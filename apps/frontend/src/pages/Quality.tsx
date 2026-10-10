@@ -197,10 +197,9 @@ export function Quality() {
               <form id="inspect-form" onSubmit={handleInspectSubmit} className="space-y-5">
                 <div className="flex space-x-4">
                   <div className="flex-1">
-                    <Label>Pass Qty</Label>
-                    <Input required type="number" min="0" step="0.01" 
-                      className="border-emerald-200 focus:ring-emerald-500/20 focus:border-emerald-500"
-                      value={passQty} 
+                    <Label htmlFor="inspect-pass-qty">Pass Qty</Label>
+                    <Input id="inspect-pass-qty" required type="number" min="0" step="0.01"
+                      value={passQty}
                       onChange={e => {
                         const val = Number(e.target.value);
                         setPassQty(val);
@@ -208,10 +207,9 @@ export function Quality() {
                       }} />
                   </div>
                   <div className="flex-1">
-                    <Label>Fail Qty</Label>
-                    <Input required type="number" min="0" step="0.01" 
-                      className="border-red-200 focus:ring-red-500/20 focus:border-red-500"
-                      value={failQty} 
+                    <Label htmlFor="inspect-fail-qty">Fail Qty</Label>
+                    <Input id="inspect-fail-qty" required type="number" min="0" step="0.01"
+                      value={failQty}
                       onChange={e => {
                         const val = Number(e.target.value);
                         setFailQty(val);
@@ -221,8 +219,8 @@ export function Quality() {
                 </div>
                 {failQty > 0 && (
                   <div>
-                    <Label>Defect Reason</Label>
-                    <select required className="w-full px-3 py-2 border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-shadow rounded-sm" value={defectReason} onChange={e => setDefectReason(e.target.value)}>
+                    <Label htmlFor="inspect-defect-reason">Defect Reason</Label>
+                    <select id="inspect-defect-reason" required className="w-full px-3 py-2 border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-shadow" value={defectReason} onChange={e => setDefectReason(e.target.value)}>
                       <option value="">Select reason...</option>
                       <option value="Scratch/Cosmetic">Scratch/Cosmetic</option>
                       <option value="Assembly Error">Assembly Error</option>

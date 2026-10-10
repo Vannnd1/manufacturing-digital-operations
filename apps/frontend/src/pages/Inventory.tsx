@@ -169,12 +169,12 @@ export function Inventory() {
               
               <form id="tx-form" onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label>Quantity to Receive ({selectedMaterial.unit})</Label>
-                  <Input required type="number" min="0.01" step="0.01" value={txData.quantity_change} onChange={e => setTxData({...txData, quantity_change: Number(e.target.value)})} />
+                  <Label htmlFor="tx-qty">Quantity to Receive ({selectedMaterial.unit})</Label>
+                  <Input id="tx-qty" required type="number" min="0.01" step="0.01" value={txData.quantity_change} onChange={e => setTxData({...txData, quantity_change: Number(e.target.value)})} />
                 </div>
                 <div>
-                  <Label>Reference ID (Optional)</Label>
-                  <Input type="text" placeholder="e.g. Manual count doc" value={txData.reference_id} onChange={e => setTxData({...txData, reference_id: e.target.value})} />
+                  <Label htmlFor="tx-ref">Reference ID (Optional)</Label>
+                  <Input id="tx-ref" type="text" placeholder="e.g. Manual count doc" value={txData.reference_id} onChange={e => setTxData({...txData, reference_id: e.target.value})} />
                 </div>
               </form>
             </div>

@@ -376,8 +376,8 @@ export function Production() {
             <div className="p-6">
               <form id="record-form" onSubmit={handleRecord} className="space-y-4">
                 <div>
-                  <Label>Actual Quantity Produced</Label>
-                  <Input required type="number" min="0.01" step="0.01" value={actualQty} onChange={e => setActualQty(Number(e.target.value))} />
+                  <Label htmlFor="record-actual-qty">Actual Quantity Produced</Label>
+                  <Input id="record-actual-qty" required type="number" min="0.01" step="0.01" value={actualQty} onChange={e => setActualQty(Number(e.target.value))} />
                   <p className="text-xs text-slate-500 mt-2 font-medium">Target Planned: {selectedOrder.planned_quantity}</p>
                 </div>
               </form>
