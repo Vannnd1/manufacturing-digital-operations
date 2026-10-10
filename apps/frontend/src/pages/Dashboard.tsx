@@ -155,7 +155,7 @@ export function Dashboard() {
                       <span className="text-xs ml-1">{item.unit}</span>
                     </Td>
                     <Td className="text-right tabular-nums">
-                      <span className="font-semibold text-red-600">−{deficit}</span>
+                      <span className="font-semibold text-red-600">{deficit}</span>
                       <span className="text-slate-400 text-xs ml-1">{item.unit}</span>
                     </Td>
                   </tr>
