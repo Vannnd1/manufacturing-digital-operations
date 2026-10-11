@@ -5,6 +5,7 @@ import { getMaterials } from "../api/inventory";
 import { useAuthStore } from "../store/useAuthStore";
 import { X, CheckCircle, AlertTriangle, Plus, Trash2 } from "lucide-react";
 import { PageHeader, Card, Table, Th, Td, Button, Input, Label, Badge } from "../components/ui";
+import { sanitizeNumberInput } from "../utils/number";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ export function Production() {
   const [reserveLoading, setReserveLoading] = useState(false);
   const [reserveError, setReserveError] = useState("");
 
-  const [actualQty, setActualQty] = useState<number>(0);
+  const [actualQty, setActualQty] = useState<string | number>(0);
   const [recordLoading, setRecordLoading] = useState(false);
   const [recordError, setRecordError] = useState("");
 
@@ -377,7 +378,16 @@ export function Production() {
               <form id="record-form" onSubmit={handleRecord} className="space-y-4">
                 <div>
                   <Label htmlFor="record-actual-qty">Actual Quantity Produced</Label>
-                  <Input id="record-actual-qty" required type="number" min="0.01" step="0.01" value={actualQty} onChange={e => setActualQty(Number(e.target.value))} />
+                  <Input
+                    id="record-actual-qty"
+                    required
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="0"
+                    value={actualQty}
+                    onChange={e => setActualQty(sanitizeNumberInput(e.target.value))}
+                  />
                   <p className="text-xs text-slate-500 mt-2 font-medium">Target Planned: {selectedOrder.planned_quantity}</p>
                 </div>
               </form>
@@ -441,7 +451,7 @@ export function Production() {
                       required
                       placeholder="0"
                       value={orderPlannedQty}
-                      onChange={e => setOrderPlannedQty(e.target.value)}
+                      onChange={e => setOrderPlannedQty(sanitizeNumberInput(e.target.value))}
                     />
                   </div>
                 </div>
@@ -496,7 +506,7 @@ export function Production() {
                                 required
                                 placeholder="0"
                                 value={item.required_quantity}
-                                onChange={e => updateBomItem(index, "required_quantity", e.target.value)}
+                                onChange={e => updateBomItem(index, "required_quantity", sanitizeNumberInput(e.target.value))}
                               />
                               {selectedMat && (
                                 <span className="text-xs text-slate-400 whitespace-nowrap">{selectedMat.unit}</span>

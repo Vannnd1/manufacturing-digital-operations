@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getInventory, adjustInventory } from "../api/inventory";
 import { Search, AlertTriangle, X, PackagePlus } from "lucide-react";
 import { PageHeader, Card, Table, Th, Td, Button, Input, Label, Badge } from "../components/ui";
+import { sanitizeNumberInput } from "../utils/number";
 
 export function Inventory() {
   const [inventory, setInventory] = useState<any[]>([]);
@@ -14,7 +15,7 @@ export function Inventory() {
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
-  const [txData, setTxData] = useState({ quantity_change: 1, type: "Receipt", reference_id: "" });
+  const [txData, setTxData] = useState<{ quantity_change: string | number; type: string; reference_id: string }>({ quantity_change: "", type: "Receipt", reference_id: "" });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -35,7 +36,7 @@ export function Inventory() {
 
   const openAdjustForm = (item: any, type: "Receipt" | "Adjustment") => {
     setSelectedMaterial(item);
-    setTxData({ quantity_change: 1, type, reference_id: "" });
+    setTxData({ quantity_change: "", type, reference_id: "" });
     setFormError("");
     setIsFormOpen(true);
   };
@@ -170,7 +171,16 @@ export function Inventory() {
               <form id="tx-form" onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="tx-qty">Quantity to Receive ({selectedMaterial.unit})</Label>
-                  <Input id="tx-qty" required type="number" min="0.01" step="0.01" value={txData.quantity_change} onChange={e => setTxData({...txData, quantity_change: Number(e.target.value)})} />
+                  <Input
+                    id="tx-qty"
+                    required
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="0"
+                    value={txData.quantity_change}
+                    onChange={e => setTxData({...txData, quantity_change: sanitizeNumberInput(e.target.value)})}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="tx-ref">Reference ID (Optional)</Label>

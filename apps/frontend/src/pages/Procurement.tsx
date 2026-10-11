@@ -3,6 +3,7 @@ import { getSuppliers, getPRs, approvePR, getPOs, createPR } from "../api/procur
 import { getMaterials } from "../api/inventory";
 import { useAuthStore } from "../store/useAuthStore";
 import { PageHeader, Card, Table, Th, Td, Button, Badge, Input } from "../components/ui";
+import { sanitizeNumberInput } from "../utils/number";
 import { Plus, Trash2, X } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -382,7 +383,7 @@ export function Procurement() {
                           required
                           placeholder="0"
                           value={item.quantity}
-                          onChange={e => updatePrItem(index, "quantity", e.target.value)}
+                          onChange={e => updatePrItem(index, "quantity", sanitizeNumberInput(e.target.value))}
                         />
                       </div>
 

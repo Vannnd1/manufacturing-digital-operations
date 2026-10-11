@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getMaterials, createMaterial, updateMaterial } from "../api/inventory";
 import { Plus, Search, Edit, X } from "lucide-react";
 import { PageHeader, Card, Table, Th, Td, Button, Input, Label, Badge } from "../components/ui";
+import { sanitizeNumberInput } from "../utils/number";
 
 const STANDARD_UNITS = [
   "kg", "g", "mg", "ton",
@@ -21,7 +22,13 @@ export function Materials() {
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ sku: "", name: "", unit: "kg", min_stock_threshold: 0, is_active: true });
+  const [formData, setFormData] = useState<{ sku: string; name: string; unit: string; min_stock_threshold: string | number; is_active: boolean }>({
+    sku: "",
+    name: "",
+    unit: "kg",
+    min_stock_threshold: "",
+    is_active: true
+  });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -46,7 +53,7 @@ export function Materials() {
       setFormData({ sku: material.sku, name: material.name, unit: material.unit, min_stock_threshold: material.min_stock_threshold, is_active: material.is_active });
     } else {
       setEditingId(null);
-      setFormData({ sku: "", name: "", unit: "kg", min_stock_threshold: 0, is_active: true });
+      setFormData({ sku: "", name: "", unit: "kg", min_stock_threshold: "", is_active: true });
     }
     setFormError("");
     setIsFormOpen(true);
@@ -217,7 +224,15 @@ export function Materials() {
                 </div>
                 <div>
                   <Label htmlFor="mat-threshold">Minimum Stock Threshold</Label>
-                  <Input id="mat-threshold" required type="number" min="0" value={formData.min_stock_threshold} onChange={e => setFormData({...formData, min_stock_threshold: Number(e.target.value)})} />
+                  <Input
+                    id="mat-threshold"
+                    required
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={formData.min_stock_threshold}
+                    onChange={e => setFormData({...formData, min_stock_threshold: sanitizeNumberInput(e.target.value)})}
+                  />
                 </div>
                 <div className="flex items-center pt-2">
                   <input type="checkbox" id="is_active" className="w-4 h-4 rounded-sm border-slate-300 text-amber-600 focus:ring-amber-500" checked={formData.is_active} onChange={e => setFormData({...formData, is_active: e.target.checked})} />

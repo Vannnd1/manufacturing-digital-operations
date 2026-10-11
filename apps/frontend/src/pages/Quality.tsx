@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getInspections, getPendingInspections, getInspectionDetails, createInspection } from "../api/quality";
 import { X } from "lucide-react";
 import { PageHeader, Card, Table, Th, Td, Button, Input, Label } from "../components/ui";
+import { sanitizeNumberInput } from "../utils/number";
 
 export function Quality() {
   const [activeTab, setActiveTab] = useState<"Pending" | "Inspections">("Pending");
@@ -17,8 +18,8 @@ export function Quality() {
   const [details, setDetails] = useState<any>(null);
 
   // Form states
-  const [passQty, setPassQty] = useState(0);
-  const [failQty, setFailQty] = useState(0);
+  const [passQty, setPassQty] = useState<string | number>(0);
+  const [failQty, setFailQty] = useState<string | number>(0);
   const [defectReason, setDefectReason] = useState("");
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState("");
@@ -64,13 +65,15 @@ export function Quality() {
     setFormLoading(true);
     setFormError("");
     try {
+      const numPass = Number(passQty) || 0;
+      const numFail = Number(failQty) || 0;
       const payload: any = {
         production_record_id: selectedRecord.id,
-        pass_quantity: passQty,
-        fail_quantity: failQty,
+        pass_quantity: numPass,
+        fail_quantity: numFail,
       };
-      if (failQty > 0) {
-        payload.defects = [{ defect_reason: defectReason, quantity: failQty }];
+      if (numFail > 0) {
+        payload.defects = [{ defect_reason: defectReason, quantity: numFail }];
       }
       await createInspection(payload);
       setActiveModal(null);
@@ -199,25 +202,39 @@ export function Quality() {
                   <div className="flex-1">
                     <Label htmlFor="inspect-pass-qty">Pass Qty</Label>
                     <Input id="inspect-pass-qty" required type="number" min="0" step="0.01"
+                      placeholder="0"
                       value={passQty}
                       onChange={e => {
-                        const val = Number(e.target.value);
-                        setPassQty(val);
-                        setFailQty(Number(selectedRecord.actual_quantity_produced) - val);
+                        const sanitized = sanitizeNumberInput(e.target.value);
+                        setPassQty(sanitized);
+                        const total = Number(selectedRecord.actual_quantity_produced) || 0;
+                        if (sanitized === "") {
+                          setFailQty("");
+                        } else {
+                          const val = Number(sanitized);
+                          setFailQty(Math.max(0, total - val));
+                        }
                       }} />
                   </div>
                   <div className="flex-1">
                     <Label htmlFor="inspect-fail-qty">Fail Qty</Label>
                     <Input id="inspect-fail-qty" required type="number" min="0" step="0.01"
+                      placeholder="0"
                       value={failQty}
                       onChange={e => {
-                        const val = Number(e.target.value);
-                        setFailQty(val);
-                        setPassQty(Number(selectedRecord.actual_quantity_produced) - val);
+                        const sanitized = sanitizeNumberInput(e.target.value);
+                        setFailQty(sanitized);
+                        const total = Number(selectedRecord.actual_quantity_produced) || 0;
+                        if (sanitized === "") {
+                          setPassQty("");
+                        } else {
+                          const val = Number(sanitized);
+                          setPassQty(Math.max(0, total - val));
+                        }
                       }} />
                   </div>
                 </div>
-                {failQty > 0 && (
+                {Number(failQty) > 0 && (
                   <div>
                     <Label htmlFor="inspect-defect-reason">Defect Reason</Label>
                     <select id="inspect-defect-reason" required className="w-full px-3 py-2 border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-shadow" value={defectReason} onChange={e => setDefectReason(e.target.value)}>
