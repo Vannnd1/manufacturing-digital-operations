@@ -26,7 +26,14 @@ export function Login() {
       setAuth(data.token, data.user);
       navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.error || "An error occurred during login.");
+      const serverError = err.response?.data?.error || err.response?.data?.message;
+      if (serverError) {
+        setError(serverError);
+      } else if (err.message === "Network Error") {
+        setError("Network error: Unable to reach the server. Please check your internet or wait for backend wake-up.");
+      } else {
+        setError(err.message || "An error occurred during login.");
+      }
     } finally {
       setLoading(false);
     }
