@@ -49,6 +49,28 @@ describe("Material API", () => {
     expect(res.status).toBe(403);
   });
 
+  it("should create material with canonical units like pcs and m", async () => {
+    const resPcs = await request(app)
+      .post("/api/materials")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ sku: "SKU-03", name: "Bolt", unit: "pcs", min_stock_threshold: 500 });
+    expect(resPcs.status).toBe(201);
+
+    const resM = await request(app)
+      .post("/api/materials")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ sku: "SKU-04", name: "Cable", unit: "m", min_stock_threshold: 200 });
+    expect(resM.status).toBe(201);
+  });
+
+  it("should reject material creation when unit is missing or empty", async () => {
+    const res = await request(app)
+      .post("/api/materials")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ sku: "SKU-05", name: "EmptyUnit", unit: "", min_stock_threshold: 10 });
+    expect(res.status).toBe(400);
+  });
+
   it("should retrieve materials list", async () => {
     const res = await request(app).get("/api/materials").set("Authorization", `Bearer ${token}`);
     expect(res.status).toBe(200);

@@ -1,15 +1,10 @@
 import { useEffect, useState } from "react";
 import { getMaterials, createMaterial, updateMaterial } from "../api/inventory";
-import { Plus, Search, Edit, X } from "lucide-react";
+import { Plus, Search, Edit, X, AlertTriangle } from "lucide-react";
 import { PageHeader, Card, Table, Th, Td, Button, Input, Label, Badge } from "../components/ui";
 import { sanitizeNumberInput } from "../utils/number";
-
-const STANDARD_UNITS = [
-  "kg", "g", "mg", "ton",
-  "pcs", "unit", "set", "box", "pack", "roll",
-  "l", "ml", "m3",
-  "m", "cm", "mm"
-];
+import { UnitSelect } from "../components/UnitSelect";
+import { isCanonicalUnit } from "../constants/uom";
 
 export function Materials() {
   const [materials, setMaterials] = useState<any[]>([]);
@@ -22,6 +17,7 @@ export function Materials() {
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [originalUnit, setOriginalUnit] = useState<string>("");
   const [formData, setFormData] = useState<{ sku: string; name: string; unit: string; min_stock_threshold: string | number; is_active: boolean }>({
     sku: "",
     name: "",
@@ -50,9 +46,11 @@ export function Materials() {
   const openForm = (material?: any) => {
     if (material) {
       setEditingId(material.id);
+      setOriginalUnit(material.unit);
       setFormData({ sku: material.sku, name: material.name, unit: material.unit, min_stock_threshold: material.min_stock_threshold, is_active: material.is_active });
     } else {
       setEditingId(null);
+      setOriginalUnit("");
       setFormData({ sku: "", name: "", unit: "kg", min_stock_threshold: "", is_active: true });
     }
     setFormError("");
@@ -63,6 +61,19 @@ export function Materials() {
     e.preventDefault();
     setFormLoading(true);
     setFormError("");
+
+    if (!formData.unit || !formData.unit.trim()) {
+      setFormError("Unit of measure is required.");
+      setFormLoading(false);
+      return;
+    }
+
+    if (!editingId && !isCanonicalUnit(formData.unit)) {
+      setFormError("Please select a standard unit of measure from the catalog.");
+      setFormLoading(false);
+      return;
+    }
+
     try {
       if (editingId) {
         await updateMaterial(editingId, { ...formData, min_stock_threshold: Number(formData.min_stock_threshold) });
@@ -183,44 +194,21 @@ export function Materials() {
                   <Input id="mat-name" required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                 </div>
                 <div>
-                  <Label htmlFor="mat-unit">Unit of Measure (SI / Standar)</Label>
-                  <select
+                  <Label htmlFor="mat-unit">Unit of Measure (UOM)</Label>
+                  <UnitSelect
                     id="mat-unit"
                     required
                     value={formData.unit}
-                    onChange={e => setFormData({...formData, unit: e.target.value})}
-                    className="w-full px-3 py-2 border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-shadow rounded-sm"
-                  >
-                    <optgroup label="Mass / Weight (SI)">
-                      <option value="kg">kg — Kilogram</option>
-                      <option value="g">g — Gram</option>
-                      <option value="mg">mg — Milligram</option>
-                      <option value="ton">ton — Metric Ton</option>
-                    </optgroup>
-                    <optgroup label="Count & Packaging">
-                      <option value="pcs">pcs — Pieces</option>
-                      <option value="unit">unit — Unit</option>
-                      <option value="set">set — Set</option>
-                      <option value="box">box — Box</option>
-                      <option value="pack">pack — Pack</option>
-                      <option value="roll">roll — Roll</option>
-                    </optgroup>
-                    <optgroup label="Volume / Liquid (SI)">
-                      <option value="l">l — Liter</option>
-                      <option value="ml">ml — Milliliter</option>
-                      <option value="m3">m³ — Cubic Meter</option>
-                    </optgroup>
-                    <optgroup label="Length / Dimension (SI)">
-                      <option value="m">m — Meter</option>
-                      <option value="cm">cm — Centimeter</option>
-                      <option value="mm">mm — Millimeter</option>
-                    </optgroup>
-                    {formData.unit && !STANDARD_UNITS.includes(formData.unit) && (
-                      <optgroup label="Custom / Non-Standard">
-                        <option value={formData.unit}>{formData.unit} (Current)</option>
-                      </optgroup>
-                    )}
-                  </select>
+                    onChange={u => setFormData({ ...formData, unit: u })}
+                  />
+                  {editingId && originalUnit && formData.unit !== originalUnit && (
+                    <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-sm flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+                      <div>
+                        <span className="font-semibold">Unit modification warning:</span> Existing inventory balances and order history will not be converted numerically. Quantities previously recorded in <strong>{originalUnit}</strong> will now be treated as <strong>{formData.unit}</strong>.
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="mat-threshold">Minimum Stock Threshold</Label>
