@@ -3,6 +3,13 @@ import { getMaterials, createMaterial, updateMaterial } from "../api/inventory";
 import { Plus, Search, Edit, X } from "lucide-react";
 import { PageHeader, Card, Table, Th, Td, Button, Input, Label, Badge } from "../components/ui";
 
+const STANDARD_UNITS = [
+  "kg", "g", "mg", "ton",
+  "pcs", "unit", "set", "box", "pack", "roll",
+  "l", "ml", "m3",
+  "m", "cm", "mm"
+];
+
 export function Materials() {
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -169,8 +176,44 @@ export function Materials() {
                   <Input id="mat-name" required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                 </div>
                 <div>
-                  <Label htmlFor="mat-unit">Unit of Measure</Label>
-                  <Input id="mat-unit" required type="text" value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} placeholder="e.g. kg, pcs, liters" />
+                  <Label htmlFor="mat-unit">Unit of Measure (SI / Standar)</Label>
+                  <select
+                    id="mat-unit"
+                    required
+                    value={formData.unit}
+                    onChange={e => setFormData({...formData, unit: e.target.value})}
+                    className="w-full px-3 py-2 border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-shadow rounded-sm"
+                  >
+                    <optgroup label="Mass / Weight (SI)">
+                      <option value="kg">kg — Kilogram</option>
+                      <option value="g">g — Gram</option>
+                      <option value="mg">mg — Milligram</option>
+                      <option value="ton">ton — Metric Ton</option>
+                    </optgroup>
+                    <optgroup label="Count & Packaging">
+                      <option value="pcs">pcs — Pieces</option>
+                      <option value="unit">unit — Unit</option>
+                      <option value="set">set — Set</option>
+                      <option value="box">box — Box</option>
+                      <option value="pack">pack — Pack</option>
+                      <option value="roll">roll — Roll</option>
+                    </optgroup>
+                    <optgroup label="Volume / Liquid (SI)">
+                      <option value="l">l — Liter</option>
+                      <option value="ml">ml — Milliliter</option>
+                      <option value="m3">m³ — Cubic Meter</option>
+                    </optgroup>
+                    <optgroup label="Length / Dimension (SI)">
+                      <option value="m">m — Meter</option>
+                      <option value="cm">cm — Centimeter</option>
+                      <option value="mm">mm — Millimeter</option>
+                    </optgroup>
+                    {formData.unit && !STANDARD_UNITS.includes(formData.unit) && (
+                      <optgroup label="Custom / Non-Standard">
+                        <option value={formData.unit}>{formData.unit} (Current)</option>
+                      </optgroup>
+                    )}
+                  </select>
                 </div>
                 <div>
                   <Label htmlFor="mat-threshold">Minimum Stock Threshold</Label>
