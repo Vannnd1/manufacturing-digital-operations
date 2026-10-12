@@ -228,4 +228,4 @@ This document defines the core business workflows for the Manufacturing Digital 
   - *Transaction Failure:* If the main action fails and rolls back, the audit log for that specific success action is not written.
 - **Business Rules:** Audit logs are append-only. They cannot be edited or deleted through the UI.
 - **State Changes:** New Audit Log entry created.
-- **Result:** A permanent, traceable history of who did what and when.
+- **Result:** A permanent, traceable history of who did what and when, inspectable by Managers and Admins via the Audit Trail view (`/audit`).

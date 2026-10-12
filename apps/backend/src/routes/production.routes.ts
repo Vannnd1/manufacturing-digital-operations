@@ -16,5 +16,6 @@ router.post("/", requireAuth, canManageProduction, validateRequest(createProdoSc
 router.get("/:id/availability", requireAuth, validateRequest(prodoIdParamSchema), ProductionController.checkAvailability);
 router.post("/:id/reserve", requireAuth, canManageProduction, validateRequest(prodoIdParamSchema), ProductionController.reserve);
 router.post("/:id/record", requireAuth, canManageProduction, validateRequest(recordProductionSchema), ProductionController.record);
+router.post("/:id/cancel", requireAuth, canManageProduction, validateRequest(prodoIdParamSchema), ProductionController.cancel);
 
 export default router;

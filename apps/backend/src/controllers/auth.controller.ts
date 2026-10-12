@@ -21,6 +21,13 @@ export class AuthController {
   }
 
   static async seedDemoUsers(req: Request, res: Response) {
+    if (process.env.NODE_ENV === "production") {
+      return res.status(403).json({
+        error: "Demo user seeding via API is disabled in production environments.",
+        code: "FORBIDDEN",
+      });
+    }
+
     try {
       const roles = await db("roles").select("id", "name");
       const passwordHash = await bcrypt.hash("demo123", 10);

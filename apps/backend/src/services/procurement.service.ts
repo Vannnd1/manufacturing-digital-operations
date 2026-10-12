@@ -5,6 +5,22 @@ export class ProcurementService {
   // PR
   static async createPR(userId: string, items: { material_id: string; quantity: number }[]) {
     return await db.transaction(async (trx) => {
+      if (!items || items.length === 0) {
+        throw new Error("EMPTY_ITEMS");
+      }
+
+      const matIds = items.map(item => item.material_id);
+      if (new Set(matIds).size !== matIds.length) {
+        throw new Error("DUPLICATE_MATERIAL");
+      }
+
+      for (const item of items) {
+        const mat = await trx("materials").where({ id: item.material_id, is_active: true }).first();
+        if (!mat) {
+          throw new Error("INACTIVE_OR_INVALID_MATERIAL");
+        }
+      }
+
       const [pr] = await trx("purchase_requests").insert({
         user_id: userId,
         request_date: new Date(),
@@ -58,6 +74,11 @@ export class ProcurementService {
       if (!pr) throw new Error("NOT_FOUND");
       if (pr.status !== "Pending") throw new Error("INVALID_TRANSITION");
 
+      // Segregation of Duties: requesters cannot approve their own PR
+      if (pr.user_id && pr.user_id === userId) {
+        throw new Error("SELF_APPROVAL_FORBIDDEN");
+      }
+
       const [updated] = await trx("purchase_requests").where({ id: prId }).update({ status }).returning("*");
 
       await trx("audit_logs").insert({
@@ -76,6 +97,14 @@ export class ProcurementService {
       if (!pr) throw new Error("PR_NOT_FOUND");
       if (pr.status !== "Approved") throw new Error("PR_NOT_APPROVED");
 
+      const supplier = await trx("suppliers").where({ id: supplierId, is_active: true }).first();
+      if (!supplier) throw new Error("INACTIVE_OR_INVALID_SUPPLIER");
+
+      const matIds = items.map(item => item.material_id);
+      if (new Set(matIds).size !== matIds.length) {
+        throw new Error("DUPLICATE_MATERIAL");
+      }
+
       const [po] = await trx("purchase_orders").insert({
         pr_id: prId,
         supplier_id: supplierId,
@@ -83,6 +112,7 @@ export class ProcurementService {
         issue_date: new Date(),
         status: "Issued",
       }).returning("*");
+
 
       const poItems = items.map(item => ({
         po_id: po.id,
@@ -105,10 +135,58 @@ export class ProcurementService {
   }
 
   static async getPOs() {
-    return await db("purchase_orders")
+    const pos = await db("purchase_orders")
       .join("suppliers", "purchase_orders.supplier_id", "suppliers.id")
       .select("purchase_orders.*", "suppliers.name as supplier_name")
       .orderBy("issue_date", "desc");
+
+    if (pos.length === 0) return pos;
+
+    const poIds = pos.map((po: any) => po.id);
+    const items = await db("purchase_order_items")
+      .join("materials", "purchase_order_items.material_id", "materials.id")
+      .whereIn("po_id", poIds)
+      .select(
+        "purchase_order_items.id as po_item_id",
+        "purchase_order_items.po_id",
+        "purchase_order_items.material_id",
+        "purchase_order_items.quantity",
+        "purchase_order_items.unit_price",
+        "materials.name as material_name",
+        "materials.sku as material_sku",
+        "materials.unit"
+      );
+
+    return pos.map((po: any) => ({
+      ...po,
+      items: items.filter((i: any) => i.po_id === po.id)
+    }));
+  }
+
+  static async getPOById(id: string) {
+    const po = await db("purchase_orders")
+      .join("suppliers", "purchase_orders.supplier_id", "suppliers.id")
+      .where("purchase_orders.id", id)
+      .select("purchase_orders.*", "suppliers.name as supplier_name")
+      .first();
+
+    if (!po) throw new Error("PO_NOT_FOUND");
+
+    const items = await db("purchase_order_items")
+      .join("materials", "purchase_order_items.material_id", "materials.id")
+      .where("po_id", id)
+      .select(
+        "purchase_order_items.id as po_item_id",
+        "purchase_order_items.po_id",
+        "purchase_order_items.material_id",
+        "purchase_order_items.quantity",
+        "purchase_order_items.unit_price",
+        "materials.name as material_name",
+        "materials.sku as material_sku",
+        "materials.unit"
+      );
+
+    return { ...po, items };
   }
 
   // Goods Receipt
@@ -118,15 +196,24 @@ export class ProcurementService {
       if (!po) throw new Error("PO_NOT_FOUND");
       if (po.status !== "Issued" && po.status !== "Partially_Received") throw new Error("INVALID_PO_STATUS");
 
+      const poItemIds = items.map(item => item.po_item_id);
+      if (new Set(poItemIds).size !== poItemIds.length) {
+        throw new Error("DUPLICATE_PO_ITEM");
+      }
+
       const [gr] = await trx("goods_receipts").insert({
         po_id: poId,
         user_id: userId,
         receipt_date: new Date(),
       }).returning("*");
 
+
       for (const item of items) {
         const poItem = await trx("purchase_order_items").where({ id: item.po_item_id, po_id: poId }).first();
         if (!poItem) throw new Error("PO_ITEM_NOT_FOUND");
+        if (Number(item.received_quantity) > Number(poItem.quantity)) {
+          throw new Error("OVER_RECEIPT");
+        }
 
         await trx("goods_receipt_items").insert({
           receipt_id: gr.id,

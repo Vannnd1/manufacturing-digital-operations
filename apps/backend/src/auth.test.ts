@@ -7,10 +7,27 @@ import jwt from "jsonwebtoken";
 jest.mock("./db", () => {
   const mockDb = jest.fn((table: string) => {
     if (table === "users") {
+      let isEmailCheck = false;
       return {
-        where: jest.fn().mockReturnThis(),
+        where: jest.fn((clause: any) => {
+          if (clause && clause.email) isEmailCheck = true;
+          return {
+            first: jest.fn().mockImplementation(() => {
+              if (isEmailCheck && clause.email !== "test@example.com") {
+                return Promise.resolve(null); // demo user doesn't exist yet
+              }
+              return Promise.resolve({
+                id: "user-123",
+                role_id: "role-123",
+                name: "Test User",
+                email: "test@example.com",
+                password_hash: bcrypt.hashSync("password123", 10),
+                is_active: true,
+              });
+            }),
+          };
+        }),
         first: jest.fn().mockImplementation(() => {
-          // Fake user
           return Promise.resolve({
             id: "user-123",
             role_id: "role-123",
@@ -20,12 +37,17 @@ jest.mock("./db", () => {
             is_active: true,
           });
         }),
+        insert: jest.fn().mockResolvedValue([1]),
       };
     }
     if (table === "roles") {
       return {
         where: jest.fn().mockReturnThis(),
         first: jest.fn().mockResolvedValue({ id: "role-123", name: "Admin" }),
+        select: jest.fn().mockResolvedValue([
+          { id: "role-123", name: "Admin" },
+          { id: "role-456", name: "Warehouse" }
+        ]),
       };
     }
     if (table === "audit_logs") {
@@ -89,5 +111,34 @@ describe("Auth & RBAC Flow", () => {
       .set("Authorization", `Bearer ${nonAdminToken}`);
     expect(res.status).toBe(403);
     expect(res.body.code).toBe("FORBIDDEN");
+  });
+
+  it("should seed demo users successfully when Admin requests in non-production", async () => {
+    const res = await request(app)
+      .get("/api/auth/seed-demo-users")
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("message");
+  });
+
+  it("should block demo users seeding in production environment", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    const originalSecret = process.env.JWT_SECRET;
+    process.env.NODE_ENV = "production";
+    process.env.JWT_SECRET = "production_secret_key_for_test";
+    const prodAdminToken = jwt.sign(
+      { userId: "user-123", role: "Admin" },
+      process.env.JWT_SECRET
+    );
+    try {
+      const res = await request(app)
+        .get("/api/auth/seed-demo-users")
+        .set("Authorization", `Bearer ${prodAdminToken}`);
+      expect(res.status).toBe(403);
+      expect(res.body.code).toBe("FORBIDDEN");
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+      process.env.JWT_SECRET = originalSecret;
+    }
   });
 });

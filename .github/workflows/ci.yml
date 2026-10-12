@@ -18,21 +18,17 @@ jobs:
         node-version: 20
         cache: 'npm'
         
-    - name: Install dependencies
-      run: npm install
+    - name: Install dependencies (clean install)
+      run: npm ci
 
     - name: Lint
       run: npm run lint
-      continue-on-error: true
 
-    - name: Typecheck Backend
-      run: npx tsc --noEmit --project apps/backend/tsconfig.json
-      
-    - name: Typecheck Frontend
-      run: npx tsc -b apps/frontend
+    - name: Typecheck
+      run: npm run typecheck
 
-    - name: Test Backend
-      run: npm test --workspace=backend
+    - name: Test Backend with Coverage
+      run: npm run test:coverage
       
     - name: Build
       run: npm run build

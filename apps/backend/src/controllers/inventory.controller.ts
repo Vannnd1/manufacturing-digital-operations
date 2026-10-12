@@ -13,6 +13,18 @@ export class InventoryController {
     }
   }
 
+  static async transactions(req: Request, res: Response) {
+    try {
+      const materialId = req.query.material_id as string | undefined;
+      const limit = req.query.limit ? Number(req.query.limit) : 100;
+      const txs = await InventoryService.getTransactions(materialId, limit);
+      res.json(txs);
+    } catch (error: any) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error", code: "INTERNAL_ERROR" });
+    }
+  }
+
   static async adjust(req: AuthRequest, res: Response) {
     try {
       const { material_id, quantity_change, type, reference_id } = req.body;

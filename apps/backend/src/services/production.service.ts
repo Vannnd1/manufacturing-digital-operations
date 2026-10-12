@@ -7,6 +7,22 @@ export class ProductionService {
       const product = await trx("products").where({ id: data.product_id }).first();
       if (!product) throw new Error("PRODUCT_NOT_FOUND");
 
+      if (!data.materials || data.materials.length === 0) {
+        throw new Error("EMPTY_BOM");
+      }
+
+      const matIds = data.materials.map(m => m.material_id);
+      if (new Set(matIds).size !== matIds.length) {
+        throw new Error("DUPLICATE_MATERIAL");
+      }
+
+      for (const m of data.materials) {
+        const mat = await trx("materials").where({ id: m.material_id, is_active: true }).first();
+        if (!mat) {
+          throw new Error("INACTIVE_OR_INVALID_MATERIAL");
+        }
+      }
+
       const [prodo] = await trx("production_orders").insert({
         product_id: data.product_id,
         planned_quantity: data.planned_quantity,
@@ -159,6 +175,44 @@ export class ProductionService {
       });
 
       return record;
+    });
+  }
+
+  static async cancelOrder(userId: string, prodoId: string) {
+    return await db.transaction(async (trx) => {
+      const prodo = await trx("production_orders").where({ id: prodoId }).first();
+      if (!prodo) throw new Error("NOT_FOUND");
+      if (prodo.status === "Completed" || prodo.status === "Cancelled") {
+        throw new Error("CANNOT_CANCEL");
+      }
+
+      // If status is Ready or In_Progress, release reserved materials back to available stock
+      if (prodo.status === "Ready" || prodo.status === "In_Progress") {
+        const reservations = await trx("material_reservations").where({ prodo_id: prodoId });
+        for (const res of reservations) {
+          await InventoryService.recordTransaction(
+            res.material_id,
+            Number(res.reserved_quantity),
+            "Release",
+            userId,
+            prodoId,
+            trx
+          );
+          await trx("material_reservations").where({ id: res.id }).delete();
+        }
+      }
+
+      await trx("production_orders").where({ id: prodoId }).update({ status: "Cancelled" });
+
+      await trx("audit_logs").insert({
+        user_id: userId,
+        action_type: "CANCEL_PRODO",
+        entity_name: "PRODUCTION_ORDER",
+        entity_id: prodoId,
+        description: `Cancelled production order ${prodoId}`,
+      });
+
+      return { success: true };
     });
   }
 }

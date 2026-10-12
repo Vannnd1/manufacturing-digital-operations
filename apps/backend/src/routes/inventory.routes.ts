@@ -10,6 +10,9 @@ const router = Router();
 // View inventory (All authenticated users)
 router.get("/", requireAuth, InventoryController.list);
 
+// View inventory transaction ledger (All authenticated users)
+router.get("/transactions", requireAuth, InventoryController.transactions);
+
 // Adjust inventory (Warehouse, Manager, Admin)
 const canAdjustInventory = requireRole(["Admin", "Manager", "Warehouse"]);
 router.post("/transaction", requireAuth, canAdjustInventory, validateRequest(inventoryTransactionSchema), InventoryController.adjust);

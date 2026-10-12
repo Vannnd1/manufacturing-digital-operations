@@ -2,8 +2,92 @@ import request from "supertest";
 import app from "./app";
 import jwt from "jsonwebtoken";
 
+const validInspId = "33333333-3333-3333-3333-333333333333";
+const notFoundInspId = "99999999-9999-9999-9999-999999999999";
+const precId = "11111111-1111-1111-1111-111111111111";
+
 jest.mock("./db", () => {
-  const mDb: any = jest.fn();
+  const mDb: any = jest.fn((table: string) => {
+    if (table === "quality_inspections") {
+      let isIdLookup: string | null = null;
+      const inspections = [
+        {
+          id: validInspId,
+          production_record_id: precId,
+          prodo_id: "prodo-1",
+          inspector_id: "user-q",
+          inspector_name: "QC Inspector",
+          pass_quantity: 90,
+          fail_quantity: 10,
+          inspection_date: "2026-01-01"
+        }
+      ];
+      const builder: any = {
+        join: jest.fn().mockReturnThis(),
+        where: jest.fn((fieldOrClause: any, val?: any) => {
+          if (fieldOrClause === "quality_inspections.id" || fieldOrClause === "id") {
+            isIdLookup = val;
+          } else if (typeof fieldOrClause === "object" && fieldOrClause?.id) {
+            isIdLookup = fieldOrClause.id;
+          }
+          return builder;
+        }),
+        select: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        first: jest.fn(() => {
+          if (isIdLookup === validInspId) return Promise.resolve(inspections[0]);
+          if (isIdLookup === notFoundInspId) return Promise.resolve(null);
+          return Promise.resolve(null);
+        }),
+        then: jest.fn((cb) => cb(inspections)),
+      };
+      return builder;
+    }
+
+    if (table === "production_records") {
+      const records = [
+        {
+          id: precId,
+          prodo_id: "prodo-1",
+          actual_quantity_produced: 100,
+          product_name: "Industrial Inverter",
+          product_sku: "INV-01",
+          operator_name: "Assembly Tech"
+        }
+      ];
+      const builder: any = {
+        join: jest.fn().mockReturnThis(),
+        leftJoin: jest.fn().mockReturnThis(),
+        whereNull: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        then: jest.fn((cb) => cb(records)),
+      };
+      return builder;
+    }
+
+    if (table === "defect_records") {
+      const defects = [
+        { id: "def-1", inspection_id: validInspId, defect_reason: "Scratch", quantity: 10 }
+      ];
+      const builder: any = {
+        where: jest.fn().mockReturnThis(),
+        then: jest.fn((cb) => cb(defects)),
+      };
+      return builder;
+    }
+
+    if (table === "finished_goods_records") {
+      const fg = { id: "fg-1", inspection_id: validInspId, quantity_accepted: 90 };
+      const builder: any = {
+        where: jest.fn().mockReturnThis(),
+        first: jest.fn().mockResolvedValue(fg),
+      };
+      return builder;
+    }
+
+    return {};
+  });
 
   mDb.transaction = jest.fn(async (cb) => {
     const trx = jest.fn((table: string) => {
@@ -11,14 +95,14 @@ jest.mock("./db", () => {
         join: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
-        first: jest.fn().mockResolvedValue({ id: "prec-1", prodo_id: "prodo-1", actual_quantity_produced: 100, product_id: "prod-1" }),
+        first: jest.fn().mockResolvedValue({ id: precId, prodo_id: "prodo-1", actual_quantity_produced: 100, product_id: "prod-1" }),
       };
 
       if (table === "quality_inspections") return {
         where: jest.fn().mockReturnThis(),
         first: jest.fn().mockResolvedValue(null),
         insert: jest.fn().mockReturnThis(),
-        returning: jest.fn().mockResolvedValue([{ id: "insp-1" }]),
+        returning: jest.fn().mockResolvedValue([{ id: validInspId }]),
       };
 
       if (table === "defect_records") return {
@@ -40,7 +124,6 @@ jest.mock("./db", () => {
 describe("Quality API", () => {
   const qaToken = jwt.sign({ userId: "user-q", role: "QC" }, process.env.JWT_SECRET || "supersecretjwtkey_for_mvp_only");
   const prodToken = jwt.sign({ userId: "user-p", role: "Production" }, process.env.JWT_SECRET || "supersecretjwtkey_for_mvp_only");
-  const precId = "11111111-1111-1111-1111-111111111111";
 
   it("should block unauthorized inspection creation", async () => {
     const res = await request(app)
@@ -92,6 +175,51 @@ describe("Quality API", () => {
         defects: [{ defect_reason: "Scratch", quantity: 10 }]
       });
     expect(res.status).toBe(201);
-    expect(res.body.id).toBe("insp-1");
+    expect(res.body.id).toBe(validInspId);
+  });
+
+  it("should list completed quality inspections", async () => {
+    const res = await request(app)
+      .get("/api/quality")
+      .set("Authorization", `Bearer ${qaToken}`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body[0].inspector_name).toBe("QC Inspector");
+  });
+
+  it("should list pending production records waiting for inspection", async () => {
+    const res = await request(app)
+      .get("/api/quality/pending")
+      .set("Authorization", `Bearer ${qaToken}`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body[0].product_sku).toBe("INV-01");
+  });
+
+  it("should get inspection details with defects and finished goods", async () => {
+    const res = await request(app)
+      .get(`/api/quality/${validInspId}`)
+      .set("Authorization", `Bearer ${qaToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe(validInspId);
+    expect(Array.isArray(res.body.defects)).toBe(true);
+    expect(res.body.defects.length).toBe(1);
+    expect(res.body.finished_goods).not.toBeNull();
+  });
+
+  it("should return 404 when inspection ID does not exist", async () => {
+    const res = await request(app)
+      .get(`/api/quality/${notFoundInspId}`)
+      .set("Authorization", `Bearer ${qaToken}`);
+    expect(res.status).toBe(404);
+    expect(res.body.code).toBe("NOT_FOUND");
+  });
+
+  it("should return 400 when inspection ID is not a valid UUID", async () => {
+    const res = await request(app)
+      .get("/api/quality/not-a-valid-uuid")
+      .set("Authorization", `Bearer ${qaToken}`);
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
   });
 });

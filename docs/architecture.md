@@ -84,18 +84,33 @@ The frontend is a standard React SPA, focusing on functional density and clear o
 
 ## 6. Authentication and Authorization (RBAC)
 
-- **Login:** User authenticates via `/api/auth/login`. Returns a JWT or secure HTTP-only cookie.
-- **Authorization:** Standard RBAC. Each route defines allowed roles (e.g., `requireRole(['Manager', 'Purchasing'])`).
-- **Frontend Security:** The frontend conditionally renders navigation and actions based on the user's role claim.
+- **Login:** User authenticates via `/api/auth/login`. Returns a JWT session token.
+- **Authorization:** Standard RBAC with 6 defined roles: `Admin`, `Manager`, `Purchasing`, `Warehouse`, `Production`, and `Quality Control`. Each route defines allowed roles (e.g., `requireRole(['Manager', 'Admin'])`).
+- **Frontend Security:** The frontend conditionally renders navigation, demo quick-fill presets, and action buttons based on the user's role claim.
 - **Backend Security (Source of Truth):** The API independently verifies the role. UI hiding is only for UX; backend validation prevents actual unauthorized access.
+
+| Role | Accessible Modules | Key Authorizations |
+|---|---|---|
+| **Admin** | All Modules, Audit Trail | Full system access, User Management, Master Data |
+| **Manager** | Dashboard, Procurement Approval, Audit Trail | PR Approval, PO Approval, Operations Monitoring |
+| **Purchasing** | Procurement (PR/PO), Suppliers | PR Creation, PO Creation & Issuance |
+| **Warehouse** | Inventory, Goods Receipt, Material Master | Stock Viewing/Adjustment, PO Goods Receipt |
+| **Production** | Production Orders, BOM, Reservations | ProdO Creation, Material Reservation, Production Recording |
+| **Quality Control** | Quality Inspection, Defect Logging | Quality Inspection (Pass/Fail), Defect Categorization |
 
 ## 7. API Boundaries & Error Handling
 
-### 7.1 Example Endpoint Groups
-- `GET /api/inventory` (View stock)
-- `POST /api/procurement/requests` (Create PR)
-- `PATCH /api/procurement/requests/:id/approve` (Approve PR)
-- `POST /api/production/orders/:id/reserve` (Reserve materials)
+### 7.1 Key Endpoint Groups
+- `GET /api/inventory` (View stock & transactions)
+- `POST /api/procurement/requests` (Create PR - Purchasing, Admin)
+- `PATCH /api/procurement/requests/:id/approve` (Approve PR - Manager, Admin)
+- `POST /api/procurement/orders` (Create PO - Purchasing, Admin)
+- `POST /api/procurement/receipts` (Record Goods Receipt - Warehouse, Admin)
+- `POST /api/production/orders` (Create ProdO - Production, Admin)
+- `POST /api/production/orders/:id/reserve` (Reserve materials - Production, Admin)
+- `POST /api/production/orders/:id/record` (Record output - Production, Admin)
+- `POST /api/quality` (Record QC inspection - Quality Control, Manager, Admin)
+- `GET /api/audit` (View audit trail - Manager, Admin)
 
 ### 7.2 Validation & Errors
 - **Frontend:** Provides immediate feedback for obvious errors (empty fields, bad formats) to improve UX.

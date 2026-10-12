@@ -1,13 +1,35 @@
 import { useEffect, useState } from "react";
 import { getDashboardSummary } from "../api/dashboard";
-import { AlertTriangle, ShoppingCart, Target, ShieldAlert, TrendingDown } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore";
+import { 
+  AlertTriangle, 
+  ShoppingCart, 
+  Target, 
+  ShieldAlert, 
+  TrendingDown, 
+  BookOpen, 
+  ChevronDown, 
+  ChevronUp, 
+  ArrowRight,
+  CheckCircle2
+} from "lucide-react";
 import { Link } from "react-router-dom";
-import { PageHeader, Card, CardHeader, Table, Th, Td } from "../components/ui";
+import { PageHeader, Card, CardHeader, Table, Th, Td, Badge, Button } from "../components/ui";
 
 export function Dashboard() {
+  const { user } = useAuthStore();
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showGuide, setShowGuide] = useState(() => {
+    return localStorage.getItem("mfg-dashboard-guide") !== "collapsed";
+  });
+
+  const toggleGuide = () => {
+    const next = !showGuide;
+    setShowGuide(next);
+    localStorage.setItem("mfg-dashboard-guide", next ? "expanded" : "collapsed");
+  };
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -22,22 +44,157 @@ export function Dashboard() {
   }, []);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-64 text-slate-500 animate-pulse">
+    <div className="flex items-center justify-center h-64 text-slate-500 animate-pulse font-medium">
       Loading command center data...
     </div>
   );
   if (error) return (
-    <div className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{error}</div>
+    <div className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500 font-medium">{error}</div>
   );
   if (!summary) return null;
 
+  const currentRole = user?.role || "Operator";
+
+  const workflowSteps = [
+    {
+      num: "01",
+      title: "Material Sourcing & Requisitions",
+      role: "Purchasing & Manager",
+      action: "Create PR (Purchasing), approve requisition (Manager)",
+      link: "/procurement",
+      linkText: "Procurement",
+      isAllowed: currentRole === "Purchasing" || currentRole === "Manager" || currentRole === "Admin",
+    },
+    {
+      num: "02",
+      title: "PO Issuance & Goods Receipt",
+      role: "Purchasing & Warehouse",
+      action: "Issue PO (Purchasing), physically receive stock into ledger (Warehouse)",
+      link: "/procurement",
+      linkText: "Goods Receipt",
+      isAllowed: currentRole === "Purchasing" || currentRole === "Warehouse" || currentRole === "Admin",
+    },
+    {
+      num: "03",
+      title: "Production Order & BOM Reservation",
+      role: "Production Staff",
+      action: "Schedule work order, check stock, atomically reserve materials",
+      link: "/production",
+      linkText: "Production",
+      isAllowed: currentRole === "Production" || currentRole === "Admin",
+    },
+    {
+      num: "04",
+      title: "Factory Yield & Quality Gate",
+      role: "Production & QC",
+      action: "Record output (Production), verify defects & release FG (QC)",
+      link: "/quality",
+      linkText: "Quality Control",
+      isAllowed: currentRole === "Production" || currentRole === "QC" || currentRole === "Admin",
+    },
+    {
+      num: "05",
+      title: "Operational Insights & Audit Trail",
+      role: "All Roles / Auditors",
+      action: "Track lot genealogy, stock movements, and operational metrics",
+      link: "/reports",
+      linkText: "Reports & Insights",
+      isAllowed: true,
+    },
+  ];
+
   return (
     <div className="space-y-8 max-w-7xl">
-      <PageHeader 
-        title="Operational Command Center" 
-        description="Real-time overview of manufacturing operations and critical alerts."
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <PageHeader 
+          title="Operational Command Center" 
+          description="Real-time overview of manufacturing operations and critical alerts."
+        />
+        <Button 
+          variant="secondary" 
+          onClick={toggleGuide}
+          className="self-start sm:self-auto flex items-center gap-1.5 border-slate-300 bg-white py-1.5 px-3 text-xs"
+        >
+          <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+          <span>{showGuide ? "Collapse Demo Guide" : "View Workflow Tour"}</span>
+          {showGuide ? <ChevronUp className="w-3.5 h-3.5 text-slate-400" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400" />}
+        </Button>
+      </div>
 
+      {/* Interactive Workflow & Demo Onboarding Card */}
+      {showGuide && (
+        <Card className="border-slate-300 bg-slate-900 text-slate-50 shadow-md">
+          <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 bg-amber-500/20 text-amber-400 rounded-sm border border-amber-500/30">
+                <BookOpen className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-100">
+                  End-to-End Manufacturing Workflow Tour
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Strict Segregation of Duties (SoD) enforced across 6 specialized operational roles.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-slate-400">Current Role:</span>
+              <Badge variant="warning">{currentRole}</Badge>
+            </div>
+          </div>
+
+          <div className="p-5 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            {workflowSteps.map((step) => (
+              <div 
+                key={step.num}
+                className={`p-3.5 rounded-sm border flex flex-col justify-between transition-colors ${
+                  step.isAllowed 
+                    ? "bg-slate-800/80 border-slate-700 hover:border-amber-500/50" 
+                    : "bg-slate-950/60 border-slate-800/60 opacity-60"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-xs font-bold text-amber-500">{step.num}</span>
+                    {step.isAllowed && (
+                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-medium">
+                        <CheckCircle2 className="w-3 h-3" /> Ready
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-xs font-bold text-slate-200 mb-1 leading-snug">{step.title}</h3>
+                  <p className="text-[11px] text-slate-400 mb-2 leading-relaxed">{step.action}</p>
+                </div>
+                <div className="pt-2 border-t border-slate-700/50 mt-2 flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400 font-mono">{step.role}</span>
+                  <Link 
+                    to={step.link}
+                    className="text-[11px] font-semibold text-amber-400 hover:text-amber-300 inline-flex items-center gap-1"
+                  >
+                    <span>{step.linkText}</span>
+                    <ArrowRight className="w-2.5 h-2.5" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="px-5 py-2.5 bg-slate-950 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+            <span>
+              💡 <strong>Tip for Interviewers:</strong> Switch roles anytime on the Login page using the quick-fill presets to verify server-side authorization enforcement.
+            </span>
+            <Link 
+              to="/audit" 
+              className="text-amber-400 hover:underline flex items-center gap-1 font-medium"
+            >
+              <span>Explore Multi-Tier Lot Genealogy</span> &rarr;
+            </Link>
+          </div>
+        </Card>
+      )}
+
+      {/* KPI Alert Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Inventory Alert */}
         <Card className="flex flex-col relative overflow-hidden group hover:border-amber-400 transition-colors">

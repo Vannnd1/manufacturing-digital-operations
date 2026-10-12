@@ -24,3 +24,9 @@ export const adjustInventory = async (transaction: any) => {
   const { data } = await apiClient.post("/inventory/transaction", transaction);
   return data;
 };
+
+export const getInventoryTransactions = async (materialId?: string, limit = 100) => {
+  const query = materialId ? `?material_id=${materialId}&limit=${limit}` : `?limit=${limit}`;
+  const { data } = await apiClient.get(`/inventory/transactions${query}`);
+  return data;
+};

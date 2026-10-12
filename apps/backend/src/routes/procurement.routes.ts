@@ -7,9 +7,11 @@ import { createPRSchema, approvePRSchema, createPOSchema, createGRSchema } from 
 
 const router = Router();
 
-// PR
-router.post("/pr", requireAuth, validateRequest(createPRSchema), ProcurementController.createPR);
+// PR (Purchasing, Manager, Admin only)
+const canCreatePR = requireRole(["Admin", "Manager", "Purchasing"]);
+router.post("/pr", requireAuth, canCreatePR, validateRequest(createPRSchema), ProcurementController.createPR);
 router.get("/pr", requireAuth, ProcurementController.listPRs);
+
 
 // Approve PR (Managers or Admins only)
 const canApprove = requireRole(["Admin", "Manager"]);
@@ -19,6 +21,7 @@ router.patch("/pr/:id/approve", requireAuth, canApprove, validateRequest(approve
 const canManagePO = requireRole(["Admin", "Manager", "Purchasing"]);
 router.post("/po", requireAuth, canManagePO, validateRequest(createPOSchema), ProcurementController.createPO);
 router.get("/po", requireAuth, ProcurementController.listPOs);
+router.get("/po/:id", requireAuth, ProcurementController.getPO);
 
 // GR
 const canReceiveGoods = requireRole(["Admin", "Manager", "Warehouse"]);

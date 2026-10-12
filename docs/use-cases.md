@@ -337,3 +337,19 @@ This document details the functional use cases for the Manufacturing Digital Ope
 **Business Rules:** Logs are append-only. No UI deletion capability.  
 **Postconditions:** Action is traceable.  
 **Related PRD:** FR-AUD-001, FR-AUD-002
+
+## 22. View Audit Trail
+**Use Case ID:** UC-022  
+**Name:** View Operational Audit Trail  
+**Primary Actor:** Admin, Manager  
+**Goal:** Review chronological operational changes and traceability logs with filtering.  
+**Preconditions:** User is authenticated as Admin or Manager.  
+**Trigger:** User navigates to Audit Trail module (`/audit`).  
+**Main Success Flow:** 
+1. System queries audit logs joined with actor details.
+2. System renders audit log table with timestamps, actions, entity types, user identities, and contextual metadata.
+3. User filters by entity type (`PURCHASE_REQUEST`, `PURCHASE_ORDER`, `GOODS_RECEIPT`, `PRODUCTION_ORDER`, `QUALITY_INSPECTION`, etc.).  
+**Business Rules:** Restricted to Admin and Manager roles. UI provides read-only inspection.  
+**Postconditions:** Operational history is clearly visible.  
+**Related PRD:** FR-AUD-001, FR-AUD-002
+

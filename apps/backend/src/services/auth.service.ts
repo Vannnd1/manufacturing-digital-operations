@@ -4,7 +4,8 @@ import db from "../db";
 
 export class AuthService {
   static async login(email: string, passwordPlain: string) {
-    const user = await db("users").where({ email, is_active: true }).first();
+    const normalizedEmail = email?.trim().toLowerCase();
+    const user = await db("users").where({ email: normalizedEmail, is_active: true }).first();
     if (!user) {
       throw new Error("INVALID_CREDENTIALS");
     }
@@ -16,11 +17,20 @@ export class AuthService {
 
     const role = await db("roles").where({ id: user.role_id }).first();
 
+    const jwtSecret =
+      process.env.JWT_SECRET ||
+      (process.env.NODE_ENV === "production" ? "" : "supersecretjwtkey_for_mvp_only");
+
+    if (!jwtSecret) {
+      throw new Error("CONFIG_ERROR");
+    }
+
     const token = jwt.sign(
       { userId: user.id, role: role?.name },
-      process.env.JWT_SECRET || "supersecretjwtkey_for_mvp_only",
+      jwtSecret,
       { expiresIn: "8h" }
     );
+
 
     // Audit log
     await db("audit_logs").insert({

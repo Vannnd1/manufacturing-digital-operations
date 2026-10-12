@@ -29,3 +29,8 @@ export const recordProduction = async (id: string, actual_quantity_produced: num
   const { data } = await apiClient.post(`/production/${id}/record`, { actual_quantity_produced });
   return data;
 };
+
+export const cancelProductionOrder = async (id: string) => {
+  const { data } = await apiClient.post(`/production/${id}/cancel`);
+  return data;
+};

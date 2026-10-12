@@ -9,6 +9,9 @@ export class ProductionController {
       res.status(201).json(prodo);
     } catch (error: any) {
       if (error.message === "PRODUCT_NOT_FOUND") res.status(404).json({ error: "Product not found", code: "NOT_FOUND" });
+      else if (error.message === "EMPTY_BOM") res.status(400).json({ error: "Production order requires at least one material", code: "BAD_REQUEST" });
+      else if (error.message === "DUPLICATE_MATERIAL") res.status(400).json({ error: "Duplicate materials in BOM", code: "BAD_REQUEST" });
+      else if (error.message === "INACTIVE_OR_INVALID_MATERIAL") res.status(400).json({ error: "One or more materials are inactive or do not exist", code: "BAD_REQUEST" });
       else res.status(500).json({ error: "Internal Server Error", code: "INTERNAL_ERROR" });
     }
   }
@@ -61,6 +64,17 @@ export class ProductionController {
     } catch (error: any) {
       if (error.message === "NOT_FOUND") res.status(404).json({ error: "Production order not found", code: "NOT_FOUND" });
       else if (error.message === "INVALID_STATUS") res.status(400).json({ error: "Order is not ready or in progress", code: "BAD_REQUEST" });
+      else res.status(500).json({ error: "Internal Server Error", code: "INTERNAL_ERROR" });
+    }
+  }
+
+  static async cancel(req: AuthRequest, res: Response) {
+    try {
+      await ProductionService.cancelOrder(req.user!.userId, req.params.id);
+      res.json({ success: true, message: "Order cancelled and materials released" });
+    } catch (error: any) {
+      if (error.message === "NOT_FOUND") res.status(404).json({ error: "Production order not found", code: "NOT_FOUND" });
+      else if (error.message === "CANNOT_CANCEL") res.status(400).json({ error: "Cannot cancel completed or already cancelled order", code: "BAD_REQUEST" });
       else res.status(500).json({ error: "Internal Server Error", code: "INTERNAL_ERROR" });
     }
   }

@@ -8,6 +8,66 @@
 - [x] docs/erd.md
 - [x] docs/architecture.md
 - [x] Project setup
-- [ ] MVP coding
-- [ ] Testing
-- [ ] Review
+- [x] MVP Core Modules (Auth, Materials, Products, Suppliers, Procurement, Inventory, Production, Quality)
+- [x] Phase 11 — Design System & Industrial UI Overhaul
+- [x] Phase 12 — Industrial Operations & UI Polish (UOM combobox, dashboard metrics, clean inputs)
+- [x] Phase 13 — Enterprise Hardening & Portfolio Readiness
+  - [x] 13.1 End-to-End Workflow Audit & Automation
+  - [x] 13.2 Inventory Transaction Integrity & Double-Booking Safeguards
+  - [x] 13.3 Full-Spectrum RBAC & Separation of Duties
+  - [x] 13.4 System-Wide Audit Trail & Traceability Explorer
+  - [x] 13.5 Data Validation, Edge Cases & Concurrent Safeguards
+  - [x] 13.6 Portfolio Readiness (Demo Accounts, Quick-Fill, Realistic Seeds, Complete Docs)
+- [x] Phase 14 — Security & Reliability Hardening
+  - [x] HTTP Security Headers & DoS Request Size Limits (1MB)
+  - [x] Authentication Claims, Token Expiration & Safe Secret Configuration
+  - [x] Separation of Duties (Self-Approval Prevention on PRs)
+  - [x] Server-Side RBAC Enforcement on PR Creation & Audit Logs
+  - [x] Business Invariant Validation (Inactive Suppliers & Duplicate Receipt Items)
+  - [x] Input Sanitization & Mass-Assignment Defenses
+  - [x] Client-Side Storage Crash Resilience & Safe Error Presentation
+- [x] Phase 15 — Automated Testing & CI/CD Reliability
+  - [x] Deterministic CI installation (`npm ci`) & removal of masked errors (`continue-on-error: false`)
+  - [x] Workspace quality gate scripts (`typecheck`, `test:coverage`, `lint`)
+  - [x] Jest ts-jest hybrid module diagnostics clean-up (`ignoreCodes: [151002]`)
+  - [x] Expanded integration tests (Product, Supplier, Material, Procurement, Quality, Auth)
+  - [x] 18 test suites passing (212/212 tests, 100% green)
+  - [x] Verified code coverage: 90.95% lines overall, 96.88% core service business logic
+  - [x] Full testing strategy documentation (`docs/testing-strategy.md`)
+- [x] Phase 16 — Operational Reporting & Manufacturing Insights
+  - [x] Operational reporting API endpoints (`/api/reports/summary`, `inventory`, `procurement`, `production`, `quality`, `export`)
+  - [x] Knex dynamic SQL aggregations for stock movements, PO spend, work order yield, and QC defects
+  - [x] Zero-division defensive safeguards for yield rate and defect rate calculations
+  - [x] Zod query validation for date ranges (`7d`, `30d`, `all`, `custom`) and `startDate <= endDate` boundary checks
+  - [x] CSV export engine with anti-formula injection sanitization (`=`, `+`, `-`, `@`, `\t`, `\r` escaping)
+  - [x] Industrial frontend reporting dashboard (`/reports`) with tabular metrics, status badges, and download triggers
+  - [x] Unit and integration test suite (`src/reports.test.ts` - 17 tests, 100% passing)
+  - [x] Operational reporting technical documentation (`docs/operational-reporting.md`)
+- [x] Phase 17 — Observability & Production Readiness
+  - [x] Separated liveness (`/api/health`, `/api/health/liveness`) and readiness (`/api/health/readiness`) probe endpoints
+  - [x] Bounded database connectivity verification with safe status mapping (200 vs 503)
+  - [x] Lightweight runtime diagnostics & memory telemetry endpoint (`/api/health/diagnostics`)
+  - [x] Structured logger (`utils/logger.ts`) with automatic sensitive field and credential redaction
+  - [x] Request correlation middleware with incoming `X-Request-Id` validation and log-injection defense
+  - [x] Safe centralized error responses translating raw database errors into standard codes with `requestId`
+  - [x] Production startup configuration validation & masked diagnostic summary (`config/env.ts`)
+  - [x] Graceful startup and shutdown lifecycle with `SIGTERM`/`SIGINT` handling and Knex pool draining
+  - [x] Frontend Axios interceptor network error classification & correlation ID extraction
+  - [x] Comprehensive test suite (`src/observability.test.ts` - 23 tests, 20/20 test suites passing, 252/252 tests green)
+  - [x] Production readiness runbook and troubleshooting documentation (`docs/production-readiness.md`)
+- [x] Phase 18 — Portfolio & Demo Experience
+  - [x] Interactive, collapsible end-to-end manufacturing workflow tour on Dashboard with role indicators
+  - [x] Expanded deterministic seed data with active pipeline states (Pending PR, Approved PR, Issued PO, Work Orders, QC defects)
+  - [x] Database reset and re-seed automation script (`npm run seed:reset`)
+  - [x] Comprehensive evaluator and interviewer walkthrough guide (`docs/demo-guide.md`)
+  - [x] Updated root documentation (`README.md`) reflecting verified test counts (252), accurate port 3001, and architecture
+  - [x] Verified full monorepo quality gates (lint 0 errors, typecheck 0 errors, 20/20 test suites green, production build ok)
+- [x] Phase 19 — Final Portfolio Audit & Release Readiness
+  - [x] Comprehensive 11-dimension portfolio and release-readiness assessment (`docs/final-portfolio-audit.md`)
+  - [x] Verified core manufacturing workflow traceability across 10 lifecycle stages
+  - [x] Verified Segregation of Duties (SoD) enforcement and server-side RBAC protection
+  - [x] Verified zero plaintext secrets in tracked files, gitignore safety, and standardized port 3001
+  - [x] Verified 100% automated quality gate passing (20/20 suites, 252 tests, 0 lint warnings, 0 type errors, clean build)
+  - [x] Executive release verdict: READY TO PRESENT
+
+

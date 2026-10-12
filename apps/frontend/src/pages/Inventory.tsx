@@ -131,10 +131,13 @@ export function Inventory() {
                       <Badge variant="success">Healthy</Badge>
                     )}
                   </Td>
-                  <Td className="text-right">
+                  <Td className="text-right space-x-1.5">
                     <Button onClick={() => openAdjustForm(m, "Receipt")} variant="secondary" className="px-2.5 py-1 text-xs">
-                      <PackagePlus className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
+                      <PackagePlus className="w-3.5 h-3.5 mr-1 text-slate-500" />
                       Receive
+                    </Button>
+                    <Button onClick={() => openAdjustForm(m, "Adjustment")} variant="ghost" className="px-2 py-1 text-xs text-slate-600 hover:text-slate-900">
+                      Adjust
                     </Button>
                   </Td>
                 </tr>
@@ -148,7 +151,9 @@ export function Inventory() {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white shadow-xl w-full max-w-md flex flex-col border border-slate-200 rounded-sm">
             <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50">
-              <h3 className="font-semibold text-slate-900 tracking-tight">Manual Receipt: {selectedMaterial.name}</h3>
+              <h3 className="font-semibold text-slate-900 tracking-tight">
+                {txData.type === "Adjustment" ? "Stock Adjustment" : "Manual Receipt"}: {selectedMaterial.name}
+              </h3>
               <button onClick={() => setIsFormOpen(false)} className="text-slate-400 hover:text-slate-900 transition-colors">
                 <X className="w-5 h-5" />
               </button>
@@ -170,21 +175,37 @@ export function Inventory() {
               
               <form id="tx-form" onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="tx-qty">Quantity to Receive ({selectedMaterial.unit})</Label>
+                  <Label htmlFor="tx-qty">
+                    {txData.type === "Adjustment"
+                      ? `Quantity Adjustment (${selectedMaterial.unit})`
+                      : `Quantity to Receive (${selectedMaterial.unit})`}
+                  </Label>
                   <Input
                     id="tx-qty"
                     required
                     type="number"
-                    min="0.01"
-                    step="0.01"
+                    step="any"
                     placeholder="0"
                     value={txData.quantity_change}
-                    onChange={e => setTxData({...txData, quantity_change: sanitizeNumberInput(e.target.value)})}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (txData.type === "Adjustment" && val.startsWith("-")) {
+                        const rest = val.slice(1);
+                        setTxData({...txData, quantity_change: "-" + sanitizeNumberInput(rest)});
+                      } else {
+                        setTxData({...txData, quantity_change: sanitizeNumberInput(val)});
+                      }
+                    }}
                   />
+                  {txData.type === "Adjustment" && (
+                    <p className="text-xs text-slate-500 mt-1">
+                      Enter positive value to increase stock, or negative value (e.g. -5) for cycle count discrepancy or shrinkage.
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <Label htmlFor="tx-ref">Reference ID (Optional)</Label>
-                  <Input id="tx-ref" type="text" placeholder="e.g. Manual count doc" value={txData.reference_id} onChange={e => setTxData({...txData, reference_id: e.target.value})} />
+                  <Label htmlFor="tx-ref">Reference ID / Note (Optional)</Label>
+                  <Input id="tx-ref" type="text" placeholder="e.g. Cycle count audit #12" value={txData.reference_id} onChange={e => setTxData({...txData, reference_id: e.target.value})} />
                 </div>
               </form>
             </div>
@@ -192,7 +213,7 @@ export function Inventory() {
             <div className="p-5 border-t border-slate-200 flex justify-end space-x-3 bg-slate-50/50">
               <Button onClick={() => setIsFormOpen(false)} type="button" variant="ghost">Cancel</Button>
               <Button form="tx-form" type="submit" variant="primary" disabled={formLoading}>
-                {formLoading ? 'Saving...' : 'Confirm Receipt'}
+                {formLoading ? 'Saving...' : (txData.type === "Adjustment" ? 'Confirm Adjustment' : 'Confirm Receipt')}
               </Button>
             </div>
           </div>

@@ -104,24 +104,44 @@ export function Login() {
             )}
           </Button>
         </form>
+
+        {/* Quick Fill Demo Roles */}
+        <div className="mt-6 pt-5 border-t border-slate-200">
+          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2.5">
+            Quick Fill Demo Roles:
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { role: "Admin", email: "admin@mfg.com", pass: "admin123" },
+              { role: "Manager", email: "manager@mfg.com", pass: "demo123" },
+              { role: "Purchasing", email: "purchasing@mfg.com", pass: "demo123" },
+              { role: "Warehouse", email: "warehouse@mfg.com", pass: "demo123" },
+              { role: "Production", email: "production@mfg.com", pass: "demo123" },
+              { role: "Quality", email: "qc@mfg.com", pass: "demo123" },
+            ].map((d) => (
+              <button
+                key={d.role}
+                type="button"
+                onClick={() => {
+                  setEmail(d.email);
+                  setPassword(d.pass);
+                  setError("");
+                }}
+                className={`py-1.5 px-2 text-xs font-medium border text-center transition-colors rounded-none ${
+                  email === d.email
+                    ? "bg-amber-50 border-amber-500 text-amber-900 font-bold"
+                    : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700"
+                }`}
+              >
+                {d.role}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
-      <div className="mt-8 text-slate-400 text-xs tracking-wider z-10 flex flex-col items-center gap-4">
-        <div>&copy; {currentYear} MfgOps Inc. All rights reserved.</div>
-        <button 
-          type="button" 
-          onClick={async () => {
-            try {
-              const { apiClient } = await import("../api/client");
-              const res = await apiClient.get("/auth/seed-demo-users");
-              alert(res.data.message || "Success!");
-            } catch (err: any) {
-              alert("Failed: " + (err.response?.data?.error || err.message));
-            }
-          }}
-          className="text-amber-500/70 hover:text-amber-500 underline transition-colors"
-        >
-          Developer: Auto-Generate Test Accounts
-        </button>
+
+      <div className="mt-8 text-slate-400 text-xs tracking-wider z-10 flex flex-col items-center gap-3">
+        <div>&copy; {currentYear} MfgOps Portfolio Platform. All rights reserved.</div>
       </div>
     </div>
   );

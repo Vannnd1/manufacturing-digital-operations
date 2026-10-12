@@ -7,9 +7,12 @@ const config: { [key: string]: Knex.Config } = {
   development: {
     client: "postgresql",
     connection: process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/manufacturing_db",
+    acquireConnectionTimeout: 5000,
     pool: {
       min: 2,
-      max: 10
+      max: 10,
+      idleTimeoutMillis: 30000,
+      acquireTimeoutMillis: 5000,
     },
     migrations: {
       tableName: "knex_migrations",
@@ -26,9 +29,12 @@ const config: { [key: string]: Knex.Config } = {
   production: {
     client: "postgresql",
     connection: process.env.DATABASE_URL,
+    acquireConnectionTimeout: 5000,
     pool: {
       min: 2,
-      max: 10
+      max: 10,
+      idleTimeoutMillis: 30000,
+      acquireTimeoutMillis: 5000,
     },
     migrations: {
       tableName: "knex_migrations",

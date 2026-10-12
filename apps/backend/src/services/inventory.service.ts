@@ -34,8 +34,11 @@ export class InventoryService {
     referenceId?: string,
     providedTrx?: any
   ) {
-    if (quantityChange <= 0) {
+    if (type !== "Adjustment" && quantityChange <= 0) {
       throw new Error("INVALID_QUANTITY"); 
+    }
+    if (type === "Adjustment" && (quantityChange === 0 || isNaN(quantityChange))) {
+      throw new Error("INVALID_QUANTITY");
     }
 
     const executeLogic = async (trx: any) => {
@@ -51,8 +54,12 @@ export class InventoryService {
       let newReserved = Number(inv.reserved_stock);
       let actualChange = quantityChange;
 
-      if (type === "Receipt" || type === "Adjustment") {
+      if (type === "Receipt") {
         newAvailable += quantityChange;
+        actualChange = quantityChange;
+      } else if (type === "Adjustment") {
+        newAvailable += quantityChange;
+        actualChange = quantityChange;
       } else if (type === "Reservation") {
         newAvailable -= quantityChange;
         newReserved += quantityChange;
@@ -101,5 +108,33 @@ export class InventoryService {
     } else {
       return await db.transaction(executeLogic);
     }
+  }
+
+  static async getTransactions(materialId?: string, limit: number = 100) {
+    let query = db("inventory_transactions")
+      .join("materials", "inventory_transactions.material_id", "=", "materials.id")
+      .select(
+        "inventory_transactions.id",
+        "inventory_transactions.material_id",
+        "materials.sku as material_sku",
+        "materials.name as material_name",
+        "materials.unit",
+        "inventory_transactions.transaction_type",
+        "inventory_transactions.quantity_change",
+        "inventory_transactions.reference_id",
+        "inventory_transactions.created_at"
+      )
+      .orderBy("inventory_transactions.created_at", "desc")
+      .limit(Math.min(limit, 500));
+
+    if (materialId) {
+      query = query.where("inventory_transactions.material_id", materialId);
+    }
+
+    const rows = await query;
+    return rows.map((r: any) => ({
+      ...r,
+      quantity_change: Number(r.quantity_change),
+    }));
   }
 }

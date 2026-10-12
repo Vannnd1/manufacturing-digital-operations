@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { getProductionOrders, createProductionOrder, reserveMaterials, recordProduction, checkAvailability } from "../api/production";
+import { getProductionOrders, createProductionOrder, reserveMaterials, recordProduction, checkAvailability, cancelProductionOrder } from "../api/production";
 import { getProducts } from "../api/product";
 import { getMaterials } from "../api/inventory";
 import { useAuthStore } from "../store/useAuthStore";
@@ -188,12 +188,25 @@ export function Production() {
     setRecordLoading(false);
   };
 
+  const handleCancelOrder = async (orderId: string) => {
+    if (!window.confirm("Are you sure you want to cancel this order? Any reserved materials will be released back to available inventory.")) {
+      return;
+    }
+    try {
+      await cancelProductionOrder(orderId);
+      setRefresh(r => r + 1);
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to cancel production order.");
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch(status) {
       case 'Completed': return <Badge variant="success">Completed</Badge>;
       case 'Ready': return <Badge variant="info">Ready to Produce</Badge>;
       case 'Planned': return <Badge variant="warning">Planned</Badge>;
       case 'In_Progress': return <Badge variant="default">In Progress</Badge>;
+      case 'Cancelled': return <Badge variant="error">Cancelled</Badge>;
       default: return <Badge variant="default">{status}</Badge>;
     }
   };
@@ -244,14 +257,28 @@ export function Production() {
                 <Td>{getStatusBadge(o.status)}</Td>
                 <Td className="text-right space-x-2">
                   {o.status === "Planned" && (
-                    <Button onClick={() => openCheck(o)} variant="secondary" className="px-3 py-1.5 text-xs">
-                      Check BOM & Reserve
-                    </Button>
+                    <>
+                      <Button onClick={() => openCheck(o)} variant="secondary" className="px-3 py-1.5 text-xs">
+                        Check BOM & Reserve
+                      </Button>
+                      {canCreate && (
+                        <Button onClick={() => handleCancelOrder(o.id)} variant="ghost" className="px-2 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50">
+                          Cancel
+                        </Button>
+                      )}
+                    </>
                   )}
                   {o.status === "Ready" && (
-                    <Button onClick={() => openRecord(o)} variant="primary" className="px-3 py-1.5 text-xs">
-                      Record Output
-                    </Button>
+                    <>
+                      <Button onClick={() => openRecord(o)} variant="primary" className="px-3 py-1.5 text-xs">
+                        Record Output
+                      </Button>
+                      {canCreate && (
+                        <Button onClick={() => handleCancelOrder(o.id)} variant="ghost" className="px-2 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50">
+                          Cancel
+                        </Button>
+                      )}
+                    </>
                   )}
                 </Td>
               </tr>

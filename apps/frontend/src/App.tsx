@@ -8,6 +8,8 @@ import { Procurement } from "./pages/Procurement";
 import { Production } from "./pages/Production";
 import { Quality } from "./pages/Quality";
 import { Dashboard } from "./pages/Dashboard";
+import { AuditTrail } from "./pages/AuditTrail";
+import { Reports } from "./pages/Reports";
 import { 
   LogOut, 
   User, 
@@ -17,6 +19,8 @@ import {
   ShoppingCart, 
   Target, 
   ShieldCheck, 
+  History,
+  BarChart3,
   Menu, 
   X, 
   PanelLeftClose, 
@@ -40,6 +44,8 @@ const NAV_ITEMS = [
   { path: "/procurement", label: "Procurement", icon: ShoppingCart },
   { path: "/production", label: "Production Orders", icon: Target },
   { path: "/quality", label: "Quality Control", icon: ShieldCheck },
+  { path: "/reports", label: "Reports & Insights", icon: BarChart3 },
+  { path: "/audit", label: "Audit & Traceability", icon: History },
 ];
 
 function MainLayout() {
@@ -312,6 +318,8 @@ function MainLayout() {
             <Route path="/procurement" element={<Procurement />} />
             <Route path="/production" element={<Production />} />
             <Route path="/quality" element={<Quality />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/audit" element={<AuditTrail />} />
           </Routes>
         </div>
       </main>

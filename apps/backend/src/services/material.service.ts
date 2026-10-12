@@ -2,25 +2,27 @@ import db from "../db";
 
 export class MaterialService {
   static async createMaterial(data: { sku: string; name: string; unit: string; min_stock_threshold: number; is_active: boolean }, userId: string) {
-    const existing = await db("materials").where({ sku: data.sku }).first();
-    if (existing) {
-      throw new Error("SKU_EXISTS");
-    }
+    return await db.transaction(async (trx) => {
+      const existing = await trx("materials").where({ sku: data.sku }).first();
+      if (existing) {
+        throw new Error("SKU_EXISTS");
+      }
 
-    const [material] = await db("materials").insert(data).returning("*");
+      const [material] = await trx("materials").insert(data).returning("*");
 
-    // Initialize inventory for new material
-    await db("inventory").insert({ material_id: material.id, available_stock: 0, reserved_stock: 0 });
+      // Initialize inventory for new material atomically
+      await trx("inventory").insert({ material_id: material.id, available_stock: 0, reserved_stock: 0 });
 
-    await db("audit_logs").insert({
-      user_id: userId,
-      action_type: "CREATE_MATERIAL",
-      entity_name: "MATERIAL",
-      entity_id: material.id,
-      description: `Created material ${material.sku}`,
+      await trx("audit_logs").insert({
+        user_id: userId,
+        action_type: "CREATE_MATERIAL",
+        entity_name: "MATERIAL",
+        entity_id: material.id,
+        description: `Created material ${material.sku}`,
+      });
+
+      return material;
     });
-
-    return material;
   }
 
   static async getMaterials(includeInactive: boolean = false) {

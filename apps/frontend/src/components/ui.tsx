@@ -37,7 +37,7 @@ export const Button = ({ children, variant = 'primary', className = '', ...props
 };
 
 // Badge
-export const Badge = ({ children, variant = 'default' }: { children: React.ReactNode; variant?: 'default' | 'success' | 'warning' | 'error' | 'info' }) => {
+export const Badge = ({ children, variant = 'default', className = '' }: { children: React.ReactNode; variant?: 'default' | 'success' | 'warning' | 'error' | 'info'; className?: string }) => {
   const base = "inline-flex items-center px-2 py-0.5 text-xs font-semibold uppercase tracking-wider border";
   const variants = {
     default: "bg-slate-100 text-slate-700 border-slate-200",
@@ -46,7 +46,7 @@ export const Badge = ({ children, variant = 'default' }: { children: React.React
     error: "bg-red-50 text-red-800 border-red-200",
     info: "bg-blue-50 text-blue-800 border-blue-200",
   };
-  return <span className={`${base} ${variants[variant]}`}>{children}</span>;
+  return <span className={`${base} ${variants[variant]} ${className}`}>{children}</span>;
 };
 
 // Form Label & Input

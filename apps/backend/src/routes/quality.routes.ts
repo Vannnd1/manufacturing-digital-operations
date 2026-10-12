@@ -7,7 +7,7 @@ import { createInspectionSchema, inspectionIdParamSchema } from "../schemas/qual
 
 const router = Router();
 
-const canManageQuality = requireRole(["Admin", "Manager", "QC"]);
+const canManageQuality = requireRole(["Admin", "Manager", "QC", "Quality Control"]);
 
 router.get("/", requireAuth, QualityController.list);
 router.get("/pending", requireAuth, QualityController.listPending);
