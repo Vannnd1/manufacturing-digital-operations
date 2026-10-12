@@ -25,7 +25,7 @@ jest.mock("./db", () => {
     }
     if (table === "purchase_request_items") {
       const items = [
-        { pr_id: validPrId, quantity: 10, material_name: "Steel Sheet", unit: "kg" }
+        { id: "pr-item-1", pr_id: validPrId, material_id: validMaterialId, quantity: 10, material_name: "Steel Sheet", unit: "kg" }
       ];
       const builder: any = {
         join: jest.fn().mockReturnThis(),

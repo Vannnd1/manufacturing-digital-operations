@@ -167,13 +167,18 @@ export function Procurement() {
     setSelectedPR(pr);
     setPoSupplierId(suppliers.find(s => s.is_active)?.id || suppliers[0]?.id || "");
     setPoItems(
-      (pr.items || []).map((it: any) => ({
-        material_id: it.material_id,
-        material_name: it.material_name,
-        unit: it.unit,
-        quantity: Number(it.quantity),
-        unit_price: "10.00",
-      }))
+      (pr.items || []).map((it: any) => {
+        const matchedMat = materials.find(
+          m => m.id === it.material_id || (it.material_name && m.name.toLowerCase() === it.material_name.toLowerCase())
+        );
+        return {
+          material_id: it.material_id || matchedMat?.id || "",
+          material_name: it.material_name || matchedMat?.name || "Unknown Material",
+          unit: it.unit || matchedMat?.unit || "pcs",
+          quantity: Number(it.quantity),
+          unit_price: "10.00",
+        };
+      })
     );
     setPoFormError("");
     setShowCreatePO(true);
@@ -189,6 +194,10 @@ export function Procurement() {
     }
 
     for (let i = 0; i < poItems.length; i++) {
+      if (!poItems[i].material_id) {
+        setPoFormError(`Item ${poItems[i].material_name || i + 1}: Material ID is missing. Please reload.`);
+        return;
+      }
       const price = Number(poItems[i].unit_price);
       if (isNaN(price) || price <= 0) {
         setPoFormError(`Item ${poItems[i].material_name}: unit price must be greater than zero.`);
@@ -211,7 +220,13 @@ export function Procurement() {
       setActiveTab("PO");
       setRefresh(r => r + 1);
     } catch (err: any) {
-      setPoFormError(err.response?.data?.error || "Failed to create Purchase Order.");
+      const details = err.response?.data?.details;
+      let errorMsg = err.response?.data?.error || "Failed to create Purchase Order.";
+      if (Array.isArray(details) && details.length > 0) {
+        const detailStr = details.map((d: any) => `${d.path?.join(".") || "field"}: ${d.message}`).join(", ");
+        errorMsg += ` (${detailStr})`;
+      }
+      setPoFormError(errorMsg);
     }
     setPoSubmitting(false);
   };
@@ -261,7 +276,13 @@ export function Procurement() {
       setShowReceivePO(false);
       setRefresh(r => r + 1);
     } catch (err: any) {
-      setGrFormError(err.response?.data?.error || "Failed to record Goods Receipt.");
+      const details = err.response?.data?.details;
+      let errorMsg = err.response?.data?.error || "Failed to record Goods Receipt.";
+      if (Array.isArray(details) && details.length > 0) {
+        const detailStr = details.map((d: any) => `${d.path?.join(".") || "field"}: ${d.message}`).join(", ");
+        errorMsg += ` (${detailStr})`;
+      }
+      setGrFormError(errorMsg);
     }
     setGrSubmitting(false);
   };

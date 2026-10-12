@@ -56,9 +56,12 @@ export class ProcurementService {
       .join("materials", "purchase_request_items.material_id", "materials.id")
       .whereIn("pr_id", prIds)
       .select(
-        "purchase_request_items.pr_id", 
+        "purchase_request_items.id",
+        "purchase_request_items.pr_id",
+        "purchase_request_items.material_id",
         "purchase_request_items.quantity", 
         "materials.name as material_name", 
+        "materials.sku as material_sku",
         "materials.unit"
       );
 
