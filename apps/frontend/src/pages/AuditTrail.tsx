@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getAuditLogs, getProductionOrderTrace } from "../api/audit";
 import type { AuditLogItem, InventoryLedgerItem } from "../api/audit";
 import { getInventoryTransactions } from "../api/inventory";
 import { getProductionOrders } from "../api/production";
-import { PageHeader, Card, Table, Th, Td, Badge, Input } from "../components/ui";
+import { PageHeader, Card, Table, Th, Td, Badge, Input, Button } from "../components/ui";
+import { useAuthStore } from "../store/useAuthStore";
 import { 
   GitCommit, 
   History, 
@@ -18,11 +20,14 @@ import {
 } from "lucide-react";
 
 export function AuditTrail() {
+  const { user } = useAuthStore();
+  const isAuthorized = user?.role === "Admin" || user?.role === "Manager";
+
   const [activeTab, setActiveTab] = useState<"LOGS" | "LEDGER" | "TRACE">("LOGS");
 
   // Tab 1: Audit Logs state
   const [logs, setLogs] = useState<AuditLogItem[]>([]);
-  const [logsLoading, setLogsLoading] = useState(true);
+  const [logsLoading, setLogsLoading] = useState(isAuthorized);
   const [logsError, setLogsError] = useState("");
   const [selectedEntityFilter, setSelectedEntityFilter] = useState("ALL");
   const [logSearch, setLogSearch] = useState("");
@@ -43,20 +48,25 @@ export function AuditTrail() {
 
   // Fetch initial audit logs
   useEffect(() => {
+    if (!isAuthorized) return;
     const fetchLogs = async () => {
       setLogsLoading(true);
       setLogsError("");
       try {
         const data = await getAuditLogs();
         setLogs(data);
-      } catch {
-        setLogsError("Failed to load audit logs");
+      } catch (err: any) {
+        if (err.response?.status === 403) {
+          setLogsError("Access Denied: Only Admin and Manager roles are authorized to inspect audit logs.");
+        } else {
+          setLogsError("Failed to load audit logs");
+        }
       } finally {
         setLogsLoading(false);
       }
     };
     fetchLogs();
-  }, []);
+  }, [isAuthorized]);
 
   // Fetch ledger when tab activated
   useEffect(() => {
@@ -149,6 +159,38 @@ export function AuditTrail() {
         return <Badge variant="default">{type}</Badge>;
     }
   };
+
+  if (!isAuthorized) {
+    return (
+      <div className="space-y-6 max-w-7xl">
+        <PageHeader
+          title="Audit Trail & Traceability"
+          description="Inspect immutable compliance logs, physical stock ledger movements, and end-to-end manufacturing lot genealogy."
+        />
+        <Card className="p-10 text-center max-w-2xl mx-auto border-amber-200 bg-amber-50/40">
+          <div className="w-12 h-12 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+          <h2 className="text-lg font-bold text-slate-900 mb-2">Access Restricted (RBAC Policy)</h2>
+          <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+            Halaman <strong>Audit Trail & Traceability</strong> merupakan modul audit kepatuhan (*compliance*) yang dibatasi secara ketat hanya untuk pengguna dengan wewenang <strong>Admin</strong> dan <strong>Manager</strong>.
+          </p>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-sm text-xs font-medium text-slate-700 mb-6">
+            <span>Role Aktif Anda:</span>
+            <span className="font-bold text-amber-700 uppercase">{user?.role || "Quality Control"}</span>
+          </div>
+          <div className="flex justify-center gap-3">
+            <Link to="/quality">
+              <Button variant="primary">Buka Modul Quality Control</Button>
+            </Link>
+            <Link to="/">
+              <Button variant="secondary">Kembali ke Dashboard</Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-7xl">

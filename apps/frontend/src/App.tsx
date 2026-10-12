@@ -37,7 +37,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-const NAV_ITEMS = [
+interface NavItem {
+  path: string;
+  label: string;
+  icon: any;
+  allowedRoles?: string[];
+}
+
+const NAV_ITEMS: NavItem[] = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
   { path: "/materials", label: "Material Master", icon: Box },
   { path: "/inventory", label: "Inventory Management", icon: Archive },
@@ -45,7 +52,7 @@ const NAV_ITEMS = [
   { path: "/production", label: "Production Orders", icon: Target },
   { path: "/quality", label: "Quality Control", icon: ShieldCheck },
   { path: "/reports", label: "Reports & Insights", icon: BarChart3 },
-  { path: "/audit", label: "Audit & Traceability", icon: History },
+  { path: "/audit", label: "Audit & Traceability", icon: History, allowedRoles: ["Admin", "Manager"] },
 ];
 
 function MainLayout() {
@@ -147,7 +154,12 @@ function MainLayout() {
 
   const currentPage = NAV_ITEMS.find(item => item.path === location.pathname)?.label || "Operations";
 
-  const navLinks = NAV_ITEMS.map((item) => {
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (!item.allowedRoles) return true;
+    return user?.role && item.allowedRoles.includes(user.role);
+  });
+
+  const navLinks = visibleNavItems.map((item) => {
     const isActive = location.pathname === item.path;
     const Icon = item.icon;
     return (
