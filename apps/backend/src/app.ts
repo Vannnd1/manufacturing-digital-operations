@@ -23,23 +23,72 @@ app.use((_req, res, next) => {
   next();
 });
 
-// CORS Configuration
-const allowedOrigins = process.env.FRONTEND_URL
-  ? [process.env.FRONTEND_URL, "http://localhost:5173", "http://localhost:3000"]
-  : ["http://localhost:5173", "http://localhost:3000"];
+/**
+ * Evaluates whether an incoming HTTP Origin header is permitted by CORS policy.
+ * Supports local development hosts, Vercel deployments (*.vercel.app), Render hosts (*.onrender.com),
+ * and any explicitly configured origins in the FRONTEND_URL environment variable.
+ */
+export function isAllowedOrigin(origin: string): boolean {
+  const normalized = origin.trim().replace(/\/$/, "");
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production") {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS policy violation"));
-      }
-    },
-    credentials: true,
-  })
-);
+  // Local development hosts
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalized)) {
+    return true;
+  }
+
+  // All Vercel production and preview deployment URLs (*.vercel.app)
+  if (/^https:\/\/([a-zA-Z0-9_-]+\.)*vercel\.app$/.test(normalized)) {
+    return true;
+  }
+
+  // Render cloud service origins (*.onrender.com)
+  if (/^https:\/\/([a-zA-Z0-9_-]+\.)*onrender\.com$/.test(normalized)) {
+    return true;
+  }
+
+  // Explicitly configured FRONTEND_URL (supports comma-separated list of origins)
+  if (process.env.FRONTEND_URL) {
+    const configuredOrigins = process.env.FRONTEND_URL.split(",")
+      .map((url) => url.trim().replace(/\/$/, ""))
+      .filter(Boolean);
+    if (configuredOrigins.includes(normalized)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// CORS Configuration
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // Non-browser or direct requests (curl, Postman, health checks, server-to-server)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (isAllowedOrigin(origin) || process.env.NODE_ENV !== "production") {
+      return callback(null, true);
+    }
+
+    logger.warn("cors_forbidden_origin", { origin });
+    return callback(new Error("CORS policy violation"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Request-Id",
+    "X-Correlation-Id",
+    "Accept",
+  ],
+  exposedHeaders: ["X-Request-Id"],
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Payload size limit to prevent Denial of Service (DoS)
 app.use(express.json({ limit: "1mb" }));
