@@ -240,7 +240,7 @@ export function Procurement() {
         material_name: it.material_name,
         unit: it.unit,
         ordered_quantity: Number(it.quantity),
-        received_quantity: String(it.quantity),
+        received_quantity: String(Number(it.quantity)),
       }))
     );
     setGrFormError("");
@@ -253,7 +253,8 @@ export function Procurement() {
 
     for (let i = 0; i < grItems.length; i++) {
       const it = grItems[i];
-      const received = Number(it.received_quantity);
+      const rawVal = String(it.received_quantity).replace(",", ".");
+      const received = Number(rawVal);
       if (isNaN(received) || received <= 0) {
         setGrFormError(`Item ${it.material_name}: received quantity must be a positive number.`);
         return;
@@ -270,7 +271,7 @@ export function Procurement() {
         po_id: selectedPO.id,
         items: grItems.map(it => ({
           po_item_id: it.po_item_id,
-          received_quantity: Number(it.received_quantity),
+          received_quantity: Number(String(it.received_quantity).replace(",", ".")),
         })),
       });
       setShowReceivePO(false);
@@ -281,6 +282,8 @@ export function Procurement() {
       if (Array.isArray(details) && details.length > 0) {
         const detailStr = details.map((d: any) => `${d.path?.join(".") || "field"}: ${d.message}`).join(", ");
         errorMsg += ` (${detailStr})`;
+      } else if (typeof details === "string" && details !== errorMsg) {
+        errorMsg += ` (${details})`;
       }
       setGrFormError(errorMsg);
     }
@@ -792,7 +795,7 @@ export function Procurement() {
                                 const val = sanitizeNumberInput(e.target.value);
                                 setGrItems(prev => prev.map((g, i) => i === idx ? { ...g, received_quantity: val } : g));
                               }}
-                              className="text-right py-1 px-2 text-sm font-mono w-24"
+                              className="text-right py-1 px-2 text-sm font-mono w-28"
                             />
                             <span className="text-xs text-slate-500 font-mono">{item.unit}</span>
                           </div>

@@ -316,7 +316,7 @@ function MainLayout() {
 
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-mono font-medium text-slate-400 bg-slate-50 px-2 py-0.5 border border-slate-200">
-              v0.1.5
+              v0.1.6
             </span>
             <div className="text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1 border border-slate-200 hidden sm:block">
               {user?.role} Access

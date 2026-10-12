@@ -47,8 +47,21 @@ export class InventoryService {
         throw new Error("MATERIAL_NOT_FOUND");
       }
 
-      const inv = await trx("inventory").where({ material_id: materialId }).first();
-      if (!inv) throw new Error("INVENTORY_NOT_FOUND");
+      let inv = await trx("inventory").where({ material_id: materialId }).first();
+      if (!inv) {
+        if (type === "Receipt" || type === "Adjustment") {
+          const [newInv] = await trx("inventory")
+            .insert({
+              material_id: materialId,
+              available_stock: 0,
+              reserved_stock: 0,
+            })
+            .returning("*");
+          inv = newInv;
+        } else {
+          throw new Error("INVENTORY_NOT_FOUND");
+        }
+      }
 
       let newAvailable = Number(inv.available_stock);
       let newReserved = Number(inv.reserved_stock);
