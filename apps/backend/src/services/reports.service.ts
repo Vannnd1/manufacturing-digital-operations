@@ -539,7 +539,10 @@ export class ReportsService {
       else if (avail < thresh) lowStock++;
     }
 
-    const txQuery = db("inventory_transactions").count("* as count").sum("quantity_change as net_change");
+    const txQuery = db("inventory_transactions").select(
+      db.raw("COUNT(*) as count"),
+      db.raw("COALESCE(SUM(quantity_change), 0) as net_change")
+    );
     if (dateRange.start) txQuery.where("created_at", ">=", `${dateRange.start} 00:00:00`);
     if (dateRange.end) txQuery.where("created_at", "<=", `${dateRange.end} 23:59:59`);
     const [txSummary] = await txQuery;
@@ -571,11 +574,11 @@ export class ReportsService {
       const poIds = pos.map((p) => p.id);
       const [spendResult] = await db("purchase_order_items")
         .whereIn("po_id", poIds)
-        .sum(db.raw("quantity * unit_price as total_spend"));
+        .select(db.raw("COALESCE(SUM(quantity * unit_price), 0) as total_spend"));
       totalSpend = Number((spendResult as any)?.total_spend || 0);
     }
 
-    const grQuery = db("goods_receipts").count("* as count");
+    const grQuery = db("goods_receipts").select(db.raw("COUNT(*) as count"));
     if (dateRange.start) grQuery.where("receipt_date", ">=", dateRange.start);
     if (dateRange.end) grQuery.where("receipt_date", "<=", dateRange.end);
     const [grResult] = await grQuery;
