@@ -85,7 +85,7 @@ export function Reports() {
         }
       } catch (err: any) {
         if (active) {
-          const msg = err.response?.data?.error || "Failed to load report data. Please try again.";
+          const msg = err.response?.data?.error || err.userMessage || "Failed to load report data. Please try again.";
           setError(msg);
         }
       } finally {
