@@ -24,7 +24,8 @@ import {
   Menu, 
   X, 
   PanelLeftClose, 
-  PanelLeftOpen 
+  PanelLeftOpen,
+  Factory
 } from "lucide-react";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -220,7 +221,9 @@ function MainLayout() {
         {/* ── Sidebar header: logo + collapse toggle ── */}
         <div className={`p-4 border-b border-slate-800/50 flex items-center ${isCollapsed ? "md:flex-col md:gap-3 justify-between md:justify-center" : "justify-between"}`}>
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-6 h-6 bg-amber-600 rounded-sm shrink-0" aria-hidden="true" />
+            <div className="w-6 h-6 bg-amber-600 rounded-sm shrink-0 flex items-center justify-center shadow-sm" aria-hidden="true">
+              <Factory className="w-3.5 h-3.5 text-white" />
+            </div>
             <span className={`font-bold text-base tracking-tight uppercase whitespace-nowrap ${isCollapsed ? "md:hidden" : ""}`}>
               MfgOps System
             </span>
@@ -316,7 +319,7 @@ function MainLayout() {
 
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-mono font-medium text-slate-400 bg-slate-50 px-2 py-0.5 border border-slate-200">
-              v0.1.6
+              v0.1.7
             </span>
             <div className="text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1 border border-slate-200 hidden sm:block">
               {user?.role} Access
