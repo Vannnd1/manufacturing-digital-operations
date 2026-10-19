@@ -3,8 +3,12 @@ import { getInventory, adjustInventory } from "../api/inventory";
 import { Search, AlertTriangle, X, PackagePlus } from "lucide-react";
 import { PageHeader, Card, Table, Th, Td, Button, Input, Label, Badge } from "../components/ui";
 import { sanitizeNumberInput } from "../utils/number";
+import { useAuthStore } from "../store/useAuthStore";
 
 export function Inventory() {
+  const { user } = useAuthStore();
+  const canManageStock = Boolean(user && ["Admin", "Manager", "Warehouse"].includes(user.role));
+
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -35,6 +39,7 @@ export function Inventory() {
   }, [refresh]);
 
   const openAdjustForm = (item: any, type: "Receipt" | "Adjustment") => {
+    if (!canManageStock) return;
     setSelectedMaterial(item);
     setTxData({ quantity_change: "", type, reference_id: "" });
     setFormError("");
@@ -107,12 +112,12 @@ export function Inventory() {
               <Th className="text-right">Reserved</Th>
               <Th className="text-right">Min Threshold</Th>
               <Th>Status</Th>
-              <Th className="text-right">Actions</Th>
+              {canManageStock && <Th className="text-right">Actions</Th>}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><Td colSpan={7} className="text-center py-8 text-slate-500 italic">No inventory records found.</Td></tr>
+              <tr><Td colSpan={canManageStock ? 7 : 6} className="text-center py-8 text-slate-500 italic">No inventory records found.</Td></tr>
             ) : (
               filtered.map(m => (
                 <tr key={m.material_id} className="hover:bg-slate-50/50 transition-colors">
@@ -131,15 +136,17 @@ export function Inventory() {
                       <Badge variant="success">Healthy</Badge>
                     )}
                   </Td>
-                  <Td className="text-right space-x-1.5">
-                    <Button onClick={() => openAdjustForm(m, "Receipt")} variant="secondary" className="px-2.5 py-1 text-xs">
-                      <PackagePlus className="w-3.5 h-3.5 mr-1 text-slate-500" />
-                      Receive
-                    </Button>
-                    <Button onClick={() => openAdjustForm(m, "Adjustment")} variant="ghost" className="px-2 py-1 text-xs text-slate-600 hover:text-slate-900">
-                      Adjust
-                    </Button>
-                  </Td>
+                  {canManageStock && (
+                    <Td className="text-right space-x-1.5">
+                      <Button onClick={() => openAdjustForm(m, "Receipt")} variant="secondary" className="px-2.5 py-1 text-xs">
+                        <PackagePlus className="w-3.5 h-3.5 mr-1 text-slate-500" />
+                        Receive
+                      </Button>
+                      <Button onClick={() => openAdjustForm(m, "Adjustment")} variant="ghost" className="px-2 py-1 text-xs text-slate-600 hover:text-slate-900">
+                        Adjust
+                      </Button>
+                    </Td>
+                  )}
                 </tr>
               ))
             )}
@@ -147,7 +154,7 @@ export function Inventory() {
         </Table>
       </Card>
 
-      {isFormOpen && selectedMaterial && (
+      {isFormOpen && selectedMaterial && canManageStock && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white shadow-xl w-full max-w-md flex flex-col border border-slate-200 rounded-sm">
             <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50">
