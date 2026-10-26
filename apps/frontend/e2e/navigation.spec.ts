@@ -359,5 +359,15 @@ test.describe("Navigation & RBAC Operational Controls", () => {
 
     // Close modal
     await page.locator("button:has-text('In schedule')").click();
+
+    // Test Grouping: Switch to Work centers mode
+    await page.getByRole("button", { name: "Work centers" }).click();
+    await expect(page.getByText("Work Center").first()).toBeVisible();
+    await expect(page.getByText("Laser Cutting & CNC Bending").first()).toBeVisible();
+    await expect(page.getByText("Structural TIG Welding Bay").first()).toBeVisible();
+
+    // Switch back to Orders mode
+    await page.getByRole("button", { name: "Orders", exact: true }).click();
+    await expect(page.getByText("Work Order").first()).toBeVisible();
   });
 });

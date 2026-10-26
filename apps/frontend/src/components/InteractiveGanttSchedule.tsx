@@ -335,7 +335,20 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           progress: 60,
           colorScheme: "blue",
           statusText: "Nov 8 – Nov 12",
-          workCenter: "WC-104 · QC Gate & Release",
+          workCenter: "WC-104 · Dielectric Safety & QC Assembly",
+        },
+        {
+          id: "op-2045-2",
+          name: "Cabinet Frame Welding",
+          techInitial: "AT",
+          techName: "Aiko Tanaka",
+          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
+          startDay: 0,
+          durationDays: 2,
+          progress: 100,
+          colorScheme: "emerald",
+          statusText: "Nov 8 – Nov 9",
+          workCenter: "WC-102 · Structural TIG Welding Bay",
         },
       ],
     },
@@ -361,7 +374,72 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           colorScheme: "emerald",
           statusText: "Nov 9 – Nov 10",
           rush: true,
-          workCenter: "WC-103 · Finishing & Powder Coating",
+          workCenter: "WC-103 · Industrial Powder Coating & Oven",
+        },
+        {
+          id: "op-2044-2",
+          name: "CNC Chassis Bending",
+          techInitial: "FW",
+          techName: "Felix Wagner",
+          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
+          startDay: 0,
+          durationDays: 1,
+          progress: 100,
+          colorScheme: "emerald",
+          statusText: "Nov 8 – Nov 8",
+          workCenter: "WC-101 · Laser Cutting & CNC Bending",
+        },
+      ],
+    },
+    {
+      id: "WO-2043",
+      model: "PROD-ENC-01 · Fast-Track Automation Enclosure (×20)",
+      rush: true,
+      status: "In progress",
+      startDay: 2,
+      durationDays: 4,
+      expanded: true,
+      note: "Delayed sheet cutting queue. Operator overtime approved.",
+      operations: [
+        {
+          id: "op-2043-1",
+          name: "Laser Sheet Metal Cutting",
+          techInitial: "FW",
+          techName: "Felix Wagner",
+          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
+          startDay: 2,
+          durationDays: 2,
+          progress: 30,
+          colorScheme: "stone",
+          statusText: "Nov 10 – Nov 11",
+          rush: true,
+          workCenter: "WC-101 · Laser Cutting & CNC Bending",
+        },
+        {
+          id: "op-2043-2",
+          name: "Structural TIG Welding",
+          techInitial: "AT",
+          techName: "Aiko Tanaka",
+          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
+          startDay: 4,
+          durationDays: 2,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 12 – Nov 13",
+          workCenter: "WC-102 · Structural TIG Welding Bay",
+        },
+        {
+          id: "op-2043-3",
+          name: "Industrial Powder Coating",
+          techInitial: "JB",
+          techName: "Jiro Bando",
+          techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
+          startDay: 5,
+          durationDays: 2,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 13 – Nov 14",
+          workCenter: "WC-103 · Industrial Powder Coating & Oven",
         },
       ],
     },
@@ -403,6 +481,47 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       prev.map((wo) => (wo.id === woId ? { ...wo, expanded: !wo.expanded } : wo))
     );
   };
+
+  // Work Centers state & grouping (for Work centers mode)
+  const [expandedWorkCenters, setExpandedWorkCenters] = useState<Record<string, boolean>>({
+    "WC-101": true,
+    "WC-102": true,
+    "WC-103": true,
+    "WC-104": true,
+  });
+
+  const toggleWorkCenterExpand = (wcId: string) => {
+    setExpandedWorkCenters((prev) => ({
+      ...prev,
+      [wcId]: prev[wcId] === false ? true : false,
+    }));
+  };
+
+  const workCenterGroups = useMemo(() => {
+    const centers = [
+      { id: "WC-101", code: "WC-101", name: "Laser Cutting & CNC Bending", desc: "Laser Stamping & Sheet Prep" },
+      { id: "WC-102", code: "WC-102", name: "Structural TIG Welding Bay", desc: "Robotic & Precision TIG Bay" },
+      { id: "WC-103", code: "WC-103", name: "Industrial Powder Coating & Oven", desc: "Coating, Powder Bake & Curing" },
+      { id: "WC-104", code: "WC-104", name: "Dielectric Safety & QC Assembly", desc: "Sub-assembly, QA Testing & Seal" },
+    ];
+
+    return centers.map((wc) => {
+      const ops: { wo: WorkOrderItem; op: OperationItem }[] = [];
+      workOrders.forEach((wo) => {
+        wo.operations.forEach((op) => {
+          if (op.workCenter && op.workCenter.startsWith(wc.id)) {
+            ops.push({ wo, op });
+          }
+        });
+      });
+
+      return {
+        ...wc,
+        expanded: expandedWorkCenters[wc.id] ?? true,
+        operations: ops,
+      };
+    });
+  }, [workOrders, expandedWorkCenters]);
 
   // Currently inspected operation in the right panel
   const inspectedData = useMemo(() => {
@@ -779,7 +898,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                 {/* Header cell */}
                 <div className="h-14 border-b border-stone-200/80 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/40 px-3 sm:px-4 flex items-center">
                   <span className="font-bold text-slate-400 dark:text-stone-500 uppercase tracking-wider text-[11px]">
-                    Work Order
+                    {mode === "Orders" ? "Work Order" : "Work Center"}
                   </span>
                 </div>
 
@@ -790,83 +909,152 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                   </span>
                 </div>
 
-                {/* Work Order Row Labels */}
+                {/* Left Row Labels (Orders mode vs Work centers mode) */}
                 <div className="divide-y divide-stone-100 dark:divide-stone-800/60 flex-1">
-                  {workOrders.map((wo) => (
-                    <div key={wo.id} className="transition-colors hover:bg-stone-50/40 dark:hover:bg-stone-900/20">
-                      
-                      {/* Order master row header */}
-                      <div className="h-12 px-3 sm:px-4 flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => toggleExpand(wo.id)}
-                          className="p-1 rounded-md text-stone-400 hover:text-slate-800 dark:hover:text-stone-200 transition-colors cursor-pointer"
-                          title={wo.expanded ? "Collapse operations" : "Expand operations"}
-                        >
-                          {wo.expanded ? (
-                            <ChevronDown className="w-3.5 h-3.5" />
-                          ) : (
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          )}
-                        </button>
-
-                        <div className="w-4 h-4 rounded-full border-2 border-amber-500/80 border-t-transparent animate-spin-slow shrink-0" />
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span
-                              onClick={() => setSelectedWorkOrderModal(wo)}
-                              className="font-bold text-xs text-slate-900 dark:text-stone-100 hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer"
-                              title="Klik untuk membuka detail Work Order"
-                            >
-                              {wo.id}
-                            </span>
-                            {wo.rush && (
-                              <span className="text-[9px] font-bold tracking-wider uppercase px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-mono">
-                                Rush
-                              </span>
+                  {mode === "Orders" ? (
+                    workOrders.map((wo) => (
+                      <div key={wo.id} className="transition-colors hover:bg-stone-50/40 dark:hover:bg-stone-900/20">
+                        {/* Order master row header */}
+                        <div className="h-12 px-3 sm:px-4 flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleExpand(wo.id)}
+                            className="p-1 rounded-md text-stone-400 hover:text-slate-800 dark:hover:text-stone-200 transition-colors cursor-pointer"
+                            title={wo.expanded ? "Collapse operations" : "Expand operations"}
+                          >
+                            {wo.expanded ? (
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            ) : (
+                              <ChevronRight className="w-3.5 h-3.5" />
                             )}
-                          </div>
-                          <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate">
-                            {wo.model}
-                          </p>
-                        </div>
-                      </div>
+                          </button>
 
-                      {/* Sub-operations row labels */}
-                      {wo.expanded && (
-                        <div className="divide-y divide-stone-50 dark:divide-stone-900/80 bg-stone-50/30 dark:bg-stone-950/20">
-                          {wo.operations.map((op) => {
-                            const isSelected = selectedOpKey?.workOrderId === wo.id && selectedOpKey?.opId === op.id;
-                            return (
-                              <div 
-                                key={op.id} 
-                                onClick={() => setSelectedOpKey({ workOrderId: wo.id, opId: op.id })}
-                                className={`h-11 pl-7 pr-3 flex items-center gap-2 cursor-pointer transition-colors ${
-                                  isSelected ? "bg-blue-50/80 dark:bg-blue-950/40" : "hover:bg-stone-100/60 dark:hover:bg-stone-900/40"
-                                }`}
-                                title="Klik untuk menginspeksi operasi ini di panel kanan"
+                          <div className="w-4 h-4 rounded-full border-2 border-amber-500/80 border-t-transparent animate-spin-slow shrink-0" />
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span
+                                onClick={() => setSelectedWorkOrderModal(wo)}
+                                className="font-bold text-xs text-slate-900 dark:text-stone-100 hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer"
+                                title="Klik untuk membuka detail Work Order"
                               >
-                                <span
-                                  className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] shrink-0 ${op.techColor}`}
-                                >
-                                  {op.techInitial}
+                                {wo.id}
+                              </span>
+                              {wo.rush && (
+                                <span className="text-[9px] font-bold tracking-wider uppercase px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-mono">
+                                  Rush
                                 </span>
-                                <div className="min-w-0 flex-1">
-                                  <span className={`font-semibold text-xs truncate block ${isSelected ? "text-blue-600 dark:text-blue-400" : "text-slate-800 dark:text-stone-200"}`}>
-                                    {op.name}
-                                  </span>
-                                  <span className="text-[10px] text-stone-400 dark:text-stone-500 block truncate">
-                                    {op.statusText}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
+                              )}
+                            </div>
+                            <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate">
+                              {wo.model}
+                            </p>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  ))}
+
+                        {/* Sub-operations row labels */}
+                        {wo.expanded && (
+                          <div className="divide-y divide-stone-50 dark:divide-stone-900/80 bg-stone-50/30 dark:bg-stone-950/20">
+                            {wo.operations.map((op) => {
+                              const isSelected = selectedOpKey?.workOrderId === wo.id && selectedOpKey?.opId === op.id;
+                              return (
+                                <div 
+                                  key={op.id} 
+                                  onClick={() => setSelectedOpKey({ workOrderId: wo.id, opId: op.id })}
+                                  className={`h-11 pl-7 pr-3 flex items-center gap-2 cursor-pointer transition-colors ${
+                                    isSelected ? "bg-blue-50/80 dark:bg-blue-950/40" : "hover:bg-stone-100/60 dark:hover:bg-stone-900/40"
+                                  }`}
+                                  title="Klik untuk menginspeksi operasi ini di panel kanan"
+                                >
+                                  <span
+                                    className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] shrink-0 ${op.techColor}`}
+                                  >
+                                    {op.techInitial}
+                                  </span>
+                                  <div className="min-w-0 flex-1">
+                                    <span className={`font-semibold text-xs truncate block ${isSelected ? "text-blue-600 dark:text-blue-400" : "text-slate-800 dark:text-stone-200"}`}>
+                                      {op.name}
+                                    </span>
+                                    <span className="text-[10px] text-stone-400 dark:text-stone-500 block truncate">
+                                      {op.statusText}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    workCenterGroups.map((wc) => (
+                      <div key={wc.id} className="transition-colors hover:bg-stone-50/40 dark:hover:bg-stone-900/20">
+                        {/* Work Center Master Row Header */}
+                        <div className="h-12 px-3 sm:px-4 flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleWorkCenterExpand(wc.id)}
+                            className="p-1 rounded-md text-stone-400 hover:text-slate-800 dark:hover:text-stone-200 transition-colors cursor-pointer"
+                            title={wc.expanded ? "Collapse work center" : "Expand work center"}
+                          >
+                            {wc.expanded ? (
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            ) : (
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+
+                          <div className="w-4 h-4 rounded-md bg-stone-100 dark:bg-stone-800 flex items-center justify-center shrink-0">
+                            <Wrench className="w-2.5 h-2.5 text-stone-500 dark:text-stone-400" />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-xs text-slate-900 dark:text-stone-100 truncate">
+                                {wc.name}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-stone-500 dark:text-stone-400">
+                              {wc.operations.length} {wc.operations.length === 1 ? "operation" : "operations"} in view
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Child operations under this Work Center */}
+                        {wc.expanded && (
+                          <div className="divide-y divide-stone-50 dark:divide-stone-900/80 bg-stone-50/30 dark:bg-stone-950/20">
+                            {wc.operations.map(({ wo, op }) => {
+                              const isSelected = selectedOpKey?.workOrderId === wo.id && selectedOpKey?.opId === op.id;
+                              return (
+                                <div
+                                  key={`${wc.id}-${wo.id}-${op.id}`}
+                                  onClick={() => setSelectedOpKey({ workOrderId: wo.id, opId: op.id })}
+                                  className={`h-11 pl-7 pr-3 flex items-center gap-2 cursor-pointer transition-colors ${
+                                    isSelected ? "bg-blue-50/80 dark:bg-blue-950/40" : "hover:bg-stone-100/60 dark:hover:bg-stone-900/40"
+                                  }`}
+                                  title="Klik untuk menginspeksi operasi ini di panel kanan"
+                                >
+                                  <span
+                                    className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] shrink-0 ${op.techColor}`}
+                                  >
+                                    {op.techInitial}
+                                  </span>
+                                  <div className="min-w-0 flex-1">
+                                    <span className={`font-semibold text-xs truncate block ${isSelected ? "text-blue-600 dark:text-blue-400" : "text-slate-800 dark:text-stone-200"}`}>
+                                      {wo.id} · {op.name}
+                                    </span>
+                                    <span className="text-[10px] text-stone-400 dark:text-stone-500 block truncate">
+                                      {op.statusText}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -956,175 +1144,290 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       </div>
                     )}
 
-                    {/* Work Order Rows Loop */}
-                    {workOrders.map((wo) => (
-                      <div key={wo.id} className="transition-colors hover:bg-stone-50/40 dark:hover:bg-stone-900/20">
-                        
-                        {/* Master Order Timeline Cell */}
-                        <div 
-                          className="h-12 relative items-center grid"
-                          style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
-                        >
-                          {/* Column drop backgrounds */}
-                          {timelineConfig.cols.map((col) => (
-                            <div 
-                              key={col.colIndex}
-                              className="h-full border-r border-stone-100/60 dark:border-stone-800/40"
-                            />
-                          ))}
+                    {/* Timeline Rows: Orders mode vs Work centers mode */}
+                    {mode === "Orders" ? (
+                      workOrders.map((wo) => (
+                        <div key={wo.id} className="transition-colors hover:bg-stone-50/40 dark:hover:bg-stone-900/20">
+                          {/* Master Order Timeline Cell */}
+                          <div 
+                            className="h-12 relative items-center grid"
+                            style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
+                          >
+                            {/* Column drop backgrounds */}
+                            {timelineConfig.cols.map((col) => (
+                              <div 
+                                key={col.colIndex}
+                                className="h-full border-r border-stone-100/60 dark:border-stone-800/40"
+                              />
+                            ))}
 
-                          {/* Collapsed Order Bar */}
-                          {!wo.expanded && (
-                            <div
-                              className="absolute h-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600/90 rounded-full transition-all shadow-sm cursor-pointer flex items-center px-2.5 z-10"
-                              style={getMainOrderBarStyle(wo)}
-                              onClick={() => setSelectedWorkOrderModal(wo)}
-                              title="Klik untuk membuka detail Work Order"
-                            >
-                              <div className="flex items-center gap-1.5 truncate text-white">
-                                <span className="font-mono text-[9px] font-extrabold bg-white/20 px-1.5 py-0.2 rounded shrink-0">
-                                  {wo.id}
-                                </span>
-                                <span className="text-[11px] font-bold truncate">
-                                  {wo.model.split("·")[1]?.trim() || wo.model}
-                                </span>
-                                {wo.rush && (
-                                  <span className="text-[8px] font-bold uppercase tracking-wider bg-amber-400 text-amber-950 px-1 rounded font-mono shrink-0">
-                                    Rush
+                            {/* Collapsed Order Bar */}
+                            {!wo.expanded && (
+                              <div
+                                className="absolute h-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600/90 rounded-full transition-all shadow-sm cursor-pointer flex items-center px-2.5 z-10"
+                                style={getMainOrderBarStyle(wo)}
+                                onClick={() => setSelectedWorkOrderModal(wo)}
+                                title="Klik untuk membuka detail Work Order"
+                              >
+                                <div className="flex items-center gap-1.5 truncate text-white">
+                                  <span className="font-mono text-[9px] font-extrabold bg-white/20 px-1.5 py-0.2 rounded shrink-0">
+                                    {wo.id}
                                   </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Expanded Sub-operations Timeline Rows with Connecting SVG lines */}
-                        {wo.expanded && (
-                          <div className="relative divide-y divide-stone-50 dark:divide-stone-900/80 bg-stone-50/20 dark:bg-stone-950/20">
-                            
-                            {/* In Month View: Draw connecting curved lines */}
-                            {granularity === "Month" && wo.operations.length > 1 && (
-                              <svg className="absolute inset-0 w-full h-full pointer-events-none z-15">
-                                {wo.operations.slice(0, -1).map((op, idx) => {
-                                  const nextOp = wo.operations[idx + 1];
-                                  const col1End = 7 + op.startDay + op.durationDays;
-                                  const col2Start = 7 + nextOp.startDay;
-                                  const x1 = (col1End / 35) * 100;
-                                  const x2 = (col2Start / 35) * 100;
-                                  const y1 = idx * 44 + 22;
-                                  const y2 = (idx + 1) * 44 + 22;
-                                  const midX = (x1 + x2) / 2;
-
-                                  return (
-                                    <path
-                                      key={`connector-${op.id}`}
-                                      d={`M ${x1}% ${y1} C ${midX}% ${y1}, ${midX}% ${y2}, ${x2}% ${y2}`}
-                                      fill="none"
-                                      className="stroke-stone-300 dark:stroke-stone-700"
-                                      strokeWidth="1.5"
-                                      strokeDasharray="2,2"
-                                    />
-                                  );
-                                })}
-                              </svg>
-                            )}
-
-                            {wo.operations.map((op) => {
-                              const isSelected = selectedOpKey?.workOrderId === wo.id && selectedOpKey?.opId === op.id;
-                              return (
-                                <div
-                                  key={op.id}
-                                  className="h-11 relative grid items-center group"
-                                  style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
-                                >
-                                  {/* Column Drop Zones */}
-                                  {timelineConfig.cols.map((col) => (
-                                    <div
-                                      key={col.colIndex}
-                                      onDragOver={(e) => handleDragOverCol(e, col.colIndex)}
-                                      onDrop={() => handleDropOnCol(col.colIndex)}
-                                      className={`h-full border-r border-stone-100/60 dark:border-stone-800/40 transition-colors ${
-                                        dragOverCol === col.colIndex
-                                          ? "bg-amber-100/40 dark:bg-amber-950/30"
-                                          : ""
-                                      }`}
-                                    />
-                                  ))}
-
-                                  {/* Draggable / Reschedulable Operation Bar */}
-                                  <div
-                                    draggable
-                                    onDragStart={() => handleDragStart(wo.id, op.id, op.startDay)}
-                                    onClick={() => setSelectedOpKey({ workOrderId: wo.id, opId: op.id })}
-                                    style={getOpBarStyle(op)}
-                                    className={`absolute h-8 rounded-xl px-2 flex items-center justify-between text-xs font-semibold shadow-2xs transition-all select-none cursor-grab active:cursor-grabbing group/bar z-10 ${
-                                      isSelected
-                                        ? "ring-2 ring-blue-500 shadow-md scale-[1.01]"
-                                        : ""
-                                    } ${
-                                      op.colorScheme === "emerald"
-                                        ? "bg-emerald-100 hover:bg-emerald-200/90 dark:bg-emerald-950/85 dark:hover:bg-emerald-900/80 border border-emerald-400 dark:border-emerald-600/80 text-emerald-950 dark:text-emerald-100"
-                                        : op.colorScheme === "blue"
-                                        ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 border border-blue-500 dark:border-blue-400 text-white"
-                                        : "bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-750 border border-stone-300 dark:border-stone-600 text-slate-800 dark:text-stone-200"
-                                    }`}
-                                    title={`${op.name} (${op.statusText || ""}) — Klik untuk melihat detail di panel samping, atau drag untuk menjadwalkan ulang`}
-                                  >
-                                    {/* Left Nudge Control */}
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        shiftOperation(wo.id, op.id, -1);
-                                      }}
-                                      disabled={op.startDay <= 0}
-                                      className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded flex items-center justify-center bg-black/20 hover:bg-black/40 text-white transition-opacity -ml-1 cursor-pointer shrink-0"
-                                      title="Geser mundur 1 hari"
-                                    >
-                                      ◀
-                                    </button>
-
-                                    {/* Technician Avatar Badge */}
-                                    <span className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] shrink-0 mr-1.5 shadow-2xs ${op.techColor}`}>
-                                      {op.techInitial}
+                                  <span className="text-[11px] font-bold truncate">
+                                    {wo.model.split("·")[1]?.trim() || wo.model}
+                                  </span>
+                                  {wo.rush && (
+                                    <span className="text-[8px] font-bold uppercase tracking-wider bg-amber-400 text-amber-950 px-1 rounded font-mono shrink-0">
+                                      Rush
                                     </span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
 
-                                    {/* Operation Name */}
-                                    <div className="flex items-center gap-1 min-w-0 flex-1 truncate px-0.5">
-                                      {op.rush && <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />}
-                                      <span className="truncate text-xs font-bold text-slate-900 dark:text-stone-100">
-                                        {op.name}
-                                      </span>
-                                    </div>
+                          {/* Expanded Sub-operations Timeline Rows with Connecting SVG lines */}
+                          {wo.expanded && (
+                            <div className="relative divide-y divide-stone-50 dark:divide-stone-900/80 bg-stone-50/20 dark:bg-stone-950/20">
+                              {/* In Month View: Draw connecting curved lines */}
+                              {granularity === "Month" && wo.operations.length > 1 && (
+                                <svg className="absolute inset-0 w-full h-full pointer-events-none z-15">
+                                  {wo.operations.slice(0, -1).map((op, idx) => {
+                                    const nextOp = wo.operations[idx + 1];
+                                    const col1End = 7 + op.startDay + op.durationDays;
+                                    const col2Start = 7 + nextOp.startDay;
+                                    const x1 = (col1End / 35) * 100;
+                                    const x2 = (col2Start / 35) * 100;
+                                    const y1 = idx * 44 + 22;
+                                    const y2 = (idx + 1) * 44 + 22;
+                                    const midX = (x1 + x2) / 2;
 
-                                    {/* Progress Badge */}
-                                    <div className="flex items-center gap-1 shrink-0 ml-1.5">
-                                      <span className="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-black/15 dark:bg-black/40 text-slate-900 dark:text-stone-100">
-                                        {op.progress}%
-                                      </span>
+                                    return (
+                                      <path
+                                        key={`connector-${op.id}`}
+                                        d={`M ${x1}% ${y1} C ${midX}% ${y1}, ${midX}% ${y2}, ${x2}% ${y2}`}
+                                        fill="none"
+                                        className="stroke-stone-300 dark:stroke-stone-700"
+                                        strokeWidth="1.5"
+                                        strokeDasharray="2,2"
+                                      />
+                                    );
+                                  })}
+                                </svg>
+                              )}
 
-                                      {/* Right Nudge Control */}
+                              {wo.operations.map((op) => {
+                                const isSelected = selectedOpKey?.workOrderId === wo.id && selectedOpKey?.opId === op.id;
+                                return (
+                                  <div
+                                    key={op.id}
+                                    className="h-11 relative grid items-center group"
+                                    style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
+                                  >
+                                    {/* Column Drop Zones */}
+                                    {timelineConfig.cols.map((col) => (
+                                      <div
+                                        key={col.colIndex}
+                                        onDragOver={(e) => handleDragOverCol(e, col.colIndex)}
+                                        onDrop={() => handleDropOnCol(col.colIndex)}
+                                        className={`h-full border-r border-stone-100/60 dark:border-stone-800/40 transition-colors ${
+                                          dragOverCol === col.colIndex
+                                            ? "bg-amber-100/40 dark:bg-amber-950/30"
+                                            : ""
+                                        }`}
+                                      />
+                                    ))}
+
+                                    {/* Draggable / Reschedulable Operation Bar */}
+                                    <div
+                                      draggable
+                                      onDragStart={() => handleDragStart(wo.id, op.id, op.startDay)}
+                                      onClick={() => setSelectedOpKey({ workOrderId: wo.id, opId: op.id })}
+                                      style={getOpBarStyle(op)}
+                                      className={`absolute h-8 rounded-xl px-2 flex items-center justify-between text-xs font-semibold shadow-2xs transition-all select-none cursor-grab active:cursor-grabbing group/bar z-10 ${
+                                        isSelected
+                                          ? "ring-2 ring-blue-500 shadow-md scale-[1.01]"
+                                          : ""
+                                        } ${
+                                        op.colorScheme === "emerald"
+                                          ? "bg-emerald-100 hover:bg-emerald-200/90 dark:bg-emerald-950/85 dark:hover:bg-emerald-900/80 border border-emerald-400 dark:border-emerald-600/80 text-emerald-950 dark:text-emerald-100"
+                                          : op.colorScheme === "blue"
+                                          ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 border border-blue-500 dark:border-blue-400 text-white"
+                                          : "bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-750 border border-stone-300 dark:border-stone-600 text-slate-800 dark:text-stone-200"
+                                      }`}
+                                      title={`${op.name} (${op.statusText || ""}) — Klik untuk melihat detail di panel samping`}
+                                    >
+                                      {/* Left Nudge Control */}
                                       <button
                                         type="button"
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          shiftOperation(wo.id, op.id, 1);
+                                          shiftOperation(wo.id, op.id, -1);
                                         }}
-                                        disabled={op.startDay + op.durationDays >= (granularity === "Month" ? 28 : 7)}
-                                        className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded flex items-center justify-center bg-black/20 hover:bg-black/40 text-white transition-opacity -mr-1 cursor-pointer shrink-0"
-                                        title="Geser maju 1 hari"
+                                        disabled={op.startDay <= 0}
+                                        className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded flex items-center justify-center bg-black/20 hover:bg-black/40 text-white transition-opacity -ml-1 cursor-pointer shrink-0"
+                                        title="Geser mundur 1 hari"
                                       >
-                                        ▶
+                                        ◀
                                       </button>
+
+                                      {/* Technician Avatar Badge */}
+                                      <span className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] shrink-0 mr-1.5 shadow-2xs ${op.techColor}`}>
+                                        {op.techInitial}
+                                      </span>
+
+                                      {/* Operation Name */}
+                                      <div className="flex items-center gap-1 min-w-0 flex-1 truncate px-0.5">
+                                        {op.rush && <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />}
+                                        <span className="truncate text-xs font-bold text-slate-900 dark:text-stone-100">
+                                          {op.name}
+                                        </span>
+                                      </div>
+
+                                      {/* Progress Badge */}
+                                      <div className="flex items-center gap-1 shrink-0 ml-1.5">
+                                        <span className="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-black/15 dark:bg-black/40 text-slate-900 dark:text-stone-100">
+                                          {op.progress}%
+                                        </span>
+
+                                        {/* Right Nudge Control */}
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            shiftOperation(wo.id, op.id, 1);
+                                          }}
+                                          disabled={op.startDay + op.durationDays >= (granularity === "Month" ? 28 : 7)}
+                                          className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded flex items-center justify-center bg-black/20 hover:bg-black/40 text-white transition-opacity -mr-1 cursor-pointer shrink-0"
+                                          title="Geser maju 1 hari"
+                                        >
+                                          ▶
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              );
-                            })}
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      workCenterGroups.map((wc) => (
+                        <div key={`timeline-${wc.id}`} className="transition-colors hover:bg-stone-50/40 dark:hover:bg-stone-900/20">
+                          {/* Work Center Master Row */}
+                          <div 
+                            className="h-12 relative items-center grid"
+                            style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
+                          >
+                            {timelineConfig.cols.map((col) => (
+                              <div 
+                                key={col.colIndex}
+                                className="h-full border-r border-stone-100/60 dark:border-stone-800/40"
+                              />
+                            ))}
                           </div>
-                        )}
-                      </div>
-                    ))}
+
+                          {/* Child operations under this Work Center */}
+                          {wc.expanded && (
+                            <div className="relative divide-y divide-stone-50 dark:divide-stone-900/80 bg-stone-50/20 dark:bg-stone-950/20">
+                              {wc.operations.map(({ wo, op }) => {
+                                const isSelected = selectedOpKey?.workOrderId === wo.id && selectedOpKey?.opId === op.id;
+                                return (
+                                  <div
+                                    key={`timeline-op-${wc.id}-${wo.id}-${op.id}`}
+                                    className="h-11 relative grid items-center group"
+                                    style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
+                                  >
+                                    {/* Column Drop Zones */}
+                                    {timelineConfig.cols.map((col) => (
+                                      <div
+                                        key={col.colIndex}
+                                        onDragOver={(e) => handleDragOverCol(e, col.colIndex)}
+                                        onDrop={() => handleDropOnCol(col.colIndex)}
+                                        className={`h-full border-r border-stone-100/60 dark:border-stone-800/40 transition-colors ${
+                                          dragOverCol === col.colIndex
+                                            ? "bg-amber-100/40 dark:bg-amber-950/30"
+                                            : ""
+                                        }`}
+                                      />
+                                    ))}
+
+                                    {/* Operation Bar */}
+                                    <div
+                                      draggable
+                                      onDragStart={() => handleDragStart(wo.id, op.id, op.startDay)}
+                                      onClick={() => setSelectedOpKey({ workOrderId: wo.id, opId: op.id })}
+                                      style={getOpBarStyle(op)}
+                                      className={`absolute h-8 rounded-xl px-2 flex items-center justify-between text-xs font-semibold shadow-2xs transition-all select-none cursor-grab active:cursor-grabbing group/bar z-10 ${
+                                        isSelected
+                                          ? "ring-2 ring-blue-500 shadow-md scale-[1.01]"
+                                          : ""
+                                      } ${
+                                        op.colorScheme === "emerald"
+                                          ? "bg-emerald-100 hover:bg-emerald-200/90 dark:bg-emerald-950/85 dark:hover:bg-emerald-900/80 border border-emerald-400 dark:border-emerald-600/80 text-emerald-950 dark:text-emerald-100"
+                                          : op.colorScheme === "blue"
+                                          ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 border border-blue-500 dark:border-blue-400 text-white"
+                                          : "bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-750 border border-stone-300 dark:border-stone-600 text-slate-800 dark:text-stone-200"
+                                      }`}
+                                      title={`${wo.id} · ${op.name} (${op.statusText || ""}) — Klik untuk melihat detail di panel samping`}
+                                    >
+                                      {/* Left Nudge Control */}
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          shiftOperation(wo.id, op.id, -1);
+                                        }}
+                                        disabled={op.startDay <= 0}
+                                        className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded flex items-center justify-center bg-black/20 hover:bg-black/40 text-white transition-opacity -ml-1 cursor-pointer shrink-0"
+                                        title="Geser mundur 1 hari"
+                                      >
+                                        ◀
+                                      </button>
+
+                                      {/* Technician Avatar Badge */}
+                                      <span className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] shrink-0 mr-1.5 shadow-2xs ${op.techColor}`}>
+                                        {op.techInitial}
+                                      </span>
+
+                                      {/* Operation Name */}
+                                      <div className="flex items-center gap-1 min-w-0 flex-1 truncate px-0.5">
+                                        {op.rush && <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />}
+                                        <span className="truncate text-xs font-bold text-slate-900 dark:text-stone-100">
+                                          {wo.id} · {op.name}
+                                        </span>
+                                      </div>
+
+                                      {/* Progress Badge */}
+                                      <div className="flex items-center gap-1 shrink-0 ml-1.5">
+                                        <span className="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-black/15 dark:bg-black/40 text-slate-900 dark:text-stone-100">
+                                          {op.progress}%
+                                        </span>
+
+                                        {/* Right Nudge Control */}
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            shiftOperation(wo.id, op.id, 1);
+                                          }}
+                                          disabled={op.startDay + op.durationDays >= (granularity === "Month" ? 28 : 7)}
+                                          className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded flex items-center justify-center bg-black/20 hover:bg-black/40 text-white transition-opacity -mr-1 cursor-pointer shrink-0"
+                                          title="Geser maju 1 hari"
+                                        >
+                                          ▶
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
