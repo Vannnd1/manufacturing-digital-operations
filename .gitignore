@@ -16,3 +16,17 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 *.tsbuildinfo
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# Local-only documentation
+DESIGN.md
+AGENTS.md
+ROADMAP.md
+PRD.md
+design.md
+agents.md
+roadmap.md
+prd.md
