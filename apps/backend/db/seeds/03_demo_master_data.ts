@@ -181,8 +181,7 @@ export async function seed(knex: Knex): Promise<void> {
     id: crypto.randomUUID(),
     product_id: products[0].id,
     inspection_id: inspectionId,
-    released_quantity: 7,
-    release_date: new Date(Date.now() - 86400000),
+    quantity: 7,
   });
 
   // 9. Initial System Audit Log

@@ -18,6 +18,7 @@ import {
   Table,
   Th,
   Td,
+  GaugeMeter,
 } from "../components/ui";
 import {
   Download,
@@ -282,13 +283,13 @@ export function Reports() {
                 <Archive className="w-4 h-4 text-amber-500" />
               </div>
               <div className="text-3xl font-bold text-slate-900 tabular-nums">
-                {summaryData.inventory.total_materials}
+                {summaryData.inventory?.total_materials ?? 0}
                 <span className="text-xs font-normal text-slate-400 ml-1">materials</span>
               </div>
               <div className="text-xs text-slate-500 mt-2 flex items-center gap-2">
-                <span className="font-semibold text-amber-600">{summaryData.inventory.low_stock_count} Low</span>
+                <span className="font-semibold text-amber-600">{summaryData.inventory?.low_stock_count ?? 0} Low</span>
                 <span>•</span>
-                <span className="font-semibold text-red-600">{summaryData.inventory.out_of_stock_count} Empty</span>
+                <span className="font-semibold text-red-600">{summaryData.inventory?.out_of_stock_count ?? 0} Empty</span>
               </div>
             </Card>
 
@@ -299,12 +300,12 @@ export function Reports() {
                 <ShoppingCart className="w-4 h-4 text-slate-500" />
               </div>
               <div className="text-3xl font-bold text-slate-900 tabular-nums">
-                ${summaryData.procurement.total_spend_commitment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${(summaryData.procurement?.total_spend_commitment ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
               <div className="text-xs text-slate-500 mt-2 flex items-center gap-2">
-                <span>{summaryData.procurement.total_pos} POs issued</span>
+                <span>{summaryData.procurement?.total_pos ?? 0} POs issued</span>
                 <span>•</span>
-                <span className="text-amber-600 font-medium">{summaryData.procurement.pending_prs} PRs pending</span>
+                <span className="text-amber-600 font-medium">{summaryData.procurement?.pending_prs ?? 0} PRs pending</span>
               </div>
             </Card>
 
@@ -315,13 +316,13 @@ export function Reports() {
                 <Target className="w-4 h-4 text-blue-500" />
               </div>
               <div className="text-3xl font-bold text-slate-900 tabular-nums">
-                {summaryData.production.yield_rate_percent}%
+                {summaryData.production?.yield_rate_percent ?? 0}%
                 <span className="text-xs font-normal text-slate-400 ml-1">yield</span>
               </div>
               <div className="text-xs text-slate-500 mt-2 flex items-center gap-2">
-                <span className="font-medium text-slate-700">{summaryData.production.total_actual_quantity} / {summaryData.production.total_planned_quantity} units</span>
+                <span className="font-medium text-slate-700">{summaryData.production?.total_actual_quantity ?? 0} / {summaryData.production?.total_planned_quantity ?? 0} units</span>
                 <span>•</span>
-                <span>{summaryData.production.completed_orders} orders</span>
+                <span>{summaryData.production?.completed_orders ?? 0} orders</span>
               </div>
             </Card>
 
@@ -332,13 +333,40 @@ export function Reports() {
                 <ShieldCheck className="w-4 h-4 text-red-500" />
               </div>
               <div className="text-3xl font-bold text-slate-900 tabular-nums">
-                {summaryData.quality.defect_rate_percent}%
+                {summaryData.quality?.defect_rate_percent ?? 0}%
               </div>
               <div className="text-xs text-slate-500 mt-2 flex items-center gap-2">
-                <span className="text-red-600 font-semibold">{summaryData.quality.total_failed_quantity} failed</span>
+                <span className="text-red-600 font-semibold">{summaryData.quality?.total_failed_quantity ?? 0} failed</span>
                 <span>/</span>
-                <span>{summaryData.quality.total_inspected_quantity} inspected</span>
+                <span>{summaryData.quality?.total_inspected_quantity ?? 0} inspected</span>
               </div>
+            </Card>
+          </div>
+
+          {/* Industrial Performance Gauges */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <Card className="p-6 flex flex-col items-center justify-center bg-white border border-stone-200/80 rounded-2xl shadow-xs">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">
+                Production Floor Yield
+              </span>
+              <GaugeMeter 
+                value={Number(summaryData.production?.yield_rate_percent) || 0}
+                title="Yield Rate"
+                target={95}
+                subtitle={`${summaryData.production?.total_actual_quantity ?? 0} actual / ${summaryData.production?.total_planned_quantity ?? 0} planned units`}
+              />
+            </Card>
+
+            <Card className="p-6 flex flex-col items-center justify-center bg-white border border-stone-200/80 rounded-2xl shadow-xs">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">
+                Quality First-Pass Yield
+              </span>
+              <GaugeMeter 
+                value={Math.max(0, 100 - (Number(summaryData.quality?.defect_rate_percent) || 0))}
+                title="Pass Rate"
+                target={98}
+                subtitle={`${summaryData.quality?.total_failed_quantity ?? 0} defects recorded across ${summaryData.quality?.total_inspected_quantity ?? 0} inspected units`}
+              />
             </Card>
           </div>
 
@@ -352,7 +380,7 @@ export function Reports() {
                   <div>
                     <div className="font-medium text-slate-900">Inventory Threshold Alerts</div>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      {summaryData.inventory.low_stock_count} materials currently below safety stock levels. Review reorder status in Inventory Movements.
+                      {summaryData.inventory?.low_stock_count ?? 0} materials currently below safety stock levels. Review reorder status in Inventory Movements.
                     </p>
                   </div>
                 </div>
@@ -361,7 +389,7 @@ export function Reports() {
                   <div>
                     <div className="font-medium text-slate-900">Active Production Batches</div>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      {summaryData.production.active_orders} orders currently ready or in progress on shop floor with {summaryData.production.yield_rate_percent}% recorded yield.
+                      {summaryData.production?.active_orders ?? 0} orders currently ready or in progress on shop floor with {summaryData.production?.yield_rate_percent ?? 0}% recorded yield.
                     </p>
                   </div>
                 </div>
@@ -373,15 +401,15 @@ export function Reports() {
               <div className="p-5 space-y-3 text-xs text-slate-600">
                 <div className="flex justify-between py-1 border-b border-slate-100">
                   <span className="text-slate-400 font-medium">Selected Period Range:</span>
-                  <span className="font-mono font-semibold uppercase">{summaryData.period.range}</span>
+                  <span className="font-mono font-semibold uppercase">{summaryData.period?.range || "30D"}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-100">
                   <span className="text-slate-400 font-medium">Window Start Date:</span>
-                  <span className="font-mono">{summaryData.period.start_date || "All History"}</span>
+                  <span className="font-mono">{summaryData.period?.start_date || "All History"}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-100">
                   <span className="text-slate-400 font-medium">Window End Date:</span>
-                  <span className="font-mono">{summaryData.period.end_date || "Present"}</span>
+                  <span className="font-mono">{summaryData.period?.end_date || "Present"}</span>
                 </div>
                 <div className="flex justify-between py-1">
                   <span className="text-slate-400 font-medium">Data Integrity Mode:</span>

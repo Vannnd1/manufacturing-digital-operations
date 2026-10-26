@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore";
 import { Login } from "./pages/Login";
@@ -10,23 +10,24 @@ import { Quality } from "./pages/Quality";
 import { Dashboard } from "./pages/Dashboard";
 import { AuditTrail } from "./pages/AuditTrail";
 import { Reports } from "./pages/Reports";
+import { Staff } from "./pages/Staff";
 import { 
   LogOut, 
-  User, 
-  LayoutDashboard, 
-  Box, 
-  Archive, 
-  ShoppingCart, 
   Target, 
   ShieldCheck, 
-  History,
-  BarChart3,
-  Menu, 
-  X, 
-  PanelLeftClose, 
-  PanelLeftOpen,
+  Bell,
+  AlertTriangle,
+  ChevronRight,
+  Search,
+  Plus,
+  Moon,
+  Sun,
+  LifeBuoy,
+  Settings,
   Factory
 } from "lucide-react";
+import { SearchModal, QuickCreateModal, SupportModal, SettingsModal } from "./components/QuickModals";
+import { LiveTelemetryPill } from "./components/LiveTelemetryPill";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((state) => state.token);
@@ -38,309 +39,514 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-interface NavItem {
-  path: string;
-  label: string;
-  icon: any;
-  allowedRoles?: string[];
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { path: "/", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/materials", label: "Material Master", icon: Box },
-  { path: "/inventory", label: "Inventory Management", icon: Archive },
-  { path: "/procurement", label: "Procurement", icon: ShoppingCart },
-  { path: "/production", label: "Production Orders", icon: Target },
-  { path: "/quality", label: "Quality Control", icon: ShieldCheck },
-  { path: "/reports", label: "Reports & Insights", icon: BarChart3 },
-  { path: "/audit", label: "Audit & Traceability", icon: History, allowedRoles: ["Admin", "Manager"] },
-];
-
 function MainLayout() {
   const { user, logout } = useAuthStore();
   const location = useLocation();
 
-  // Desktop: persisted collapse state
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    return localStorage.getItem("sidebar-collapsed") === "true";
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  // Operational Notification Center State
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(3);
+
+  // Quick Utilities Modals State
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const [supportModalOpen, setSupportModalOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [themeMode, setThemeMode] = useState<"light" | "dark">(() => {
+    const saved = localStorage.getItem("mfg-theme-mode");
+    if (saved === "dark" || saved === "light") return saved;
+    return "light";
   });
+  const [themeToast, setThemeToast] = useState<string | null>(null);
 
-  // Mobile: drawer open state
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  // Sync theme mode to documentElement class (.dark) and localStorage
+  useEffect(() => {
+    if (themeMode === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("mfg-theme-mode", themeMode);
+  }, [themeMode]);
 
-  // Refs for focus management
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const sidebarRef = useRef<HTMLElement>(null);
-
-  const toggleSidebar = () => {
-    const newState = !isCollapsed;
-    setIsCollapsed(newState);
-    localStorage.setItem("sidebar-collapsed", String(newState));
+  const toggleThemeMode = () => {
+    const next = themeMode === "light" ? "dark" : "light";
+    setThemeMode(next);
+    setThemeToast(
+      next === "dark"
+        ? "Dark Mode active · Industrial graphite theme enabled"
+        : "Light Mode active · Clean theme enabled"
+    );
+    setTimeout(() => setThemeToast(null), 3000);
   };
 
-  const openMobileDrawer = () => {
-    setIsMobileOpen(true);
-  };
-
-  const closeMobileDrawer = useCallback(() => {
-    setIsMobileOpen(false);
-    // Return focus to the hamburger button when drawer closes
-    requestAnimationFrame(() => menuButtonRef.current?.focus());
+  // Keyboard shortcut Ctrl+K / Cmd+K for Quick Search
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchModalOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
   }, []);
 
-  // Escape key and Tab focus-trap while drawer is open
+  // Close notifications popover on click outside
   useEffect(() => {
-    if (!isMobileOpen) return;
-
-    const getFocusable = (): HTMLElement[] => {
-      if (!sidebarRef.current) return [];
-      return Array.from(
-        sidebarRef.current.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        )
-      ).filter((el) => !el.closest("[inert]") && el.offsetParent !== null);
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        closeMobileDrawer();
-        return;
-      }
-
-      if (e.key === "Tab") {
-        const focusable = getFocusable();
-        if (focusable.length === 0) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        const active = document.activeElement as HTMLElement;
-
-        if (e.shiftKey) {
-          // Shift+Tab from first element → wrap to last
-          if (active === first || !sidebarRef.current?.contains(active)) {
-            e.preventDefault();
-            last.focus();
-          }
-        } else {
-          // Tab from last element → wrap to first
-          if (active === last || !sidebarRef.current?.contains(active)) {
-            e.preventDefault();
-            first.focus();
-          }
-        }
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotificationsOpen(false);
       }
     };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isMobileOpen, closeMobileDrawer]);
-
-  // Body scroll lock while drawer is open
-  useEffect(() => {
-    if (isMobileOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+    if (notificationsOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
-    return () => { document.body.style.overflow = ""; };
-  }, [isMobileOpen]);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [notificationsOpen]);
 
-  // Move focus to close button when drawer opens
-  useEffect(() => {
-    if (isMobileOpen) {
-      requestAnimationFrame(() => closeButtonRef.current?.focus());
+  const currentPage = (() => {
+    if (location.pathname === "/") return "Dashboard";
+    if (location.pathname === "/procurement") return "Procurement";
+    if (location.pathname === "/inventory") return "Inventory Management";
+    if (location.pathname === "/materials") return "Material Master";
+    if (location.pathname === "/production") return "Production Orders";
+    if (location.pathname === "/quality") return "Quality Control";
+    if (location.pathname === "/staff") return "People & Staff";
+    if (location.pathname === "/reports") return "Reports & Insights";
+    if (location.pathname === "/audit") return "Audit & Traceability";
+    return "Operations";
+  })();
+
+  const domainInfo = (() => {
+    if (location.pathname === "/production" || location.pathname === "/quality") {
+      return { name: "Manufacturing", path: "/production" };
     }
-  }, [isMobileOpen]);
-
-  const currentPage = NAV_ITEMS.find(item => item.path === location.pathname)?.label || "Operations";
-
-  const visibleNavItems = NAV_ITEMS.filter((item) => {
-    if (!item.allowedRoles) return true;
-    return user?.role && item.allowedRoles.includes(user.role);
-  });
-
-  const navLinks = visibleNavItems.map((item) => {
-    const isActive = location.pathname === item.path;
-    const Icon = item.icon;
-    return (
-      <Link
-        key={item.path}
-        to={item.path}
-        onClick={closeMobileDrawer}
-        title={isCollapsed ? item.label : undefined}
-        aria-current={isActive ? "page" : undefined}
-        className={`flex items-center px-3 py-2.5 text-sm transition-colors border-l-2 rounded-r-sm
-          ${isActive
-            ? "bg-white/10 text-white border-amber-500 font-medium"
-            : "text-slate-400 border-transparent hover:bg-white/5 hover:text-slate-200"}
-          ${isCollapsed ? "justify-center md:justify-center" : "justify-start"}
-        `}
-      >
-        <Icon className={`w-5 h-5 shrink-0 ${isCollapsed ? "md:mr-0 mr-3" : "mr-3"} ${isActive ? "text-amber-500" : ""}`} />
-        {/* Always show label on mobile drawer; respect collapse on desktop */}
-        <span className={`whitespace-nowrap ${isCollapsed ? "md:hidden" : ""}`}>{item.label}</span>
-      </Link>
-    );
-  });
+    if (location.pathname === "/inventory" || location.pathname === "/materials") {
+      return { name: "Stock & Materials", path: "/inventory" };
+    }
+    if (location.pathname === "/procurement") {
+      return { name: "Procurement", path: "/procurement" };
+    }
+    if (location.pathname === "/staff") {
+      return { name: "People & Staff", path: "/staff" };
+    }
+    if (location.pathname === "/reports") {
+      return { name: "Reporting", path: "/reports" };
+    }
+    if (location.pathname === "/audit") {
+      return { name: "Audit & Traceability", path: "/audit" };
+    }
+    return null;
+  })();
 
   return (
-    <div className="min-h-screen flex bg-[var(--color-background)]">
+    <div className="min-h-screen flex bg-[#FAF9F6] dark:bg-[#0F1013] text-slate-800 dark:text-stone-100 transition-colors duration-150">
 
-      {/* ── Mobile Backdrop ── */}
-      {isMobileOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/60 z-40 md:hidden"
-          onClick={closeMobileDrawer}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* ── Sidebar ── */}
+      {/* ── Floating Dark Capsule Dock ── */}
       <aside
-        ref={sidebarRef}
-        id="main-sidebar"
-        aria-label="Main navigation"
-        // inert makes hidden sidebar invisible to keyboard / AT on mobile
-        {...(!isMobileOpen ? { inert: "" as unknown as boolean } : {})}
-        className={[
-          // Base styles
-          "fixed inset-y-0 left-0 z-50",
-          "bg-slate-950 text-slate-50",
-          "border-r border-slate-800",
-          "flex flex-col shadow-xl",
-          // Motion — translate for mobile, width for desktop
-          "transition-transform md:transition-[width] duration-300 ease-in-out motion-reduce:transition-none",
-          // Mobile: slide in/out; width is always full-drawer (w-72)
-          "w-72 md:w-auto",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-          // Desktop: switch width based on collapsed state
-          isCollapsed ? "md:w-20" : "md:w-64",
-        ].join(" ")}
+        aria-label="Quick Utility Dock"
+        className="hidden md:flex fixed left-3.5 top-28 z-40 flex-col items-center py-3 px-1.5 bg-[#18181B] text-stone-300 rounded-full border border-stone-800/90 shadow-2xl shadow-black/40 gap-3 animate-in fade-in duration-200"
       >
-        {/* ── Sidebar header: logo + collapse toggle ── */}
-        <div className={`p-4 border-b border-slate-800/50 flex items-center ${isCollapsed ? "md:flex-col md:gap-3 justify-between md:justify-center" : "justify-between"}`}>
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-6 h-6 bg-amber-600 rounded-sm shrink-0 flex items-center justify-center shadow-sm" aria-hidden="true">
-              <Factory className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className={`font-bold text-base tracking-tight uppercase whitespace-nowrap ${isCollapsed ? "md:hidden" : ""}`}>
-              MfgOps System
-            </span>
-          </div>
+        {/* 1. Quick Search */}
+        <button
+          onClick={() => setSearchModalOpen(true)}
+          className="p-2 hover:text-white hover:bg-stone-800 rounded-full transition-colors cursor-pointer text-stone-300"
+          title="Search (Ctrl+K)"
+          aria-label="Search operations"
+        >
+          <Search className="w-4 h-4" />
+        </button>
 
-          {/* Mobile: close button (X) */}
+        {/* 2. Quick Create (+) */}
+        <button
+          onClick={() => setQuickCreateOpen(true)}
+          className="p-2 hover:text-white hover:bg-stone-800 rounded-full transition-colors cursor-pointer text-stone-300"
+          title="Quick Action"
+          aria-label="Quick Action"
+        >
+          <Plus className="w-4.5 h-4.5" />
+        </button>
+
+        {/* 3. Theme Toggle (Moon / Sun) */}
+        <div className="relative group">
           <button
-            ref={closeButtonRef}
-            onClick={closeMobileDrawer}
-            className="md:hidden p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-            aria-label="Close navigation menu"
+            onClick={toggleThemeMode}
+            className="p-2 hover:text-white hover:bg-stone-800 rounded-full transition-colors cursor-pointer text-stone-300 relative"
+            title={themeMode === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            aria-label="Toggle theme mode"
           >
-            <X className="w-5 h-5" />
+            {themeMode === "dark" ? (
+              <Sun className="w-4 h-4 text-amber-400 transition-transform duration-200 hover:rotate-45" />
+            ) : (
+              <Moon className="w-4 h-4 text-stone-300 transition-transform duration-200 hover:-rotate-12" />
+            )}
           </button>
-
-          {/* Desktop: collapse toggle */}
-          <button
-            onClick={toggleSidebar}
-            className="hidden md:flex items-center justify-center p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-sm transition-colors shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-            aria-expanded={!isCollapsed}
-            aria-controls="main-sidebar"
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
-          </button>
-        </div>
-
-        {/* ── Operations label ── */}
-        <div className={`px-5 pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider ${isCollapsed ? "md:hidden" : ""}`}>
-          Operations
-        </div>
-
-        {/* ── Navigation ── */}
-        <nav className="space-y-0.5 flex-1 px-2 overflow-y-auto">
-          {navLinks}
-        </nav>
-
-        {/* ── User profile footer ── */}
-        <div className="p-4 border-t border-slate-800/50 bg-slate-900/50">
-          <div className={`flex items-center ${isCollapsed ? "md:flex-col md:gap-2 md:justify-center" : ""}`}>
-            <div className="w-9 h-9 rounded-sm bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
-              <User className="w-4 h-4 text-slate-300" aria-hidden="true" />
-            </div>
-            <div className={`flex-1 min-w-0 ml-3 mr-2 ${isCollapsed ? "md:hidden" : ""}`}>
-              <p className="text-sm font-medium text-slate-100 truncate">{user?.name}</p>
-              <p className="text-xs text-amber-500/90 font-medium truncate">{user?.role}</p>
-            </div>
-            <button
-              onClick={logout}
-              className="p-2 hover:bg-slate-800 rounded-sm text-slate-400 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-              title="Sign out"
-              aria-label="Sign out"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+          <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-white dark:bg-stone-800 text-slate-900 dark:text-white font-semibold text-xs rounded-xl shadow-lg border border-stone-200/90 dark:border-stone-700 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 flex items-center">
+            {themeMode === "dark" ? "Light Mode" : "Dark Mode"}
+            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-white dark:border-r-stone-800" />
           </div>
         </div>
+
+        {/* Divider */}
+        <div className="w-5 h-px bg-stone-700/80 my-0.5" />
+
+        {/* 4. Support (Circular button with signature tooltip badge) */}
+        <div className="relative group">
+          <button
+            onClick={() => setSupportModalOpen(true)}
+            className="w-9 h-9 rounded-full bg-[#27272A] text-white flex items-center justify-center hover:bg-stone-700 transition-colors shadow-xs cursor-pointer"
+            title="Support & SOPs"
+            aria-label="Support"
+          >
+            <LifeBuoy className="w-4 h-4" />
+          </button>
+          <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-white dark:bg-stone-800 text-slate-900 dark:text-white font-semibold text-xs rounded-xl shadow-lg border border-stone-200/90 dark:border-stone-700 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 flex items-center">
+            Support
+            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-white dark:border-r-stone-800" />
+          </div>
+        </div>
+
+        {/* 5. Settings (Gear) */}
+        <button
+          onClick={() => setSettingsModalOpen(true)}
+          className="p-2 hover:text-white hover:bg-stone-800 rounded-full transition-colors cursor-pointer text-stone-300"
+          title="Settings & System Preferences"
+          aria-label="Settings"
+        >
+          <Settings className="w-4 h-4" />
+        </button>
       </aside>
 
-      {/* ── Main content — inert while mobile drawer is open so background is unreachable ── */}
-      <main
-        className={[
-          "flex-1 flex flex-col min-w-0 h-screen overflow-hidden",
-          "transition-[padding] duration-300 ease-in-out motion-reduce:transition-none",
-          isCollapsed ? "md:pl-20" : "md:pl-64"
-        ].join(" ")}
-        {...(isMobileOpen ? { inert: "" as unknown as boolean } : {})}
-      >
+      {/* ── Main Content Area (Full-width canvas) ── */}
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
-        {/* ── Header ── */}
-        <header className="h-16 shrink-0 border-b border-slate-200 bg-white flex justify-between items-center px-4 md:px-8 shadow-sm z-10">
-          <div className="flex items-center">
-            {/* Mobile hamburger */}
-            <button
-              ref={menuButtonRef}
-              className="md:hidden p-2 mr-3 -ml-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-              onClick={openMobileDrawer}
-              aria-label="Open navigation menu"
-              aria-expanded={isMobileOpen}
-              aria-controls="main-sidebar"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
+        {/* ── Top Header with Navigation Options ── */}
+        <header className="h-16 shrink-0 border-b border-stone-200/80 dark:border-stone-800 bg-[#FAF9F6] dark:bg-[#141519] flex justify-between items-center px-4 sm:px-6 z-20 relative gap-3 sm:gap-6 transition-colors duration-150">
+          
+          {/* Left: Brand Platform Logo & Navigation Buttons (Full to the left for spacious room) */}
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+            {/* Brand Platform Logo */}
+            <div className="flex items-center gap-2.5 shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-amber-600 flex items-center justify-center shadow-xs">
+                <Factory className="w-4 h-4 text-white" />
+              </div>
+              <div className="leading-tight hidden sm:block">
+                <span className="font-bold text-xs tracking-tight text-slate-900 dark:text-white uppercase block">
+                  MfgOps
+                </span>
+                <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium tracking-wider uppercase block">
+                  Platform
+                </span>
+              </div>
+            </div>
 
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider hidden sm:block">
-                Manufacturing Digital Operations
-              </span>
-              <span className="text-sm font-semibold text-slate-800">{currentPage}</span>
+            <div className="h-5 w-px bg-stone-200/80 dark:bg-stone-800 hidden sm:block shrink-0" />
+
+            {/* Top Navigation Bar with Pill Choices - Full Left & Spacious */}
+            <div className="flex items-center gap-1 bg-stone-100/90 dark:bg-stone-900/90 p-1 rounded-full border border-stone-200/80 dark:border-stone-800 shadow-2xs overflow-x-auto scrollbar-none">
+              <Link
+                to="/"
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  location.pathname === "/"
+                    ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                    : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                }`}
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/procurement"
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                  location.pathname === "/procurement"
+                    ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                    : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                }`}
+              >
+                <span>Procurement</span>
+                <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${location.pathname === "/procurement" ? "bg-white/20 text-white" : "bg-amber-600 text-white"}`}>
+                  4
+                </span>
+              </Link>
+              <Link
+                to="/inventory"
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                  location.pathname === "/inventory" || location.pathname === "/materials"
+                    ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                    : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                }`}
+              >
+                <span>Stock</span>
+                <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${location.pathname === "/inventory" || location.pathname === "/materials" ? "bg-white/20 text-white" : "bg-amber-600 text-white"}`}>
+                  6
+                </span>
+              </Link>
+              <Link
+                to="/production"
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                  location.pathname === "/production" || location.pathname === "/quality"
+                    ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                    : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                }`}
+              >
+                <span>Manufacturing</span>
+                <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${location.pathname === "/production" || location.pathname === "/quality" ? "bg-white/20 text-white" : "bg-amber-600 text-white"}`}>
+                  1
+                </span>
+              </Link>
+              <Link
+                to="/staff"
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                  location.pathname === "/staff"
+                    ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                    : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                }`}
+              >
+                <span>People</span>
+                <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${location.pathname === "/staff" ? "bg-white/20 text-white" : "bg-stone-500 text-white"}`}>
+                  22
+                </span>
+              </Link>
+              <Link
+                to="/reports"
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  location.pathname === "/reports"
+                    ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                    : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                }`}
+              >
+                Reporting
+              </Link>
+              {(user?.role === "Admin" || user?.role === "Manager") && (
+                <Link
+                  to="/audit"
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    location.pathname === "/audit"
+                      ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                      : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                  }`}
+                >
+                  Audit
+                </Link>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono font-medium text-slate-400 bg-slate-50 px-2 py-0.5 border border-slate-200">
-              v0.1.7
-            </span>
-            <div className="text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1 border border-slate-200 hidden sm:block">
-              {user?.role} Access
+          {/* Right: Quick Tools, Alerts & User Profile */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Quick Search Button */}
+            <button
+              onClick={() => setSearchModalOpen(true)}
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs text-stone-500 dark:text-stone-400 hover:text-slate-900 dark:hover:text-white transition-colors shadow-2xs cursor-pointer"
+              title="Quick Search (Ctrl+K)"
+              aria-label="Search operations"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>Search</span>
+              <kbd className="px-1.5 py-0.2 text-[10px] bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded text-stone-500 dark:text-stone-400 font-mono">⌘K</kbd>
+            </button>
+
+            {/* Operational Notification Center */}
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                className="relative p-2 text-stone-500 dark:text-stone-400 hover:text-slate-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors focus:outline-none cursor-pointer"
+                aria-label="Operational Notifications"
+                aria-expanded={notificationsOpen}
+                title="Operational Notifications"
+              >
+                <Bell className="w-4.5 h-4.5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full ring-2 ring-white" />
+                )}
+              </button>
+
+              {notificationsOpen && (
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-[#18181B] border border-stone-200 dark:border-stone-800 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in duration-150">
+                  <div className="p-3.5 border-b border-stone-200 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-900/80 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs uppercase tracking-wider text-slate-800 dark:text-stone-200">
+                        Operational Alerts
+                      </span>
+                      {unreadCount > 0 && (
+                        <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-bold text-[10px] rounded-full border border-amber-200 dark:border-amber-800/80">
+                          {unreadCount} new
+                        </span>
+                      )}
+                    </div>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={() => setUnreadCount(0)}
+                        className="text-xs text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-300 font-medium transition-colors cursor-pointer"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="divide-y divide-stone-100 dark:divide-stone-800 max-h-80 overflow-y-auto">
+                    <Link
+                      to="/inventory"
+                      onClick={() => setNotificationsOpen(false)}
+                      className="p-3 hover:bg-stone-50 dark:hover:bg-stone-900/60 transition-colors flex items-start gap-3 text-left"
+                    >
+                      <div className="p-1.5 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-lg shrink-0 mt-0.5 border border-amber-200/60 dark:border-amber-800/60">
+                        <AlertTriangle className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-slate-800 dark:text-stone-200">
+                          Materials below reorder threshold
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-stone-400 truncate">
+                          Warehouse replenishment needed
+                        </p>
+                        <span className="text-[10px] text-slate-400 dark:text-stone-500 font-mono mt-1 block">15 min ago</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-stone-400 dark:text-stone-600 self-center shrink-0" />
+                    </Link>
+
+                    <Link
+                      to="/production"
+                      onClick={() => setNotificationsOpen(false)}
+                      className="p-3 hover:bg-stone-50 dark:hover:bg-stone-900/60 transition-colors flex items-start gap-3 text-left"
+                    >
+                      <div className="p-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-lg shrink-0 mt-0.5 border border-blue-200/60 dark:border-blue-800/60">
+                        <Target className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-slate-800 dark:text-stone-200">
+                          Work orders active on shop floor
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-stone-400 truncate">
+                          Production lines executing planned orders
+                        </p>
+                        <span className="text-[10px] text-slate-400 dark:text-stone-500 font-mono mt-1 block">42 min ago</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-stone-400 dark:text-stone-600 self-center shrink-0" />
+                    </Link>
+
+                    <Link
+                      to="/quality"
+                      onClick={() => setNotificationsOpen(false)}
+                      className="p-3 hover:bg-stone-50 dark:hover:bg-stone-900/60 transition-colors flex items-start gap-3 text-left"
+                    >
+                      <div className="p-1.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0 mt-0.5 border border-emerald-200/60 dark:border-emerald-800/60">
+                        <ShieldCheck className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-slate-800 dark:text-stone-200">
+                          Quality inspections logged
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-stone-400 truncate">
+                          Batch released with digital genealogy stamp
+                        </p>
+                        <span className="text-[10px] text-slate-400 dark:text-stone-500 font-mono mt-1 block">1 hr ago</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-stone-400 dark:text-stone-600 self-center shrink-0" />
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* User Role Badge, Name, Avatar & Sign Out */}
+            <div className="flex items-center gap-2 pl-2 border-l border-stone-200/80 dark:border-stone-800">
+              <span className="text-xs font-medium bg-stone-100 dark:bg-stone-800 text-slate-700 dark:text-stone-300 px-2.5 py-1 rounded-full border border-stone-200 dark:border-stone-700 hidden sm:inline-block">
+                {user?.role} Access
+              </span>
+              <span className="text-xs font-semibold text-slate-800 dark:text-stone-200 hidden md:inline truncate max-w-[120px]">
+                {user?.name}
+              </span>
+              <div
+                className="w-8 h-8 rounded-full bg-slate-900 dark:bg-amber-600 text-white font-semibold text-xs flex items-center justify-center shrink-0 border border-slate-700 dark:border-amber-500 shadow-2xs"
+                title={`${user?.name} (${user?.role})`}
+              >
+                {(user?.name || "OP").split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase()}
+              </div>
+              <button
+                onClick={logout}
+                className="p-1.5 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg text-stone-400 hover:text-slate-800 dark:hover:text-white transition-colors focus:outline-none cursor-pointer"
+                title="Sign out"
+                aria-label="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </header>
 
-        {/* ── Page content ── */}
-        <div className="flex-1 p-4 md:p-8 overflow-y-auto">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/materials" element={<Materials />} />
-            <Route path="/inventory" element={<Inventory />} />
-            <Route path="/procurement" element={<Procurement />} />
-            <Route path="/production" element={<Production />} />
-            <Route path="/quality" element={<Quality />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/audit" element={<AuditTrail />} />
-          </Routes>
+        {/* ── Page Content Canvas (with clearance for floating dock on md screens) ── */}
+        <div className="flex-1 overflow-y-auto bg-[#FAF9F6] dark:bg-[#0F1013] p-4 md:p-8 md:pl-20 transition-colors duration-150">
+          <div className="max-w-7xl mx-auto space-y-4">
+            {/* Top Operational Bar (Below Dashboard Header): Breadcrumb Rollback (Left) + Live Telemetry Clock Pill (Right) */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1">
+              {/* Breadcrumb Alur Navigasi (Rollback ke page sebelumnya via alur '/') */}
+              <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-medium">
+                <Link
+                  to="/"
+                  className="text-stone-400 dark:text-stone-500 hover:text-slate-900 dark:hover:text-white hover:underline transition-colors cursor-pointer"
+                  title="Rollback ke Operations (Dashboard)"
+                >
+                  Operations
+                </Link>
+                <span className="text-stone-300 dark:text-stone-700 select-none">/</span>
+
+                {domainInfo && domainInfo.name !== currentPage && (
+                  <>
+                    <Link
+                      to={domainInfo.path}
+                      className="text-stone-500 dark:text-stone-400 hover:text-slate-900 dark:hover:text-white hover:underline font-semibold transition-colors cursor-pointer"
+                      title={`Rollback ke ${domainInfo.name}`}
+                    >
+                      {domainInfo.name}
+                    </Link>
+                    <span className="text-stone-300 dark:text-stone-700 select-none">/</span>
+                  </>
+                )}
+
+                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight">
+                  {currentPage}
+                </span>
+              </nav>
+
+              {/* Live Operational Shift Clock & Floor Telemetry Capsule */}
+              <LiveTelemetryPill />
+            </div>
+
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/materials" element={<Materials />} />
+              <Route path="/inventory" element={<Inventory />} />
+              <Route path="/procurement" element={<Procurement />} />
+              <Route path="/production" element={<Production />} />
+              <Route path="/quality" element={<Quality />} />
+              <Route path="/staff" element={<Staff />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/audit" element={<AuditTrail />} />
+            </Routes>
+          </div>
         </div>
       </main>
+
+      {/* ── Utility Modals ── */}
+      <SearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+      <QuickCreateModal isOpen={quickCreateOpen} onClose={() => setQuickCreateOpen(false)} />
+      <SupportModal isOpen={supportModalOpen} onClose={() => setSupportModalOpen(false)} />
+      <SettingsModal isOpen={settingsModalOpen} onClose={() => setSettingsModalOpen(false)} />
+
+      {/* ── Theme Mode Indicator Toast ── */}
+      {themeToast && (
+        <div className="fixed top-20 right-8 z-50 bg-[#18181B] text-white text-xs px-4 py-2.5 rounded-full shadow-2xl border border-stone-700/80 flex items-center gap-2.5 animate-in slide-in-from-top-2 duration-200">
+          {themeMode === "dark" ? (
+            <Sun className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          ) : (
+            <Moon className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          )}
+          <span className="font-medium">{themeToast}</span>
+        </div>
+      )}
     </div>
   );
 }

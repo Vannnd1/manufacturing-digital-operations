@@ -309,36 +309,51 @@ export function Procurement() {
   return (
     <div className="space-y-6 max-w-7xl">
       {/* Page header with Create PR action */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-4">
         <PageHeader
           title="Procurement Management"
           description="Manage purchase requests, purchase orders, and supplier information."
         />
         {activeTab === "PR" && (
-          <Button onClick={openCreatePR} variant="primary" className="shrink-0 ml-4">
+          <button 
+            onClick={openCreatePR} 
+            className="px-4 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center shadow-xs transition-colors shrink-0 cursor-pointer"
+          >
             <Plus className="w-4 h-4 mr-1.5" />
             New PR
-          </Button>
+          </button>
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex space-x-1 border-b border-slate-200 mb-6">
+      {/* Sub-Navigation Pill Tabs */}
+      <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-full border border-stone-200/80 w-fit mb-6 shadow-2xs">
         <button
           onClick={() => setActiveTab("PR")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "PR" ? "border-amber-500 text-slate-900 bg-slate-50/50" : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50/30"}`}
+          className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
+            activeTab === "PR"
+              ? "bg-white text-slate-900 shadow-xs"
+              : "text-slate-500 hover:text-slate-900"
+          }`}
         >
           Purchase Requests
         </button>
         <button
           onClick={() => setActiveTab("PO")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "PO" ? "border-amber-500 text-slate-900 bg-slate-50/50" : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50/30"}`}
+          className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
+            activeTab === "PO"
+              ? "bg-white text-slate-900 shadow-xs"
+              : "text-slate-500 hover:text-slate-900"
+          }`}
         >
           Purchase Orders
         </button>
         <button
           onClick={() => setActiveTab("Supplier")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "Supplier" ? "border-amber-500 text-slate-900 bg-slate-50/50" : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50/30"}`}
+          className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
+            activeTab === "Supplier"
+              ? "bg-white text-slate-900 shadow-xs"
+              : "text-slate-500 hover:text-slate-900"
+          }`}
         >
           Suppliers
         </button>

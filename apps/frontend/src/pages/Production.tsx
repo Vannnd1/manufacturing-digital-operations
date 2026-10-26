@@ -1,11 +1,36 @@
 import { useEffect, useState, useCallback } from "react";
-import { getProductionOrders, createProductionOrder, reserveMaterials, recordProduction, checkAvailability, cancelProductionOrder } from "../api/production";
+import { 
+  getProductionOrders, 
+  createProductionOrder, 
+  reserveMaterials, 
+  recordProduction, 
+  checkAvailability, 
+  cancelProductionOrder 
+} from "../api/production";
+import { 
+  getInspections, 
+  getPendingInspections, 
+  getInspectionDetails, 
+  createInspection 
+} from "../api/quality";
 import { getProducts } from "../api/product";
 import { getMaterials } from "../api/inventory";
 import { useAuthStore } from "../store/useAuthStore";
-import { X, CheckCircle, AlertTriangle, Plus, Trash2 } from "lucide-react";
-import { PageHeader, Card, Table, Th, Td, Button, Input, Label, Badge } from "../components/ui";
+import { 
+  X, 
+  AlertTriangle, 
+  Plus, 
+  Trash2, 
+  Target, 
+  CheckCircle2, 
+  Clock, 
+  Layers, 
+  Download,
+  CheckCircle
+} from "lucide-react";
+import { Card, Table, Th, Td, Button, Input, Label, RoutePipeline } from "../components/ui";
 import { sanitizeNumberInput } from "../utils/number";
+import { InteractiveGanttSchedule } from "../components/InteractiveGanttSchedule";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -25,11 +50,25 @@ interface Material {
 
 interface BomItem {
   material_id: string;
-  required_quantity: string; // string while editing; converted to number on submit
+  required_quantity: string;
 }
 
-export function Production() {
+interface ProductionProps {
+  defaultTab?: "scheduling" | "orders" | "quality";
+}
+
+export function Production({ defaultTab = "scheduling" }: ProductionProps) {
   const { user } = useAuthStore();
+
+  // ── Sub-Page Navigation State ───────────────────────────────────────────
+  const [activeSubPage, setActiveSubPage] = useState<"scheduling" | "orders" | "quality">(defaultTab);
+
+  // Keep in sync if defaultTab prop changes (e.g. route change between /production and /quality)
+  useEffect(() => {
+    setActiveSubPage(defaultTab);
+  }, [defaultTab]);
+
+  // ── Production Orders State ────────────────────────────────────────────
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -48,7 +87,7 @@ export function Production() {
   const [recordLoading, setRecordLoading] = useState(false);
   const [recordError, setRecordError] = useState("");
 
-  // ── Create Production Order form state ─────────────────────────────────
+  // Create Production Order form state
   const [showCreateOrder, setShowCreateOrder] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -58,12 +97,34 @@ export function Production() {
   const [createFormError, setCreateFormError] = useState("");
   const [createSubmitting, setCreateSubmitting] = useState(false);
 
-  // Fetch master data once for the create form dropdowns
+  // Status Filter
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+
+  // ── Quality Control State ──────────────────────────────────────────────
+  const [qualityTab, setQualityTab] = useState<"Pending" | "Inspections">("Pending");
+  const [pendingInspections, setPendingInspections] = useState<any[]>([]);
+  const [inspections, setInspections] = useState<any[]>([]);
+  const [qualityLoading, setQualityLoading] = useState(false);
+  const [qualityError, setQualityError] = useState("");
+
+  const [activeQualityModal, setActiveQualityModal] = useState<"inspect" | "details" | null>(null);
+  const [selectedInspectionRecord, setSelectedInspectionRecord] = useState<any>(null);
+  const [inspectionDetails, setInspectionDetails] = useState<any>(null);
+
+  const [passQty, setPassQty] = useState<string | number>(0);
+  const [failQty, setFailQty] = useState<string | number>(0);
+  const [defectReason, setDefectReason] = useState("");
+  const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [detailsError, setDetailsError] = useState("");
+
+  // Fetch master data once
   useEffect(() => {
     getProducts().then((d: Product[]) => setProducts(d)).catch(() => {});
     getMaterials().then((d: Material[]) => setMaterials(d)).catch(() => {});
   }, []);
 
+  // Fetch production orders
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -78,7 +139,24 @@ export function Production() {
     fetchOrders();
   }, [refresh]);
 
-  // ── Create Production Order handlers ───────────────────────────────────
+  // Fetch quality records
+  useEffect(() => {
+    if (activeSubPage !== "quality") return;
+    const fetchQuality = async () => {
+      setQualityLoading(true);
+      setQualityError("");
+      try {
+        if (qualityTab === "Inspections") setInspections(await getInspections());
+        if (qualityTab === "Pending") setPendingInspections(await getPendingInspections());
+      } catch {
+        setQualityError("Failed to load quality control data");
+      }
+      setQualityLoading(false);
+    };
+    fetchQuality();
+  }, [activeSubPage, qualityTab, refresh]);
+
+  // ── Create Production Order Handlers ───────────────────────────────────
 
   const openCreateOrder = useCallback(() => {
     setOrderProductId("");
@@ -97,14 +175,12 @@ export function Production() {
   };
 
   const addBomItem = () => setBomItems(prev => [...prev, { material_id: "", required_quantity: "" }]);
-
   const removeBomItem = (index: number) => setBomItems(prev => prev.filter((_, i) => i !== index));
 
   const handleCreateOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateFormError("");
 
-    // Client-side validation
     if (!orderProductId) { setCreateFormError("Please select a product."); return; }
     const qty = Number(orderPlannedQty);
     if (!orderPlannedQty || isNaN(qty) || qty <= 0) { setCreateFormError("Planned quantity must be a positive number."); return; }
@@ -132,9 +208,7 @@ export function Production() {
       closeCreateOrder();
       setRefresh(r => r + 1);
     } catch (err: any) {
-      setCreateFormError(
-        err.response?.data?.error || "Failed to create production order. Please try again."
-      );
+      setCreateFormError(err.response?.data?.error || "Failed to create production order. Please try again.");
     }
     setCreateSubmitting(false);
   };
@@ -200,397 +274,836 @@ export function Production() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch(status) {
-      case 'Completed': return <Badge variant="success">Completed</Badge>;
-      case 'Ready': return <Badge variant="info">Ready to Produce</Badge>;
-      case 'Planned': return <Badge variant="warning">Planned</Badge>;
-      case 'In_Progress': return <Badge variant="default">In Progress</Badge>;
-      case 'Cancelled': return <Badge variant="error">Cancelled</Badge>;
-      default: return <Badge variant="default">{status}</Badge>;
+  // ── Quality Handlers ───────────────────────────────────────────────────
+
+  const openInspect = (record: any) => {
+    setSelectedInspectionRecord(record);
+    setPassQty(Number(record.actual_quantity_produced));
+    setFailQty(0);
+    setDefectReason("");
+    setFormError("");
+    setActiveQualityModal("inspect");
+  };
+
+  const openDetails = async (inspection: any) => {
+    setActiveQualityModal("details");
+    setInspectionDetails(null);
+    setDetailsError("");
+    try {
+      setInspectionDetails(await getInspectionDetails(inspection.id));
+    } catch {
+      setDetailsError("Failed to load inspection details. Please try again.");
     }
   };
 
-  if (loading) return <div className="p-8 text-slate-500 animate-pulse">Loading production orders...</div>;
-  if (error) return <div className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{error}</div>;
+  const handleInspectSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormLoading(true);
+    setFormError("");
+    try {
+      const numPass = Number(passQty) || 0;
+      const numFail = Number(failQty) || 0;
+      const payload: any = {
+        production_record_id: selectedInspectionRecord.id,
+        pass_quantity: numPass,
+        fail_quantity: numFail,
+      };
+      if (numFail > 0) {
+        payload.defects = [{ defect_reason: defectReason, quantity: numFail }];
+      }
+      await createInspection(payload);
+      setActiveQualityModal(null);
+      setRefresh(r => r + 1);
+    } catch (err: any) {
+      setFormError(err.response?.data?.error || "Failed to create inspection record. Please try again.");
+    }
+    setFormLoading(false);
+  };
+
+  // ── Export CSV Handler ─────────────────────────────────────────────────
+  const handleExport = () => {
+    let csv = "";
+    if (activeSubPage === "orders" || activeSubPage === "scheduling") {
+      csv = "Order ID,Product,Planned Qty,Status,Created At\n" +
+        orders.map(o => `"${o.id}","${o.product_name || o.product_id}","${o.planned_quantity}","${o.status}","${o.created_at}"`).join("\n");
+    } else {
+      csv = "Inspection ID,Production Record,Date,Pass Qty,Fail Qty\n" +
+        inspections.map(i => `"${i.id}","${i.prodo_id}","${i.inspection_date}","${i.pass_quantity}","${i.fail_quantity}"`).join("\n");
+    }
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `mfg_${activeSubPage}_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // ── Calculations ───────────────────────────────────────────────────────
+  const inProductionCount = orders.filter(o => o.status === "Ready" || o.status === "In_Progress").length;
+  const plannedCount = orders.filter(o => o.status === "Planned").length;
+  const completedCount = orders.filter(o => o.status === "Completed").length;
+
+  const filteredOrders = orders.filter(o => {
+    if (filterStatus === "all") return true;
+    if (filterStatus === "in_production") return o.status === "Ready" || o.status === "In_Progress";
+    return o.status.toLowerCase() === filterStatus.toLowerCase();
+  });
 
   const canCreate = user?.role === "Admin" || user?.role === "Manager" || user?.role === "Production";
 
+  const subPageTitles = {
+    scheduling: "Scheduling",
+    orders: "Work orders",
+    quality: "Quality control",
+  };
+
   return (
     <div className="space-y-6 max-w-7xl">
-      {/* Page header with New Order action */}
-      <div className="flex items-start justify-between mb-6">
-        <PageHeader
-          title="Production Operations"
-          description="Manage active production runs, reserve materials, and record output."
-        />
-        {canCreate && (
-          <Button onClick={openCreateOrder} variant="primary" className="shrink-0 ml-4">
-            <Plus className="w-4 h-4 mr-1.5" />
-            New Order
-          </Button>
-        )}
+      
+      {/* ── Heading Title ── */}
+      <div className="pb-1 border-b border-stone-200/70 dark:border-stone-800">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-stone-100">
+          {subPageTitles[activeSubPage]}
+        </h1>
       </div>
 
-      <Card>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Order ID</Th>
-              <Th>Product</Th>
-              <Th className="text-right">Planned Qty</Th>
-              <Th>Status</Th>
-              <Th className="text-right">Actions</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.length === 0 ? (
-              <tr><Td colSpan={5} className="text-center py-8 text-slate-500 italic">No production orders found.</Td></tr>
-            ) : orders.map(o => (
-              <tr key={o.id} className="hover:bg-slate-50/50 transition-colors">
-                <Td className="font-mono text-xs text-slate-500 font-medium">{o.id}</Td>
-                <Td>
-                  <div className="font-medium text-slate-900">{o.product_name}</div>
-                  <div className="font-mono text-xs text-slate-500 mt-0.5">{o.product_sku}</div>
-                </Td>
-                <Td className="text-right font-semibold">{o.planned_quantity}</Td>
-                <Td>{getStatusBadge(o.status)}</Td>
-                <Td className="text-right space-x-2">
-                  {o.status === "Planned" && (
-                    <>
-                      <Button onClick={() => openCheck(o)} variant="secondary" className="px-3 py-1.5 text-xs">
-                        Check BOM & Reserve
-                      </Button>
-                      {canCreate && (
-                        <Button onClick={() => handleCancelOrder(o.id)} variant="ghost" className="px-2 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50">
-                          Cancel
-                        </Button>
-                      )}
-                    </>
-                  )}
-                  {o.status === "Ready" && (
-                    <>
-                      <Button onClick={() => openRecord(o)} variant="primary" className="px-3 py-1.5 text-xs">
-                        Record Output
-                      </Button>
-                      {canCreate && (
-                        <Button onClick={() => handleCancelOrder(o.id)} variant="ghost" className="px-2 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50">
-                          Cancel
-                        </Button>
-                      )}
-                    </>
-                  )}
-                </Td>
-              </tr>
+      {/* ── Row 2: Sub-Navigation Capsule Bar + Action Buttons ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-stone-200/70 dark:border-stone-800">
+        
+        {/* The Signature Pill Slider Capsule */}
+        <div className="flex items-center p-1 bg-[#EBEAE5] dark:bg-[#18181B] rounded-full border border-stone-300/80 dark:border-stone-800 shadow-2xs self-start">
+          <button
+            type="button"
+            onClick={() => setActiveSubPage("scheduling")}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+              activeSubPage === "scheduling"
+                ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold border border-transparent dark:border-stone-700"
+                : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            Scheduling
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSubPage("orders")}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+              activeSubPage === "orders"
+                ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold border border-transparent dark:border-stone-700"
+                : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            <span>Work orders</span>
+            <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${
+              activeSubPage === "orders" ? "bg-amber-600 text-white" : "bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-200"
+            }`}>
+              {orders.length}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSubPage("quality")}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+              activeSubPage === "quality"
+                ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold border border-transparent dark:border-stone-700"
+                : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            <span>Quality control</span>
+            <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${
+              activeSubPage === "quality" ? "bg-emerald-600 text-white" : "bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-200"
+            }`}>
+              Gate
+            </span>
+          </button>
+        </div>
+
+        {/* Right Action Buttons (Export & New Work Order) */}
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={handleExport}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 border border-stone-300/80 dark:border-stone-700 text-xs font-semibold text-slate-700 dark:text-stone-200 shadow-2xs transition-colors cursor-pointer"
+            title="Export CSV data"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export</span>
+          </button>
+
+          {canCreate && (
+            <button
+              type="button"
+              onClick={openCreateOrder}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 dark:bg-amber-600 dark:hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New work order</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Sub-Page 1: Scheduling (Interactive Visual Timeline Gantt Board) ── */}
+      {activeSubPage === "scheduling" && (
+        <InteractiveGanttSchedule 
+          orders={orders}
+          onNavigateToOrders={() => setActiveSubPage("orders")} 
+        />
+      )}
+
+      {/* ── Sub-Page 2: Work Orders (Production Operations View) ── */}
+      {activeSubPage === "orders" && (
+        <div className="space-y-6 animate-in fade-in duration-150">
+          
+          {/* 4 Hero Metric Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-[#E0EDFD] rounded-2xl p-5 border border-blue-200/60 shadow-xs flex flex-col justify-between h-32 text-slate-900">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-900">In Production</span>
+                <Target className="w-4 h-4 text-blue-700" />
+              </div>
+              <div>
+                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-blue-950">
+                  {inProductionCount}
+                </div>
+                <p className="text-[11px] text-blue-800 mt-0.5 font-medium">Shop floor machining active</p>
+              </div>
+            </div>
+
+            <div className="bg-[#FEF5E7] rounded-2xl p-5 border border-amber-200/70 shadow-xs flex flex-col justify-between h-32 text-slate-900">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-900">Awaiting Allocation</span>
+                <Clock className="w-4 h-4 text-amber-700" />
+              </div>
+              <div>
+                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-amber-950">
+                  {plannedCount}
+                </div>
+                <p className="text-[11px] text-amber-800 mt-0.5 font-medium">BOM check & reserve required</p>
+              </div>
+            </div>
+
+            <div className="bg-[#E6F7EC] rounded-2xl p-5 border border-emerald-200/60 shadow-xs flex flex-col justify-between h-32 text-slate-900">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-900">Completed Orders</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+              </div>
+              <div>
+                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-emerald-950">
+                  {completedCount}
+                </div>
+                <p className="text-[11px] text-emerald-800 mt-0.5 font-medium">Passed through QC verification</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-xs flex flex-col justify-between h-32">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Lines</span>
+                <Layers className="w-4 h-4 text-slate-400" />
+              </div>
+              <div>
+                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-slate-900">
+                  4 Work Centers
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Operating at 88.4% capacity</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-full border border-stone-200 w-fit">
+            {(["all", "in_production", "planned", "completed"] as const).map(statusKey => (
+              <button
+                key={statusKey}
+                type="button"
+                onClick={() => setFilterStatus(statusKey)}
+                className={`px-3.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer capitalize ${
+                  filterStatus === statusKey
+                    ? "bg-slate-900 text-white shadow-2xs font-bold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-stone-200/60"
+                }`}
+              >
+                {statusKey.replace("_", " ")}
+              </button>
             ))}
-          </tbody>
-        </Table>
-      </Card>
-
-      {/* Availability Modal */}
-      {activeModal === "check" && selectedOrder && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white shadow-xl w-full max-w-xl flex flex-col border border-slate-200 rounded-sm">
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50">
-              <h3 className="font-semibold text-slate-900 tracking-tight">Material Availability (BOM)</h3>
-              <button onClick={() => setActiveModal(null)} className="text-slate-400 hover:text-slate-900 transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
-              <div className="mb-5 text-sm text-slate-700 bg-slate-50 p-3 rounded-sm border border-slate-200">
-                Production Order for <span className="font-bold text-slate-900">{selectedOrder.product_name}</span> (Target: {selectedOrder.planned_quantity} units).
-              </div>
-              
-              {checkLoading ? (
-                <div className="text-sm text-slate-500 py-8 text-center animate-pulse">Running inventory allocation check...</div>
-              ) : checkError ? (
-                <div role="alert" aria-live="assertive" className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{checkError}</div>
-              ) : availabilityCheck ? (
-                <div className="space-y-4">
-                  <div className={`p-4 rounded-sm text-sm border flex items-center font-medium ${availabilityCheck.all_available ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
-                    {availabilityCheck.all_available ? <CheckCircle className="w-5 h-5 mr-3" /> : <AlertTriangle className="w-5 h-5 mr-3" />}
-                    {availabilityCheck.all_available ? "Sufficient materials available in warehouse for reservation." : "Insufficient materials available. Purchasing required."}
-                  </div>
-                  
-                  <div className="border border-slate-200 rounded-sm overflow-hidden">
-                    <Table>
-                      <thead>
-                        <tr>
-                          <Th>Material</Th>
-                          <Th className="text-right">Required</Th>
-                          <Th className="text-right">Available</Th>
-                          <Th className="text-right">Shortage</Th>
-                          <Th className="text-center">Status</Th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {availabilityCheck.materials.map((m: any) => {
-                          const shortage = m.is_sufficient ? 0 : m.required - m.available;
-                          const unit = m.unit ?? "";
-                          return (
-                            <tr key={m.material_id}>
-                              <Td>
-                                {m.material_name
-                                  ? (
-                                    <div>
-                                      <div className="font-medium text-slate-900">{m.material_name}</div>
-                                      {m.material_sku && (
-                                        <div className="font-mono text-xs text-slate-500 mt-0.5">{m.material_sku}</div>
-                                      )}
-                                    </div>
-                                  )
-                                  : (
-                                    <span className="font-mono text-xs text-slate-400" title={m.material_id}>
-                                      {m.material_id.substring(0, 8)}… <span className="text-slate-300">(name unavailable)</span>
-                                    </span>
-                                  )
-                                }
-                              </Td>
-                              <Td className="text-right font-medium tabular-nums">
-                                {m.required} <span className="text-slate-400 text-xs">{unit}</span>
-                              </Td>
-                              <Td className="text-right font-medium tabular-nums">
-                                {m.available} <span className="text-slate-400 text-xs">{unit}</span>
-                              </Td>
-                              <Td className="text-right tabular-nums">
-                                {m.is_sufficient
-                                  ? <span className="text-slate-300 text-xs">—</span>
-                                  : <span className="text-red-600 font-semibold">−{shortage} <span className="font-normal text-xs">{unit}</span></span>
-                                }
-                              </Td>
-                              <Td className="text-center">
-                                {m.is_sufficient
-                                  ? <span className="text-emerald-600 font-bold text-xs uppercase">OK</span>
-                                  : <span className="text-red-600 font-bold text-xs uppercase">Short</span>
-                                }
-                              </Td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </Table>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-            <div className="p-5 border-t border-slate-200 bg-slate-50/50 space-y-3">
-              {reserveError && (
-                <div role="alert" aria-live="assertive" className="p-3 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{reserveError}</div>
-              )}
-              <div className="flex justify-end space-x-3">
-                <Button onClick={() => setActiveModal(null)} variant="ghost">Cancel</Button>
-                {availabilityCheck?.all_available && (
-                  <Button onClick={handleReserve} variant="primary" disabled={reserveLoading}>
-                    {reserveLoading ? 'Reserving...' : 'Reserve & Confirm Ready'}
-                  </Button>
-                )}
-              </div>
-            </div>
           </div>
-        </div>
-      )}
 
-      {/* Record Production Modal */}
-      {activeModal === "record" && selectedOrder && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white shadow-xl w-full max-w-sm flex flex-col border border-slate-200 rounded-sm">
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50">
-              <h3 className="font-semibold text-slate-900 tracking-tight">Record Production Output</h3>
-              <button onClick={() => setActiveModal(null)} className="text-slate-400 hover:text-slate-900 transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6">
-              <form id="record-form" onSubmit={handleRecord} className="space-y-4">
-                <div>
-                  <Label htmlFor="record-actual-qty">Actual Quantity Produced</Label>
-                  <Input
-                    id="record-actual-qty"
-                    required
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    placeholder="0"
-                    value={actualQty}
-                    onChange={e => setActualQty(sanitizeNumberInput(e.target.value))}
-                  />
-                  <p className="text-xs text-slate-500 mt-2 font-medium">Target Planned: {selectedOrder.planned_quantity}</p>
-                </div>
-              </form>
-            </div>
-            <div className="p-5 border-t border-slate-200 bg-slate-50/50 space-y-3">
-              {recordError && (
-                <div role="alert" aria-live="assertive" className="p-3 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{recordError}</div>
-              )}
-              <div className="flex justify-end space-x-3">
-                <Button onClick={() => setActiveModal(null)} variant="ghost">Cancel</Button>
-                <Button form="record-form" type="submit" variant="primary" disabled={recordLoading}>
-                  {recordLoading ? 'Saving...' : 'Complete Output'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Create Production Order Modal ─────────────────────────────────── */}
-      {showCreateOrder && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white shadow-xl w-full max-w-2xl flex flex-col border border-slate-200 rounded-sm max-h-[90vh]">
-
-            {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50 shrink-0">
-              <h3 className="font-semibold text-slate-900 tracking-tight">New Production Order</h3>
-              <button onClick={closeCreateOrder} className="text-slate-400 hover:text-slate-900 transition-colors" aria-label="Close">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="p-6 overflow-y-auto flex-1">
-              <form id="create-order-form" onSubmit={handleCreateOrder} className="space-y-6">
-
-                {/* Product + Planned Quantity */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="order-product">Product</Label>
-                    <select
-                      id="order-product"
-                      required
-                      value={orderProductId}
-                      onChange={e => setOrderProductId(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-shadow"
-                    >
-                      <option value="">Select product…</option>
-                      {products.map(p => (
-                        <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <Label htmlFor="order-planned-qty">Planned Quantity</Label>
-                    <Input
-                      id="order-planned-qty"
-                      type="number"
-                      min="0.001"
-                      step="any"
-                      required
-                      placeholder="0"
-                      value={orderPlannedQty}
-                      onChange={e => setOrderPlannedQty(sanitizeNumberInput(e.target.value))}
-                    />
-                  </div>
-                </div>
-
-                {/* Bill of Materials */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-slate-700">Bill of Materials (BOM)</span>
-                    <span className="text-xs text-slate-400">At least 1 material required</span>
-                  </div>
-
-                  {/* Column headers */}
-                  <div className="grid grid-cols-[1fr_140px_32px] gap-3 mb-2">
-                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Material</span>
-                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Required Qty</span>
-                    <span />
-                  </div>
-
-                  <div className="space-y-3">
-                    {bomItems.map((item, index) => {
-                      const selectedMatIds = bomItems.map(it => it.material_id).filter((_, i) => i !== index);
-                      const selectedMat = materials.find(m => m.id === item.material_id);
-                      return (
-                        <div key={index} className="grid grid-cols-[1fr_140px_32px] gap-3 items-start">
-                          <div>
-                            <label htmlFor={`bom-mat-${index}`} className="sr-only">Material {index + 1}</label>
-                            <select
-                              id={`bom-mat-${index}`}
-                              required
-                              value={item.material_id}
-                              onChange={e => updateBomItem(index, "material_id", e.target.value)}
-                              className="w-full px-3 py-2 border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-shadow"
-                            >
-                              <option value="">Select material…</option>
-                              {materials.map(m => (
-                                <option key={m.id} value={m.id} disabled={selectedMatIds.includes(m.id)}>
-                                  {m.name} ({m.sku})
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label htmlFor={`bom-qty-${index}`} className="sr-only">
-                              Required quantity for {selectedMat?.name ?? `item ${index + 1}`}
-                            </label>
-                            <div className="flex items-center gap-1.5">
-                              <Input
-                                id={`bom-qty-${index}`}
-                                type="number"
-                                min="0.001"
-                                step="any"
-                                required
-                                placeholder="0"
-                                value={item.required_quantity}
-                                onChange={e => updateBomItem(index, "required_quantity", sanitizeNumberInput(e.target.value))}
-                              />
-                              {selectedMat && (
-                                <span className="text-xs text-slate-400 whitespace-nowrap">{selectedMat.unit}</span>
-                              )}
-                            </div>
-                          </div>
+          {/* Orders Table */}
+          {error && <div className="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-xs">{error}</div>}
+          {loading && <div className="p-8 text-slate-500 animate-pulse text-xs">Loading production orders...</div>}
+          <Card>
+            <Table>
+              <thead>
+                <tr>
+                  <Th>Order ID</Th>
+                  <Th>Product</Th>
+                  <Th className="text-right">Planned Qty</Th>
+                  <Th className="text-right">Actual Qty</Th>
+                  <Th>Status</Th>
+                  <Th>Production Route</Th>
+                  <Th className="text-right">Actions</Th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredOrders.length === 0 ? (
+                  <tr>
+                    <Td colSpan={7} className="text-center py-8 text-slate-500 italic">
+                      No production orders found matching the filter.
+                    </Td>
+                  </tr>
+                ) : (
+                  filteredOrders.map(order => (
+                    <tr key={order.id} className="hover:bg-slate-50/60 transition-colors">
+                      <Td className="font-mono text-xs text-slate-500 font-medium">
+                        {order.id.slice(0, 8)}...
+                      </Td>
+                      <Td>
+                        <div className="font-medium text-slate-900">{order.product_name || order.product_id}</div>
+                      </Td>
+                      <Td className="text-right font-mono font-medium">{order.planned_quantity}</Td>
+                      <Td className="text-right font-mono font-medium">
+                        {order.actual_quantity !== null && order.actual_quantity !== undefined ? order.actual_quantity : "—"}
+                      </Td>
+                      <Td>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                          order.status === "Completed" ? "bg-emerald-100 text-emerald-800" :
+                          order.status === "In_Progress" ? "bg-amber-100 text-amber-800" :
+                          order.status === "Ready" ? "bg-blue-100 text-blue-800" :
+                          "bg-stone-100 text-stone-700"
+                        }`}>
+                          {order.status}
+                        </span>
+                      </Td>
+                      <Td>
+                        <RoutePipeline 
+                          steps={[
+                            { name: "BOM Check", status: order.status === "Planned" ? "current" : "completed" },
+                            { name: "Reserve", status: order.status === "Planned" ? "pending" : "completed" },
+                            { name: "Assembly", status: order.status === "In_Progress" ? "current" : order.status === "Completed" ? "completed" : "pending" },
+                            { name: "QC Gate", status: order.status === "Completed" ? "completed" : "pending" },
+                          ]} 
+                        />
+                      </Td>
+                      <Td className="text-right space-x-1.5 whitespace-nowrap">
+                        {order.status === "Planned" && canCreate && (
+                          <Button onClick={() => openCheck(order)} variant="secondary" className="py-1 px-2.5 text-xs">
+                            Check BOM
+                          </Button>
+                        )}
+                        {order.status === "Ready" && canCreate && (
+                          <Button onClick={() => openRecord(order)} variant="primary" className="py-1 px-2.5 text-xs">
+                            Record Output
+                          </Button>
+                        )}
+                        {order.status === "In_Progress" && canCreate && (
+                          <Button onClick={() => openRecord(order)} variant="primary" className="py-1 px-2.5 text-xs">
+                            Complete Order
+                          </Button>
+                        )}
+                        {(order.status === "Planned" || order.status === "Ready") && canCreate && (
                           <button
                             type="button"
-                            onClick={() => removeBomItem(index)}
-                            disabled={bomItems.length === 1}
-                            className="mt-0.5 p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                            aria-label={`Remove BOM row ${index + 1}`}
-                            title="Remove row"
+                            onClick={() => handleCancelOrder(order.id)}
+                            className="p-1.5 text-slate-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors"
+                            title="Cancel Order"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        )}
+                      </Td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </Table>
+          </Card>
+        </div>
+      )}
 
-                  <button
-                    type="button"
-                    onClick={addBomItem}
-                    className="flex items-center gap-1.5 text-sm text-amber-700 hover:text-amber-900 font-medium transition-colors mt-3"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add material
-                  </button>
-                </div>
+      {/* ── Sub-Page 3: Quality Control (Integrated Inspection Gate) ── */}
+      {activeSubPage === "quality" && (
+        <div className="space-y-6 animate-in fade-in duration-150">
+          
+          {/* Quality Sub-Tabs (Pending vs Inspection Records) */}
+          <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-full border border-stone-200/80 w-fit shadow-2xs">
+            <button 
+              type="button"
+              onClick={() => setQualityTab("Pending")} 
+              className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
+                qualityTab === "Pending" ? "bg-white text-slate-900 shadow-xs font-bold" : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              Pending Inspections
+            </button>
+            <button 
+              type="button"
+              onClick={() => setQualityTab("Inspections")} 
+              className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
+                qualityTab === "Inspections" ? "bg-white text-slate-900 shadow-xs font-bold" : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              Inspection Records
+            </button>
+          </div>
 
-              </form>
+          {qualityLoading && <div className="p-8 text-slate-500 animate-pulse text-xs">Loading quality control records...</div>}
+          {qualityError && <div className="p-4 bg-red-50 text-red-700 text-xs rounded-xl border border-red-200">{qualityError}</div>}
+
+          {/* Pending Inspections View */}
+          {!qualityLoading && !qualityError && qualityTab === "Pending" && (
+            <Card>
+              <Table>
+                <thead>
+                  <tr>
+                    <Th>Record ID</Th>
+                    <Th>Product</Th>
+                    <Th>Date</Th>
+                    <Th className="text-right">Produced Qty</Th>
+                    <Th className="text-right">Actions</Th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {pendingInspections.length === 0 ? (
+                    <tr>
+                      <Td colSpan={5} className="text-center py-8 text-slate-500 italic">
+                        No pending inspections. All shop floor production lots have been released.
+                      </Td>
+                    </tr>
+                  ) : (
+                    pendingInspections.map(record => (
+                      <tr key={record.id} className="hover:bg-slate-50/50 transition-colors">
+                        <Td className="font-mono text-xs text-slate-500">{record.id.slice(0, 8)}...</Td>
+                        <Td>
+                          <div className="font-medium text-slate-900">{record.product_name}</div>
+                          <div className="font-mono text-xs text-slate-500 mt-0.5">{record.product_sku}</div>
+                        </Td>
+                        <Td className="text-slate-700">{new Date(record.completion_date).toLocaleDateString()}</Td>
+                        <Td className="text-right font-mono font-bold text-slate-900">{record.actual_quantity_produced}</Td>
+                        <Td className="text-right">
+                          <button 
+                            type="button"
+                            onClick={() => openInspect(record)} 
+                            className="py-1.5 px-4 text-xs font-semibold rounded-full bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+                          >
+                            Inspect
+                          </button>
+                        </Td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </Table>
+            </Card>
+          )}
+
+          {/* Completed Inspections View */}
+          {!qualityLoading && !qualityError && qualityTab === "Inspections" && (
+            <Card>
+              <Table>
+                <thead>
+                  <tr>
+                    <Th>Inspection ID</Th>
+                    <Th>Prodo ID</Th>
+                    <Th>Date</Th>
+                    <Th>Inspector</Th>
+                    <Th className="text-right">Pass Qty</Th>
+                    <Th className="text-right">Fail Qty</Th>
+                    <Th className="text-right">Actions</Th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {inspections.length === 0 ? (
+                    <tr>
+                      <Td colSpan={7} className="text-center py-8 text-slate-500 italic">
+                        No inspection records found.
+                      </Td>
+                    </tr>
+                  ) : (
+                    inspections.map(i => (
+                      <tr key={i.id} className="hover:bg-slate-50/50 transition-colors">
+                        <Td className="font-mono text-xs text-slate-500 font-medium">{i.id.slice(0, 8)}...</Td>
+                        <Td className="font-mono text-xs text-slate-500">{i.prodo_id.slice(0, 8)}...</Td>
+                        <Td className="text-slate-700">{new Date(i.inspection_date).toLocaleDateString()}</Td>
+                        <Td className="font-medium text-slate-900">{i.inspector_name}</Td>
+                        <Td className="text-right font-mono font-bold text-emerald-600">{i.pass_quantity}</Td>
+                        <Td className="text-right font-mono font-bold text-red-600">{i.fail_quantity}</Td>
+                        <Td className="text-right">
+                          <button 
+                            type="button"
+                            onClick={() => openDetails(i)} 
+                            className="py-1 px-3 text-xs font-semibold rounded-full bg-stone-100 hover:bg-stone-200 text-slate-700 transition-colors cursor-pointer"
+                          >
+                            View
+                          </button>
+                        </Td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </Table>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* ── Modals & Overlays ────────────────────────────────────────────── */}
+
+      {/* 1. Create Work Order Modal */}
+      {showCreateOrder && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-stone-200 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+              <h3 className="font-bold text-base text-slate-900">New Production Work Order</h3>
+              <button onClick={closeCreateOrder} className="p-1 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-900">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            {/* Footer */}
-            <div className="p-5 border-t border-slate-200 bg-slate-50/50 space-y-3 shrink-0">
+            <form onSubmit={handleCreateOrder} className="space-y-4">
               {createFormError && (
-                <div role="alert" aria-live="assertive" className="p-3 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">
+                <div className="p-3 bg-red-50 text-red-700 text-xs rounded-xl border border-red-200">
                   {createFormError}
                 </div>
               )}
-              <div className="flex justify-end space-x-3">
-                <Button onClick={closeCreateOrder} variant="ghost" type="button">Cancel</Button>
-                <Button
-                  form="create-order-form"
-                  type="submit"
-                  variant="primary"
-                  disabled={createSubmitting}
+
+              <div>
+                <Label htmlFor="order-product">Target Assembly / Product</Label>
+                <select
+                  id="order-product"
+                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-stone-300 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                  value={orderProductId}
+                  onChange={(e) => setOrderProductId(e.target.value)}
                 >
-                  {createSubmitting ? "Creating…" : "Create Order"}
+                  <option value="">Select product to manufacture...</option>
+                  {products.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="order-qty">Planned Build Quantity</Label>
+                <Input
+                  id="order-qty"
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 50"
+                  value={orderPlannedQty}
+                  onChange={(e) => setOrderPlannedQty(sanitizeNumberInput(e.target.value))}
+                  className="mt-1 rounded-xl"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Bill of Materials (BOM Requirements)</Label>
+                  <button
+                    type="button"
+                    onClick={addBomItem}
+                    className="text-xs font-semibold text-amber-700 hover:text-amber-800 flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Item</span>
+                  </button>
+                </div>
+
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {bomItems.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <select
+                        className="flex-1 px-3 py-2 rounded-xl border border-stone-300 bg-white text-xs text-slate-900"
+                        value={item.material_id}
+                        onChange={(e) => updateBomItem(idx, "material_id", e.target.value)}
+                      >
+                        <option value="">Select raw material...</option>
+                        {materials.map(m => (
+                          <option key={m.id} value={m.id}>{m.name} ({m.sku})</option>
+                        ))}
+                      </select>
+
+                      <Input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        placeholder="Qty"
+                        value={item.required_quantity}
+                        onChange={(e) => updateBomItem(idx, "required_quantity", sanitizeNumberInput(e.target.value))}
+                        className="w-24 rounded-xl text-xs py-2"
+                      />
+
+                      {bomItems.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeBomItem(idx)}
+                          className="p-2 text-stone-400 hover:text-red-600 rounded-lg"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-stone-100">
+                <Button type="button" onClick={closeCreateOrder} variant="ghost" className="rounded-full text-xs">
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" disabled={createSubmitting} className="rounded-full text-xs px-5">
+                  {createSubmitting ? "Creating..." : "Create Work Order"}
                 </Button>
               </div>
-            </div>
-
+            </form>
           </div>
         </div>
       )}
+
+      {/* 2. BOM Check & Allocation Modal */}
+      {activeModal === "check" && selectedOrder && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-stone-200 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+              <h3 className="font-bold text-base text-slate-900">BOM Material Allocation Check</h3>
+              <button onClick={() => setActiveModal(null)} className="p-1 rounded-full hover:bg-stone-100 text-stone-400">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {checkLoading && <div className="p-6 text-center text-xs text-slate-500 animate-pulse">Checking warehouse stocks...</div>}
+            {checkError && <div className="p-3 bg-red-50 text-red-700 text-xs rounded-xl">{checkError}</div>}
+            {reserveError && <div className="p-3 bg-red-50 text-red-700 text-xs rounded-xl">{reserveError}</div>}
+
+            {availabilityCheck && (
+              <div className="space-y-4 text-xs">
+                <div className={`p-3.5 rounded-2xl flex items-center gap-2.5 ${
+                  availabilityCheck.all_available ? "bg-emerald-50 text-emerald-900 border border-emerald-200" : "bg-amber-50 text-amber-900 border border-amber-200"
+                }`}>
+                  {availabilityCheck.all_available ? (
+                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  )}
+                  <span className="font-medium">
+                    {availabilityCheck.all_available
+                      ? "All required BOM materials are in stock and ready to be reserved."
+                      : "Insufficient stock for one or more BOM items. Procurement required."}
+                  </span>
+                </div>
+
+                <div className="border border-stone-200 rounded-2xl overflow-hidden divide-y divide-stone-100 max-h-48 overflow-y-auto">
+                  {availabilityCheck.items?.map((it: any) => (
+                    <div key={it.material_id} className="p-2.5 flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold text-slate-800">{it.material_name}</div>
+                        <div className="text-[11px] text-stone-400">Req: {it.required_quantity} · Avail: {it.available_quantity}</div>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        it.is_available ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
+                      }`}>
+                        {it.is_available ? "In Stock" : "Shortage"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end gap-2.5 pt-2">
+                  <Button onClick={() => setActiveModal(null)} variant="ghost" className="rounded-full text-xs">
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleReserve}
+                    disabled={reserveLoading || !availabilityCheck.all_available}
+                    variant="primary"
+                    className="rounded-full text-xs px-5"
+                  >
+                    {reserveLoading ? "Reserving..." : "Reserve Materials"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 3. Record Output Modal */}
+      {activeModal === "record" && selectedOrder && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-stone-200 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+              <h3 className="font-bold text-base text-slate-900">Record Production Output</h3>
+              <button onClick={() => setActiveModal(null)} className="p-1 rounded-full hover:bg-stone-100 text-stone-400">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleRecord} className="space-y-4">
+              {recordError && <div className="p-3 bg-red-50 text-red-700 text-xs rounded-xl">{recordError}</div>}
+
+              <div>
+                <Label htmlFor="actual-qty">Actual Produced Units</Label>
+                <Input
+                  id="actual-qty"
+                  type="number"
+                  min="1"
+                  value={actualQty}
+                  onChange={(e) => setActualQty(sanitizeNumberInput(e.target.value))}
+                  className="mt-1 rounded-xl"
+                  required
+                />
+                <p className="text-[11px] text-stone-400 mt-1">Planned: {selectedOrder.planned_quantity} units</p>
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-2">
+                <Button type="button" onClick={() => setActiveModal(null)} variant="ghost" className="rounded-full text-xs">
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={recordLoading} variant="primary" className="rounded-full text-xs px-5">
+                  {recordLoading ? "Saving..." : "Log Output & Send to QC"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Quality Inspection Modal */}
+      {activeQualityModal === "inspect" && selectedInspectionRecord && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-stone-200 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+              <h3 className="font-bold text-base text-slate-900">QC Gate Inspection</h3>
+              <button onClick={() => setActiveQualityModal(null)} className="p-1 rounded-full hover:bg-stone-100 text-stone-400">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="text-xs p-3 bg-stone-50 rounded-2xl border border-stone-200">
+              <p className="text-stone-500">Product: <strong className="text-slate-900">{selectedInspectionRecord.product_name}</strong></p>
+              <p className="text-stone-500 mt-0.5">Total Produced: <strong className="text-slate-900">{selectedInspectionRecord.actual_quantity_produced} units</strong></p>
+            </div>
+
+            <form onSubmit={handleInspectSubmit} className="space-y-4 text-xs">
+              {formError && <div className="p-3 bg-red-50 text-red-700 rounded-xl">{formError}</div>}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="pass-qty">Pass Qty</Label>
+                  <Input
+                    id="pass-qty"
+                    type="number"
+                    min="0"
+                    value={passQty}
+                    onChange={(e) => {
+                      const sanitized = sanitizeNumberInput(e.target.value);
+                      setPassQty(sanitized);
+                      const total = Number(selectedInspectionRecord.actual_quantity_produced) || 0;
+                      if (sanitized !== "") {
+                        setFailQty(Math.max(0, total - Number(sanitized)));
+                      }
+                    }}
+                    className="mt-1 rounded-xl"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="fail-qty">Fail Qty</Label>
+                  <Input
+                    id="fail-qty"
+                    type="number"
+                    min="0"
+                    value={failQty}
+                    onChange={(e) => {
+                      const sanitized = sanitizeNumberInput(e.target.value);
+                      setFailQty(sanitized);
+                      const total = Number(selectedInspectionRecord.actual_quantity_produced) || 0;
+                      if (sanitized !== "") {
+                        setPassQty(Math.max(0, total - Number(sanitized)));
+                      }
+                    }}
+                    className="mt-1 rounded-xl"
+                    required
+                  />
+                </div>
+              </div>
+
+              {Number(failQty) > 0 && (
+                <div>
+                  <Label htmlFor="defect-reason">Defect Reason Classification</Label>
+                  <select
+                    id="defect-reason"
+                    required
+                    value={defectReason}
+                    onChange={(e) => setDefectReason(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 border border-stone-300 rounded-xl bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  >
+                    <option value="">Select defect classification...</option>
+                    <option value="Scratch/Cosmetic">Scratch / Cosmetic Defect</option>
+                    <option value="Assembly Error">Assembly / Placement Error</option>
+                    <option value="Material Failure">Material Fatigue / Solder Void</option>
+                    <option value="Dimensional Out of Spec">Dimensional Out of Spec</option>
+                    <option value="Other">Other Floor Anomaly</option>
+                  </select>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2.5 pt-2">
+                <Button type="button" onClick={() => setActiveQualityModal(null)} variant="ghost" className="rounded-full text-xs">
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={formLoading} variant="primary" className="rounded-full text-xs px-5">
+                  {formLoading ? "Recording..." : "Release Batch"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Quality Details Modal */}
+      {activeQualityModal === "details" && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 border border-stone-200 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+              <h3 className="font-bold text-base text-slate-900">Inspection Digital Genealogy</h3>
+              <button onClick={() => setActiveQualityModal(null)} className="p-1 rounded-full hover:bg-stone-100 text-stone-400">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {detailsError && <div className="p-3 bg-red-50 text-red-700 text-xs rounded-xl">{detailsError}</div>}
+            
+            {inspectionDetails ? (
+              <div className="space-y-3 text-xs">
+                <div className="p-3 bg-stone-50 rounded-2xl space-y-1">
+                  <p><strong className="text-slate-900">Product:</strong> {inspectionDetails.product_name}</p>
+                  <p><strong className="text-slate-900">Inspector:</strong> {inspectionDetails.inspector_name}</p>
+                  <p><strong className="text-slate-900">Date:</strong> {new Date(inspectionDetails.inspection_date).toLocaleString()}</p>
+                  <p><strong className="text-slate-900">Digital Seal:</strong> <span className="font-mono text-[10px] text-emerald-700">SHA256-AUTHENTICATED</span></p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="p-2.5 bg-emerald-50 text-emerald-800 rounded-xl font-bold font-mono">
+                    {inspectionDetails.pass_quantity} Passed
+                  </div>
+                  <div className="p-2.5 bg-red-50 text-red-800 rounded-xl font-bold font-mono">
+                    {inspectionDetails.fail_quantity} Defective
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-6 text-center text-xs text-slate-500 animate-pulse">Loading genealogy stamp...</div>
+            )}
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={() => setActiveQualityModal(null)} variant="secondary" className="rounded-full text-xs">
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
+export default Production;

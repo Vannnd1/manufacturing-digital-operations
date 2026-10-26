@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getMaterials, createMaterial, updateMaterial } from "../api/inventory";
-import { Plus, Search, Edit, X, AlertTriangle } from "lucide-react";
-import { PageHeader, Card, Table, Th, Td, Button, Input, Label, Badge } from "../components/ui";
+import { Plus, Search, Edit, X, AlertTriangle, Layers, PackagePlus } from "lucide-react";
+import { PageHeader, Card, Table, Th, Td, Input, Label, Badge } from "../components/ui";
 import { sanitizeNumberInput } from "../utils/number";
 import { UnitSelect } from "../components/UnitSelect";
 import { isCanonicalUnit } from "../constants/uom";
@@ -96,24 +97,46 @@ export function Materials() {
 
   return (
     <div className="space-y-6 max-w-7xl">
+      {/* ── Domain Sub-Page Tabs: Stock & Materials ── */}
+      <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-full border border-stone-200/80 w-fit shadow-2xs">
+        <Link
+          to="/inventory"
+          className="px-4 py-1.5 rounded-full text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-stone-200/60 transition-colors flex items-center gap-1.5"
+        >
+          <Layers className="w-3.5 h-3.5 text-slate-500" />
+          <span>Inventory Stock</span>
+        </Link>
+        <Link
+          to="/materials"
+          className="px-4 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white shadow-xs flex items-center gap-1.5"
+        >
+          <PackagePlus className="w-3.5 h-3.5 text-amber-400" />
+          <span>Material Master</span>
+          <span className="px-1.5 py-0.2 text-[10px] bg-white/20 rounded-full font-mono">{materials.length}</span>
+        </Link>
+      </div>
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <PageHeader 
           title="Material Master" 
           description="Manage raw materials, components, and tracking thresholds." 
         />
-        <Button onClick={() => openForm()} variant="primary" className="mb-6">
+        <button 
+          onClick={() => openForm()} 
+          className="mb-6 px-4 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center shadow-xs transition-colors cursor-pointer"
+        >
           <Plus className="w-4 h-4 mr-2" /> New Material
-        </Button>
+        </button>
       </div>
 
-      <Card>
-        <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <Card className="rounded-2xl border border-stone-200/80 bg-white shadow-2xs overflow-hidden">
+        <div className="p-4 border-b border-stone-100 bg-stone-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="relative w-full max-w-md">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-            <Input 
+            <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 transform -translate-y-1/2" />
+            <input 
               type="text" 
               placeholder="Search by SKU or material name..." 
-              className="pl-9"
+              className="w-full pl-9 pr-4 py-2 rounded-full border border-stone-200/80 bg-white text-xs text-slate-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -122,11 +145,11 @@ export function Materials() {
             <input 
               type="checkbox" 
               id="toggle-inactive" 
-              className="w-4 h-4 rounded-sm border-slate-300 text-amber-600 focus:ring-amber-500"
+              className="w-4 h-4 rounded-sm border-slate-300 text-slate-900 focus:ring-slate-900"
               checked={showInactive}
               onChange={e => setShowInactive(e.target.checked)}
             />
-            <label htmlFor="toggle-inactive" className="ml-2 text-sm font-medium text-slate-700 cursor-pointer">
+            <label htmlFor="toggle-inactive" className="ml-2 text-xs font-medium text-slate-700 cursor-pointer">
               Show Inactive
             </label>
           </div>
@@ -171,27 +194,27 @@ export function Materials() {
       </Card>
 
       {isFormOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white shadow-xl w-full max-w-md flex flex-col border border-slate-200 rounded-sm">
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50">
-              <h3 className="font-semibold text-slate-900 tracking-tight">{editingId ? 'Edit Material' : 'New Material'}</h3>
-              <button onClick={() => setIsFormOpen(false)} className="text-slate-400 hover:text-slate-900 transition-colors">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
+          <div className="bg-white shadow-2xl w-full max-w-md flex flex-col border border-stone-200/90 rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between p-5 border-b border-stone-100 bg-stone-50/50">
+              <h3 className="font-bold text-slate-900 text-sm tracking-tight">{editingId ? 'Edit Material' : 'New Material'}</h3>
+              <button onClick={() => setIsFormOpen(false)} className="text-stone-400 hover:text-slate-900 transition-colors p-1 rounded-lg">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto">
+            <div className="p-6 overflow-y-auto max-h-[75vh]">
               {formError && (
-                <div className="mb-5 p-3 bg-red-50 border border-red-200 text-red-700 text-sm font-medium">{formError}</div>
+                <div className="mb-5 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium">{formError}</div>
               )}
-              <form id="material-form" onSubmit={handleSubmit} className="space-y-5">
+              <form id="material-form" onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="mat-sku">SKU</Label>
-                  <Input id="mat-sku" required disabled={!!editingId} type="text" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className={editingId ? "bg-slate-100 text-slate-500" : ""} />
+                  <Input id="mat-sku" required disabled={!!editingId} type="text" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className={editingId ? "bg-slate-100 text-slate-500 rounded-xl" : "rounded-xl"} />
                 </div>
                 <div>
                   <Label htmlFor="mat-name">Material Name</Label>
-                  <Input id="mat-name" required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                  <Input id="mat-name" required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="rounded-xl" />
                 </div>
                 <div>
                   <Label htmlFor="mat-unit">Unit of Measure (UOM)</Label>
@@ -202,7 +225,7 @@ export function Materials() {
                     onChange={u => setFormData({ ...formData, unit: u })}
                   />
                   {editingId && originalUnit && formData.unit !== originalUnit && (
-                    <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-sm flex items-start gap-2">
+                    <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl flex items-start gap-2">
                       <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
                       <div>
                         <span className="font-semibold">Unit modification warning:</span> Existing inventory balances and order history will not be converted numerically. Quantities previously recorded in <strong>{originalUnit}</strong> will now be treated as <strong>{formData.unit}</strong>.
@@ -220,20 +243,32 @@ export function Materials() {
                     placeholder="0"
                     value={formData.min_stock_threshold}
                     onChange={e => setFormData({...formData, min_stock_threshold: sanitizeNumberInput(e.target.value)})}
+                    className="rounded-xl"
                   />
                 </div>
                 <div className="flex items-center pt-2">
-                  <input type="checkbox" id="is_active" className="w-4 h-4 rounded-sm border-slate-300 text-amber-600 focus:ring-amber-500" checked={formData.is_active} onChange={e => setFormData({...formData, is_active: e.target.checked})} />
-                  <label htmlFor="is_active" className="ml-2 text-sm font-medium text-slate-700 cursor-pointer">Active Material</label>
+                  <input type="checkbox" id="is_active" className="w-4 h-4 rounded-sm border-slate-300 text-slate-900 focus:ring-slate-900" checked={formData.is_active} onChange={e => setFormData({...formData, is_active: e.target.checked})} />
+                  <label htmlFor="is_active" className="ml-2 text-xs font-medium text-slate-700 cursor-pointer">Active Material</label>
                 </div>
               </form>
             </div>
             
-            <div className="p-5 border-t border-slate-200 flex justify-end space-x-3 bg-slate-50/50">
-              <Button onClick={() => setIsFormOpen(false)} type="button" variant="ghost">Cancel</Button>
-              <Button form="material-form" type="submit" variant="primary" disabled={formLoading}>
+            <div className="p-4 border-t border-stone-100 flex justify-end space-x-2.5 bg-stone-50/50">
+              <button 
+                onClick={() => setIsFormOpen(false)} 
+                type="button" 
+                className="px-4 py-2 rounded-full border border-stone-200 text-slate-700 text-xs font-semibold hover:bg-stone-100 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button 
+                form="material-form" 
+                type="submit" 
+                disabled={formLoading}
+                className="px-4 py-2 rounded-full bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+              >
                 {formLoading ? 'Saving...' : 'Save Material'}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
