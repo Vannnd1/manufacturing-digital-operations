@@ -38,6 +38,7 @@ export interface OperationItem {
 export interface WorkOrderItem {
   id: string; // e.g. "WO-2041"
   model: string; // e.g. "PROD-ENC-01 · Modular Industrial Automation Enclosure (×50)"
+  shortName?: string;
   rush?: boolean;
   status?: "In progress" | "On hold" | "Completed" | "Done";
   startDay: number;
@@ -203,6 +204,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     {
       id: "WO-2047",
       model: "PROD-ENC-02 · Ridgeline Frameset Enclosure (×30)",
+      shortName: "Ridgeline Frameset",
       clientOrDept: "Lumen Bike Studio",
       dateRange: "Nov 6 – Nov 13",
       rush: false,
@@ -256,6 +258,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     {
       id: "WO-2041",
       model: "PROD-ENC-01 · Ridgeline Gravel Enclosure (×50)",
+      shortName: "Ridgeline Gravel",
       clientOrDept: "Rosewood Bikes",
       dateRange: "Nov 7 – Nov 17",
       rush: false,
@@ -322,6 +325,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     {
       id: "WO-2042",
       model: "PROD-BMOD-02 · Tempo Road Battery Pack (×25)",
+      shortName: "Tempo Road",
       clientOrDept: "Harbor & Hill Bikes",
       dateRange: "Nov 8 – Nov 15",
       rush: true,
@@ -377,6 +381,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     {
       id: "WO-2045",
       model: "PROD-PDU-03 · Halcyon Tourer PDU (×10)",
+      shortName: "Halcyon Tourer",
       clientOrDept: "Fernhill Outfitters",
       dateRange: "Nov 8 – Nov 12",
       rush: false,
@@ -430,6 +435,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     {
       id: "WO-2044",
       model: "PROD-ENC-01 · Juniper Trail Cabinet (×15)",
+      shortName: "Juniper Trail",
       clientOrDept: "Copper Canyon Cycles",
       dateRange: "Nov 9 – Nov 13",
       rush: true,
@@ -484,6 +490,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     {
       id: "WO-2043",
       model: "PROD-ENC-01 · Commuter Urban Chassis (×20)",
+      shortName: "Commuter Urban",
       clientOrDept: "Gearhouse Collective",
       dateRange: "Nov 10 – Nov 17",
       rush: true,
@@ -538,6 +545,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     {
       id: "WO-2046",
       model: "PROD-PDU-04 · Pico 20 Kids Inverter (×40)",
+      shortName: "Pico 20 Kids",
       clientOrDept: "For stock",
       dateRange: "Nov 12 – Nov 18",
       rush: false,
@@ -591,6 +599,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     {
       id: "WO-2048",
       model: "PROD-BMOD-03 · Tempo Frameset Battery Rack (×12)",
+      shortName: "Tempo Frameset",
       clientOrDept: "Ottoline Velo",
       dateRange: "Nov 14 – Nov 18",
       rush: false,
@@ -2053,23 +2062,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       ) : (
         /* ── Agenda Card Grid & Floor Telemetry View (Cadra Reference) ── */
         <div className="space-y-4">
-          {/* Top Status Alert Strip */}
-          <div className="p-3 bg-stone-50/90 dark:bg-stone-900/70 rounded-2xl border border-stone-200/80 dark:border-stone-800 flex items-center justify-between text-xs text-stone-600 dark:text-stone-300">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <span>
-                <strong className="text-slate-900 dark:text-stone-100 font-bold">3 operations running</strong> across 3 work centers ·{" "}
-                <strong className="text-slate-900 dark:text-stone-100 font-bold">5 start</strong> in the next two days ·{" "}
-                <span className="text-rose-600 dark:text-rose-400 font-bold">WO-2043 is behind plan</span>
-              </span>
-            </div>
-          </div>
-
-          {/* Agenda Main Container: 4-Column Card Grid (Left) + Floor Telemetry Sidebar (Right) */}
+          {/* Agenda Main Container: Card Grid (Left) + Floor Telemetry Sidebar (Right) */}
           <div className="flex flex-col xl:flex-row gap-5 items-start">
             
-            {/* 4-column Work Order Cards Grid */}
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
+            {/* Work Order Cards Grid */}
+            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3.5 w-full">
               {workOrders.map((wo) => {
                 const totalOps = wo.operations.length;
                 const overallProgress = totalOps > 0 ? Math.round(wo.operations.reduce((acc, o) => acc + (o.progress || 0), 0) / totalOps) : 0;
@@ -2083,54 +2080,55 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                   <div
                     key={wo.id}
                     onClick={() => setSelectedWorkOrderModal(wo)}
-                    className="bg-white dark:bg-[#18181B] rounded-2xl border border-stone-200/80 dark:border-stone-800 p-4 shadow-2xs hover:shadow-xs hover:border-amber-500/50 dark:hover:border-amber-500/50 transition-all cursor-pointer flex flex-col justify-between space-y-3.5 group"
+                    className="bg-white dark:bg-[#18181B] rounded-2xl border border-stone-200/80 dark:border-stone-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs hover:border-amber-500/50 dark:hover:border-amber-500/50 transition-all cursor-pointer flex flex-col justify-between space-y-3.5 group"
                   >
                     {/* Header */}
                     <div>
-                      <div className="flex items-start justify-between gap-2">
+                      {/* Top Row: Circular Progress Ring, WO-ID, and Status Badge */}
+                      <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          {/* Circular Progress Ring */}
-                          <svg className="w-6 h-6 -rotate-90 shrink-0" viewBox="0 0 24 24">
-                            <circle
-                              cx="12"
-                              cy="12"
-                              r={radius}
-                              className="stroke-stone-200 dark:stroke-stone-800"
-                              strokeWidth="2.8"
-                              fill="transparent"
-                            />
-                            <circle
-                              cx="12"
-                              cy="12"
-                              r={radius}
-                              className={`${
-                                wo.status === "Done"
-                                  ? "stroke-emerald-600 dark:stroke-emerald-500"
-                                  : wo.status === "On hold"
-                                  ? "stroke-amber-500 dark:stroke-amber-400"
-                                  : "stroke-blue-600 dark:stroke-blue-500"
-                              } transition-all duration-300`}
-                              strokeWidth="2.8"
-                              strokeDasharray={circumference}
-                              strokeDashoffset={strokeDashoffset}
-                              strokeLinecap="round"
-                              fill="transparent"
-                            />
-                          </svg>
-
-                          <div className="min-w-0">
-                            <h4 className="font-bold text-xs text-slate-900 dark:text-stone-100 truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-                              {wo.id} · {wo.model.split("·")[1]?.trim().split("(")[0]?.trim() || wo.model}
-                            </h4>
-                            <p className="text-[10px] text-stone-500 dark:text-stone-400 truncate">
-                              {wo.clientOrDept || "OEM Studio"} · {wo.dateRange || "Nov 8 – Nov 15"}
-                            </p>
+                          {/* Circular Progress Ring with Percentage */}
+                          <div className="relative w-6 h-6 shrink-0 flex items-center justify-center">
+                            <svg className="w-6 h-6 -rotate-90" viewBox="0 0 24 24">
+                              <circle
+                                cx="12"
+                                cy="12"
+                                r={radius}
+                                className="stroke-stone-200 dark:stroke-stone-800"
+                                strokeWidth="2.8"
+                                fill="transparent"
+                              />
+                              <circle
+                                cx="12"
+                                cy="12"
+                                r={radius}
+                                className={`${
+                                  wo.status === "Done"
+                                    ? "stroke-emerald-600 dark:stroke-emerald-500"
+                                    : wo.status === "On hold"
+                                    ? "stroke-amber-500 dark:stroke-amber-400"
+                                    : "stroke-blue-600 dark:stroke-blue-500"
+                                } transition-all duration-300`}
+                                strokeWidth="2.8"
+                                strokeDasharray={circumference}
+                                strokeDashoffset={strokeDashoffset}
+                                strokeLinecap="round"
+                                fill="transparent"
+                              />
+                            </svg>
+                            <span className="absolute text-[8px] font-bold text-slate-700 dark:text-stone-300">
+                              {overallProgress}%
+                            </span>
                           </div>
+
+                          <span className="font-mono font-bold text-xs text-slate-900 dark:text-stone-100 shrink-0">
+                            {wo.id}
+                          </span>
                         </div>
 
                         {/* Status Badge */}
                         <span
-                          className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                          className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
                             wo.status === "Done"
                               ? "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
                               : wo.status === "On hold"
@@ -2150,44 +2148,70 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                           {wo.status}
                         </span>
                       </div>
+
+                      {/* Second Row: Model Title & Client/Date Range */}
+                      <div className="mt-2.5">
+                        <h4
+                          className="font-bold text-xs text-slate-900 dark:text-stone-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate"
+                          title={wo.shortName || wo.model}
+                        >
+                          {wo.shortName || (wo.model.includes("·") ? wo.model.split("·")[1]?.trim().split("(")[0]?.trim() : wo.model)}
+                        </h4>
+                        <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+                          <span className="truncate max-w-[120px]" title={wo.clientOrDept}>
+                            {wo.clientOrDept || "OEM Studio"}
+                          </span>
+                          <span className="shrink-0 text-[10px] text-stone-400 dark:text-stone-500 font-medium">
+                            {wo.dateRange || "Nov 8 – Nov 15"}
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Operations List */}
-                    <div className="space-y-2.5 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+                    <div className="space-y-2.5 pt-2.5 border-t border-stone-100 dark:border-stone-800/80">
                       {wo.operations.map((op) => (
-                        <div key={op.id} className="flex items-center justify-between gap-2 text-xs">
-                          <div className="min-w-0 flex items-start gap-1.5 flex-1">
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full mt-1 shrink-0 ${
-                                op.progress === 100
-                                  ? "bg-emerald-600 dark:bg-emerald-400"
-                                  : op.progress > 0
-                                  ? (op.rush ? "bg-rose-500" : "bg-blue-600 dark:bg-blue-400")
-                                  : "bg-stone-300 dark:bg-stone-700"
-                              }`}
-                            />
-                            <div className="min-w-0">
-                              <p className="font-semibold text-slate-800 dark:text-stone-200 truncate leading-tight text-[11px]">
+                        <div key={op.id} className="space-y-1">
+                          <div className="flex items-center justify-between gap-1.5 text-xs">
+                            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                  op.progress === 100
+                                    ? "bg-emerald-600 dark:bg-emerald-400"
+                                    : op.progress > 0
+                                    ? (op.rush ? "bg-rose-500" : "bg-blue-600 dark:bg-blue-400")
+                                    : "bg-stone-300 dark:bg-stone-700"
+                                }`}
+                              />
+                              <span className="font-semibold text-slate-800 dark:text-stone-200 truncate text-[11px]">
                                 {op.name}
-                              </p>
-                              <p className="text-[10px] text-stone-400 dark:text-stone-500 truncate">
-                                {op.statusText} · {op.techName}
-                              </p>
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <div className="w-10 sm:w-12 h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-300 ${
+                                    op.progress === 100
+                                      ? "bg-emerald-600 dark:bg-emerald-500"
+                                      : op.progress > 0
+                                      ? (op.rush ? "bg-rose-600 dark:bg-rose-500" : "bg-blue-600 dark:bg-blue-500")
+                                      : "bg-transparent"
+                                  }`}
+                                  style={{ width: `${op.progress}%` }}
+                                />
+                              </div>
+                              <span className="text-[10px] font-mono font-medium text-stone-500 dark:text-stone-400 w-7 text-right">
+                                {op.progress}%
+                              </span>
                             </div>
                           </div>
 
-                          {/* Mini Progress Bar */}
-                          <div className="w-12 h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden shrink-0">
-                            <div
-                              className={`h-full rounded-full transition-all duration-300 ${
-                                op.progress === 100
-                                  ? "bg-emerald-600 dark:bg-emerald-500"
-                                  : op.progress > 0
-                                  ? (op.rush ? "bg-rose-600 dark:bg-rose-500" : "bg-blue-600 dark:bg-blue-500")
-                                  : "bg-transparent"
-                              }`}
-                              style={{ width: `${op.progress}%` }}
-                            />
+                          <div className="flex items-center justify-between text-[10px] text-stone-400 dark:text-stone-500 pl-3">
+                            <span className="truncate">{op.statusText}</span>
+                            <span className="shrink-0 font-medium text-slate-600 dark:text-stone-400 ml-1">
+                              {op.techName}
+                            </span>
                           </div>
                         </div>
                       ))}
