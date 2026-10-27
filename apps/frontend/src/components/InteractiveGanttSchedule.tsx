@@ -16,7 +16,8 @@ import {
   Pause,
   CheckCircle2,
   Layers,
-  Info
+  Info,
+  SlidersHorizontal
 } from "lucide-react";
 import { useLiveTime } from "../utils/useLiveTime";
 
@@ -956,22 +957,29 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
   // Position & width styles for operation bar
   const getOpBarStyle = (op: OperationItem) => {
     if (granularity === "Week") {
-      if (op.startDay >= 7) {
+      const relStart = op.startDay - timeOffset * 7;
+      const relEnd = relStart + op.durationDays;
+      if (relEnd <= 0 || relStart >= 7) {
         return { display: "none" };
       }
-      const clampedDuration = Math.min(op.durationDays, 7 - op.startDay);
+      const visibleStart = Math.max(0, relStart);
+      const visibleEnd = Math.min(7, relEnd);
+      const clampedDuration = Math.max(0.4, visibleEnd - visibleStart);
       return {
-        left: `${(op.startDay / 7) * 100}%`,
+        left: `${(visibleStart / 7) * 100}%`,
         width: `${(clampedDuration / 7) * 100}%`,
         paddingLeft: "3px",
         paddingRight: "3px",
       };
     }
     if (granularity === "Month") {
-      const colStart = 7 + op.startDay;
+      const colStart = 7 + op.startDay - timeOffset * 35;
       const colSpan = Math.max(1, op.durationDays);
+      if (colStart + colSpan <= 0 || colStart >= 35) {
+        return { display: "none" };
+      }
       return {
-        left: `${(colStart / 35) * 100 + 0.2}%`,
+        left: `${(Math.max(0, colStart) / 35) * 100 + 0.2}%`,
         width: `${Math.max(4.5, (colSpan / 35) * 100)}%`,
         minWidth: "120px",
       };
@@ -991,11 +999,13 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     let x1 = 0;
     let x2 = 0;
     if (granularity === "Week") {
-      x1 = Math.min(1000, Math.max(0, ((op.startDay + op.durationDays) / 7) * 1000));
-      x2 = Math.min(1000, Math.max(0, (nextOp.startDay / 7) * 1000));
+      const relEnd1 = op.startDay + op.durationDays - timeOffset * 7;
+      const relStart2 = nextOp.startDay - timeOffset * 7;
+      x1 = Math.min(1000, Math.max(0, (relEnd1 / 7) * 1000));
+      x2 = Math.min(1000, Math.max(0, (relStart2 / 7) * 1000));
     } else if (granularity === "Month") {
-      x1 = Math.min(1000, Math.max(0, ((7 + op.startDay + op.durationDays) / 35) * 1000));
-      x2 = Math.min(1000, Math.max(0, ((7 + nextOp.startDay) / 35) * 1000));
+      x1 = Math.min(1000, Math.max(0, ((7 + op.startDay + op.durationDays - timeOffset * 35) / 35) * 1000));
+      x2 = Math.min(1000, Math.max(0, ((7 + nextOp.startDay - timeOffset * 35) / 35) * 1000));
     } else {
       const w1 = 4 + (op.startDay >= 5 ? 1 : op.startDay >= 2 ? 0.35 : 0) + (op.durationDays >= 4 ? 2 : op.durationDays >= 2 ? 1.4 : 1);
       const w2 = 4 + (nextOp.startDay >= 5 ? 1 : nextOp.startDay >= 2 ? 0.35 : 0);
@@ -1010,18 +1020,27 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
   // Position & width for main order progress bar & collapsed bar
   const getMainOrderBarStyle = (wo: WorkOrderItem) => {
     if (granularity === "Week") {
-      const leftPct = (wo.startDay / 7) * 100;
-      const widthPct = Math.min(100 - leftPct, (wo.durationDays / 7) * 100);
+      const relStart = wo.startDay - timeOffset * 7;
+      const relEnd = relStart + wo.durationDays;
+      if (relEnd <= 0 || relStart >= 7) {
+        return { display: "none" };
+      }
+      const visibleStart = Math.max(0, relStart);
+      const visibleEnd = Math.min(7, relEnd);
+      const widthPct = Math.max(1, ((visibleEnd - visibleStart) / 7) * 100);
       return {
-        left: `${leftPct}%`,
+        left: `${(visibleStart / 7) * 100}%`,
         width: `${widthPct}%`,
       };
     }
     if (granularity === "Month") {
-      const colStart = 7 + wo.startDay;
+      const colStart = 7 + wo.startDay - timeOffset * 35;
       const colSpan = Math.max(2, wo.durationDays);
+      if (colStart + colSpan <= 0 || colStart >= 35) {
+        return { display: "none" };
+      }
       return {
-        left: `${(colStart / 35) * 100}%`,
+        left: `${(Math.max(0, colStart) / 35) * 100}%`,
         width: `${(colSpan / 35) * 100}%`,
         minWidth: "180px",
       };
@@ -1352,7 +1371,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
               </div>
 
               {/* Horizontally Scrollable Timeline Area */}
-              <div className="flex-1 overflow-x-auto relative">
+              <div className="flex-1 overflow-x-auto relative scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700">
                 <div className={`${timelineConfig.gridMinWidth} relative min-h-[460px]`}>
                   
                   {/* Column Headers */}
@@ -1999,6 +2018,115 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       ))
                     )}
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Interactive Horizontal Timeline Range Slider (Bilah Penggeser Rentang Jadwal) ── */}
+            <div className="p-3.5 sm:p-4 border-t border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/50 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                    <SlidersHorizontal className="w-4 h-4" />
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">
+                        Bilah Penggeser Timeline (Date Range Slider)
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                        {timelineConfig.label}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                      Geser bilah slider untuk menggeser rentang tanggal maju atau mundur secara langsung.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Quick Step Buttons */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setTimeOffset((prev) => Math.max(-2, prev - 1))}
+                    disabled={timeOffset <= -2}
+                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    title="Geser mundur 1 periode"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Mundur</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTimeOffset(0)}
+                    className={`px-3 py-1 text-xs font-semibold rounded-lg border transition-colors cursor-pointer ${
+                      timeOffset === 0
+                        ? "bg-blue-600 border-blue-600 text-white shadow-xs font-bold"
+                        : "border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700"
+                    }`}
+                    title="Kembali ke minggu saat ini"
+                  >
+                    Hari Ini
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTimeOffset((prev) => Math.min(3, prev + 1))}
+                    disabled={timeOffset >= 3}
+                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    title="Geser maju 1 periode"
+                  >
+                    <span>Maju</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Slider Track with Custom Range Input */}
+              <div className="space-y-1.5 pt-1">
+                <div className="relative flex items-center">
+                  <input
+                    type="range"
+                    min={-2}
+                    max={3}
+                    step={1}
+                    value={timeOffset}
+                    onChange={(e) => setTimeOffset(parseInt(e.target.value, 10))}
+                    aria-label="Penggeser Rentang Tanggal Timeline"
+                    className="w-full h-2.5 bg-stone-200 dark:bg-stone-800 rounded-full appearance-none cursor-ew-resize accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                  />
+                </div>
+
+                {/* Milestone Tick Marks and Labels */}
+                <div className="grid grid-cols-6 text-center text-[10px] font-mono pt-1 text-stone-500 dark:text-stone-400 gap-1">
+                  {[
+                    { offset: -2, label: "25 Okt – 31 Okt", desc: "Lampau" },
+                    { offset: -1, label: "1 Nov – 7 Nov", desc: "Minggu Lalu" },
+                    { offset: 0, label: "8 Nov – 14 Nov", desc: "★ Minggu Ini" },
+                    { offset: 1, label: "15 Nov – 21 Nov", desc: "Minggu Depan" },
+                    { offset: 2, label: "22 Nov – 28 Nov", desc: "Kosong" },
+                    { offset: 3, label: "29 Nov – 5 Des", desc: "Kosong" },
+                  ].map((mark) => {
+                    const isSelected = timeOffset === mark.offset;
+                    return (
+                      <button
+                        key={mark.offset}
+                        type="button"
+                        onClick={() => setTimeOffset(mark.offset)}
+                        className={`py-1 px-1 rounded-md transition-all cursor-pointer truncate ${
+                          isSelected
+                            ? "bg-blue-600 text-white font-extrabold shadow-xs scale-[1.02]"
+                            : "hover:bg-stone-200/60 dark:hover:bg-stone-800/80 hover:text-slate-900 dark:hover:text-white"
+                        }`}
+                      >
+                        <span className="block truncate">{mark.label}</span>
+                        <span className={`block text-[9px] ${isSelected ? "text-blue-100" : "text-stone-400 dark:text-stone-500"}`}>
+                          {mark.desc}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
