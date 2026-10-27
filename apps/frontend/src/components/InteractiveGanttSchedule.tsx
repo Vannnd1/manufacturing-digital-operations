@@ -15,7 +15,8 @@ import {
   Calendar,
   Pause,
   CheckCircle2,
-  Layers
+  Layers,
+  Info
 } from "lucide-react";
 import { useLiveTime } from "../utils/useLiveTime";
 
@@ -38,12 +39,14 @@ export interface WorkOrderItem {
   id: string; // e.g. "WO-2041"
   model: string; // e.g. "PROD-ENC-01 · Modular Industrial Automation Enclosure (×50)"
   rush?: boolean;
-  status?: "In progress" | "On hold" | "Completed";
+  status?: "In progress" | "On hold" | "Completed" | "Done";
   startDay: number;
   durationDays: number;
   expanded: boolean;
   operations: OperationItem[];
   note?: string;
+  clientOrDept?: string;
+  dateRange?: string;
 }
 
 interface InteractiveGanttScheduleProps {
@@ -198,8 +201,63 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
   // Initial Work Orders & Sub-operations tailored to real project products and roster
   const [workOrders, setWorkOrders] = useState<WorkOrderItem[]>([
     {
+      id: "WO-2047",
+      model: "PROD-ENC-02 · Ridgeline Frameset Enclosure (×30)",
+      clientOrDept: "Lumen Bike Studio",
+      dateRange: "Nov 6 – Nov 13",
+      rush: false,
+      status: "Done",
+      startDay: 0,
+      durationDays: 7,
+      expanded: false,
+      note: "Completed early run for Lumen Bike Studio. Zero paint defects, release signed off.",
+      operations: [
+        {
+          id: "op-2047-1",
+          name: "TIG welding",
+          techInitial: "KM",
+          techName: "Kwame Mensah",
+          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
+          startDay: 0,
+          durationDays: 2,
+          progress: 100,
+          colorScheme: "emerald",
+          statusText: "Nov 6 – Nov 8",
+          workCenter: "WC-102 · Structural TIG Welding Bay",
+        },
+        {
+          id: "op-2047-2",
+          name: "Frame alignment",
+          techInitial: "LV",
+          techName: "Lena Vogel",
+          techColor: "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-200",
+          startDay: 2,
+          durationDays: 2,
+          progress: 100,
+          colorScheme: "emerald",
+          statusText: "Nov 9 – Nov 10",
+          workCenter: "WC-104 · Sub-assembly & Precision Alignment",
+        },
+        {
+          id: "op-2047-3",
+          name: "Powder coat",
+          techInitial: "JB",
+          techName: "Jonas Berg",
+          techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
+          startDay: 4,
+          durationDays: 2,
+          progress: 100,
+          colorScheme: "emerald",
+          statusText: "Nov 12 – Nov 13",
+          workCenter: "WC-103 · Finishing & Powder Coating",
+        },
+      ],
+    },
+    {
       id: "WO-2041",
-      model: "PROD-ENC-01 · Modular Industrial Automation Enclosure (×50)",
+      model: "PROD-ENC-01 · Ridgeline Gravel Enclosure (×50)",
+      clientOrDept: "Rosewood Bikes",
+      dateRange: "Nov 7 – Nov 17",
       rush: false,
       status: "In progress",
       startDay: 0,
@@ -209,7 +267,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       operations: [
         {
           id: "op-2041-1",
-          name: "Laser Sheet Metal Cutting",
+          name: "Tube cutting",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
@@ -217,17 +275,17 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           durationDays: 1,
           progress: 100,
           colorScheme: "stone",
-          statusText: "Nov 7 – Nov 7",
+          statusText: "Nov 7",
           workCenter: "WC-101 · Laser & Stamping",
         },
         {
           id: "op-2041-2",
-          name: "Structural TIG Welding",
+          name: "TIG welding",
           techInitial: "AT",
           techName: "Aiko Tanaka",
           techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
           startDay: 1,
-          durationDays: 3, // Mon 9 - Wed 11
+          durationDays: 3,
           progress: 100,
           colorScheme: "emerald",
           statusText: "Nov 9 – Nov 11",
@@ -235,12 +293,12 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2041-3",
-          name: "Anti-Corrosion Powder Coating",
+          name: "Powder coat",
           techInitial: "JB",
-          techName: "Jiro Bando",
+          techName: "Jonas Berg",
           techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
           startDay: 5,
-          durationDays: 2, // Fri 13 - Sat 14
+          durationDays: 2,
           progress: 45,
           colorScheme: "blue",
           statusText: "Nov 13 – Nov 14",
@@ -248,9 +306,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2041-4",
-          name: "Enclosure Gasket Assembly",
+          name: "Assembly",
           techInitial: "DA",
-          techName: "David Adebayo",
+          techName: "Diego Alvarez",
           techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
           startDay: 6,
           durationDays: 1,
@@ -263,17 +321,19 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     },
     {
       id: "WO-2042",
-      model: "PROD-BMOD-02 · High-Density Battery Module (×25)",
+      model: "PROD-BMOD-02 · Tempo Road Battery Pack (×25)",
+      clientOrDept: "Harbor & Hill Bikes",
+      dateRange: "Nov 8 – Nov 15",
       rush: true,
       status: "In progress",
       startDay: 1,
-      durationDays: 4, // Mon 9 - Thu 12
+      durationDays: 4,
       expanded: true,
       note: "Priority commercial client run. Promised for dispatch Nov 20. Double check insulation gap.",
       operations: [
         {
           id: "op-2042-1",
-          name: "Laser Cell Terminal Prep",
+          name: "Mitering",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
@@ -281,13 +341,13 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           durationDays: 1,
           progress: 100,
           colorScheme: "emerald",
-          statusText: "Nov 9 – Nov 9",
+          statusText: "Nov 8 – Nov 9",
           rush: true,
           workCenter: "WC-101 · Laser & Stamping",
         },
         {
           id: "op-2042-2",
-          name: "Busbar TIG Welding",
+          name: "TIG welding",
           techInitial: "AT",
           techName: "Aiko Tanaka",
           techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
@@ -301,75 +361,92 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2042-3",
-          name: "Dielectric Safety Gate",
-          techInitial: "HK",
-          techName: "Hana Kim",
-          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
+          name: "Frame alignment",
+          techInitial: "LV",
+          techName: "Lena Vogel",
+          techColor: "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-200",
           startDay: 5,
           durationDays: 1,
           progress: 0,
           colorScheme: "stone",
-          statusText: "Nov 13 – Nov 13",
+          statusText: "Nov 15",
           workCenter: "WC-104 · QC Gate & Release",
         },
       ],
     },
     {
       id: "WO-2045",
-      model: "PROD-PDU-03 · Intelligent Power Distribution Unit (×10)",
+      model: "PROD-PDU-03 · Halcyon Tourer PDU (×10)",
+      clientOrDept: "Fernhill Outfitters",
+      dateRange: "Nov 8 – Nov 12",
       rush: false,
       status: "In progress",
       startDay: 0,
-      durationDays: 5, // Sun 8 - Thu 12
+      durationDays: 5,
       expanded: false,
       note: "Industrial power distribution unit with integrated Ethernet telemetry. 100% dielectric isolation check.",
       operations: [
         {
           id: "op-2045-1",
-          name: "Dielectric Test & QC Gate",
-          techInitial: "HK",
-          techName: "Hana Kim",
-          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
-          startDay: 0,
-          durationDays: 5,
-          progress: 60,
-          colorScheme: "blue",
-          statusText: "Nov 8 – Nov 12",
-          workCenter: "WC-104 · Dielectric Safety & QC Assembly",
-        },
-        {
-          id: "op-2045-2",
-          name: "Cabinet Frame Welding",
-          techInitial: "AT",
-          techName: "Aiko Tanaka",
-          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
+          name: "Assembly",
+          techInitial: "AO",
+          techName: "Amara Okafor",
+          techColor: "bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-200",
           startDay: 0,
           durationDays: 2,
           progress: 100,
           colorScheme: "emerald",
-          statusText: "Nov 8 – Nov 9",
-          workCenter: "WC-102 · Structural TIG Welding Bay",
+          statusText: "Nov 8 – Nov 10",
+          workCenter: "WC-104 · Dielectric Safety & QC Assembly",
+        },
+        {
+          id: "op-2045-2",
+          name: "Quality check",
+          techInitial: "HK",
+          techName: "Hana Kim",
+          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
+          startDay: 3,
+          durationDays: 1,
+          progress: 60,
+          colorScheme: "blue",
+          statusText: "Nov 11",
+          workCenter: "WC-104 · QC Gate",
+        },
+        {
+          id: "op-2045-3",
+          name: "Wheel build",
+          techInitial: "BA",
+          techName: "Bo Andersen",
+          techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
+          startDay: 4,
+          durationDays: 1,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 12",
+          workCenter: "WC-102 · Mechanical Bay",
         },
       ],
     },
     {
       id: "WO-2044",
-      model: "PROD-ENC-01 · Fast-Track Automation Cabinet (×15)",
+      model: "PROD-ENC-01 · Juniper Trail Cabinet (×15)",
+      clientOrDept: "Copper Canyon Cycles",
+      dateRange: "Nov 9 – Nov 13",
       rush: true,
       status: "In progress",
       startDay: 1,
-      durationDays: 3, // Mon 9 - Wed 11
+      durationDays: 3,
       expanded: true,
       note: "Rush replacement chassis for Tier 1 assembly line. Powder bake must cure 45 min at 200°C.",
       operations: [
         {
           id: "op-2044-1",
-          name: "Industrial Powder Coating",
+          name: "Powder coat",
           techInitial: "JB",
-          techName: "Jiro Bando",
+          techName: "Jonas Berg",
           techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
           startDay: 1,
-          durationDays: 2, // Mon 9 - Tue 10
+          durationDays: 2,
           progress: 100,
           colorScheme: "emerald",
           statusText: "Nov 9 – Nov 10",
@@ -378,22 +455,37 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2044-2",
-          name: "CNC Chassis Bending",
-          techInitial: "FW",
-          techName: "Felix Wagner",
-          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 0,
+          name: "Wheel build",
+          techInitial: "BA",
+          techName: "Bo Andersen",
+          techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
+          startDay: 3,
           durationDays: 1,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 8 – Nov 8",
+          progress: 50,
+          colorScheme: "blue",
+          statusText: "Nov 11 – Nov 12",
           workCenter: "WC-101 · Laser Cutting & CNC Bending",
+        },
+        {
+          id: "op-2044-3",
+          name: "Assembly",
+          techInitial: "DA",
+          techName: "Diego Alvarez",
+          techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
+          startDay: 4,
+          durationDays: 1,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 12 – Nov 13",
+          workCenter: "WC-104 · Final Assembly",
         },
       ],
     },
     {
       id: "WO-2043",
-      model: "PROD-ENC-01 · Fast-Track Automation Enclosure (×20)",
+      model: "PROD-ENC-01 · Commuter Urban Chassis (×20)",
+      clientOrDept: "Gearhouse Collective",
+      dateRange: "Nov 10 – Nov 17",
       rush: true,
       status: "In progress",
       startDay: 2,
@@ -403,7 +495,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       operations: [
         {
           id: "op-2043-1",
-          name: "Laser Sheet Metal Cutting",
+          name: "Tube cutting",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
@@ -417,29 +509,135 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2043-2",
-          name: "Structural TIG Welding",
-          techInitial: "AT",
-          techName: "Aiko Tanaka",
-          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
+          name: "Mitering",
+          techInitial: "FW",
+          techName: "Felix Wagner",
+          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
           startDay: 4,
           durationDays: 2,
           progress: 0,
           colorScheme: "stone",
-          statusText: "Nov 12 – Nov 13",
-          workCenter: "WC-102 · Structural TIG Welding Bay",
+          statusText: "Nov 13 – Nov 14",
+          workCenter: "WC-101 · CNC Mitering Bay",
         },
         {
           id: "op-2043-3",
-          name: "Industrial Powder Coating",
-          techInitial: "JB",
-          techName: "Jiro Bando",
-          techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
+          name: "TIG welding",
+          techInitial: "AT",
+          techName: "Aiko Tanaka",
+          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
           startDay: 5,
           durationDays: 2,
           progress: 0,
           colorScheme: "stone",
-          statusText: "Nov 13 – Nov 14",
-          workCenter: "WC-103 · Industrial Powder Coating & Oven",
+          statusText: "Nov 15 – Nov 17",
+          workCenter: "WC-102 · Structural TIG Welding Bay",
+        },
+      ],
+    },
+    {
+      id: "WO-2046",
+      model: "PROD-PDU-04 · Pico 20 Kids Inverter (×40)",
+      clientOrDept: "For stock",
+      dateRange: "Nov 12 – Nov 18",
+      rush: false,
+      status: "In progress",
+      startDay: 3,
+      durationDays: 5,
+      expanded: true,
+      note: "Standard seasonal build for inventory replenishment.",
+      operations: [
+        {
+          id: "op-2046-1",
+          name: "Tube cutting",
+          techInitial: "FW",
+          techName: "Felix Wagner",
+          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
+          startDay: 3,
+          durationDays: 1,
+          progress: 100,
+          colorScheme: "emerald",
+          statusText: "Nov 12",
+          workCenter: "WC-101 · Cutting",
+        },
+        {
+          id: "op-2046-2",
+          name: "TIG welding",
+          techInitial: "KM",
+          techName: "Kwame Mensah",
+          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
+          startDay: 4,
+          durationDays: 2,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 14 – Nov 16",
+          workCenter: "WC-102 · Welding",
+        },
+        {
+          id: "op-2046-3",
+          name: "Powder coat",
+          techInitial: "JB",
+          techName: "Jonas Berg",
+          techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
+          startDay: 6,
+          durationDays: 2,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 17 – Nov 18",
+          workCenter: "WC-103 · Coating",
+        },
+      ],
+    },
+    {
+      id: "WO-2048",
+      model: "PROD-BMOD-03 · Tempo Frameset Battery Rack (×12)",
+      clientOrDept: "Ottoline Velo",
+      dateRange: "Nov 14 – Nov 18",
+      rush: false,
+      status: "On hold",
+      startDay: 4,
+      durationDays: 4,
+      expanded: false,
+      note: "Awaiting custom bracket spec confirmation from client.",
+      operations: [
+        {
+          id: "op-2048-1",
+          name: "Mitering",
+          techInitial: "FW",
+          techName: "Felix Wagner",
+          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
+          startDay: 4,
+          durationDays: 1,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 14 – Nov 15",
+          workCenter: "WC-101 · Mitering",
+        },
+        {
+          id: "op-2048-2",
+          name: "TIG welding",
+          techInitial: "AT",
+          techName: "Aiko Tanaka",
+          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
+          startDay: 5,
+          durationDays: 2,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 16 – Nov 17",
+          workCenter: "WC-102 · Welding",
+        },
+        {
+          id: "op-2048-3",
+          name: "Frame alignment",
+          techInitial: "LV",
+          techName: "Lena Vogel",
+          techColor: "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-200",
+          startDay: 6,
+          durationDays: 1,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 18",
+          workCenter: "WC-104 · Alignment",
         },
       ],
     },
@@ -1853,60 +2051,303 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           </div>
         </div>
       ) : (
-        /* ── Alternate View: Agenda Shift View ── */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white dark:bg-[#18181B] p-5 rounded-3xl border border-stone-200/90 dark:border-stone-800 shadow-xs space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-stone-100 dark:border-stone-800">
-              <div className="font-bold text-sm text-slate-900 dark:text-stone-100">
-                Shift 1 · Morning Dispatch (08:00 – 16:00)
-              </div>
-              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950 dark:text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                Active
+        /* ── Agenda Card Grid & Floor Telemetry View (Cadra Reference) ── */
+        <div className="space-y-4">
+          {/* Top Status Alert Strip */}
+          <div className="p-3 bg-stone-50/90 dark:bg-stone-900/70 rounded-2xl border border-stone-200/80 dark:border-stone-800 flex items-center justify-between text-xs text-stone-600 dark:text-stone-300">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span>
+                <strong className="text-slate-900 dark:text-stone-100 font-bold">3 operations running</strong> across 3 work centers ·{" "}
+                <strong className="text-slate-900 dark:text-stone-100 font-bold">5 start</strong> in the next two days ·{" "}
+                <span className="text-rose-600 dark:text-rose-400 font-bold">WO-2043 is behind plan</span>
               </span>
-            </div>
-            <div className="space-y-2 text-xs">
-              <div className="p-3 bg-stone-50 dark:bg-stone-900 rounded-2xl flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-slate-900 dark:text-stone-100">WO-2041: Laser Cutting & Bending</p>
-                  <p className="text-stone-500 dark:text-stone-400 text-[11px]">Operator: Felix Wagner · WC-101</p>
-                </div>
-                <span className="font-mono text-amber-700 dark:text-amber-400 font-bold">50 units</span>
-              </div>
-              <div className="p-3 bg-stone-50 dark:bg-stone-900 rounded-2xl flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-slate-900 dark:text-stone-100">WO-2042: Busbar TIG Welding</p>
-                  <p className="text-stone-500 dark:text-stone-400 text-[11px]">Operator: Aiko Tanaka · WC-102</p>
-                </div>
-                <span className="font-mono text-amber-700 dark:text-amber-400 font-bold">25 units</span>
-              </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#18181B] p-5 rounded-3xl border border-stone-200/90 dark:border-stone-800 shadow-xs space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-stone-100 dark:border-stone-800">
-              <div className="font-bold text-sm text-slate-900 dark:text-stone-100">
-                Shift 2 · Afternoon Run (16:00 – 00:00)
-              </div>
-              <span className="text-xs font-semibold text-stone-500 bg-stone-100 dark:bg-stone-800 dark:text-stone-400 px-2.5 py-0.5 rounded-full border border-stone-200 dark:border-stone-700">
-                Scheduled
-              </span>
+          {/* Agenda Main Container: 4-Column Card Grid (Left) + Floor Telemetry Sidebar (Right) */}
+          <div className="flex flex-col xl:flex-row gap-5 items-start">
+            
+            {/* 4-column Work Order Cards Grid */}
+            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
+              {workOrders.map((wo) => {
+                const totalOps = wo.operations.length;
+                const overallProgress = totalOps > 0 ? Math.round(wo.operations.reduce((acc, o) => acc + (o.progress || 0), 0) / totalOps) : 0;
+                
+                // SVG Progress Ring calculations
+                const radius = 9;
+                const circumference = 2 * Math.PI * radius;
+                const strokeDashoffset = circumference - (overallProgress / 100) * circumference;
+
+                return (
+                  <div
+                    key={wo.id}
+                    onClick={() => setSelectedWorkOrderModal(wo)}
+                    className="bg-white dark:bg-[#18181B] rounded-2xl border border-stone-200/80 dark:border-stone-800 p-4 shadow-2xs hover:shadow-xs hover:border-amber-500/50 dark:hover:border-amber-500/50 transition-all cursor-pointer flex flex-col justify-between space-y-3.5 group"
+                  >
+                    {/* Header */}
+                    <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {/* Circular Progress Ring */}
+                          <svg className="w-6 h-6 -rotate-90 shrink-0" viewBox="0 0 24 24">
+                            <circle
+                              cx="12"
+                              cy="12"
+                              r={radius}
+                              className="stroke-stone-200 dark:stroke-stone-800"
+                              strokeWidth="2.8"
+                              fill="transparent"
+                            />
+                            <circle
+                              cx="12"
+                              cy="12"
+                              r={radius}
+                              className={`${
+                                wo.status === "Done"
+                                  ? "stroke-emerald-600 dark:stroke-emerald-500"
+                                  : wo.status === "On hold"
+                                  ? "stroke-amber-500 dark:stroke-amber-400"
+                                  : "stroke-blue-600 dark:stroke-blue-500"
+                              } transition-all duration-300`}
+                              strokeWidth="2.8"
+                              strokeDasharray={circumference}
+                              strokeDashoffset={strokeDashoffset}
+                              strokeLinecap="round"
+                              fill="transparent"
+                            />
+                          </svg>
+
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-xs text-slate-900 dark:text-stone-100 truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                              {wo.id} · {wo.model.split("·")[1]?.trim().split("(")[0]?.trim() || wo.model}
+                            </h4>
+                            <p className="text-[10px] text-stone-500 dark:text-stone-400 truncate">
+                              {wo.clientOrDept || "OEM Studio"} · {wo.dateRange || "Nov 8 – Nov 15"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        <span
+                          className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                            wo.status === "Done"
+                              ? "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                              : wo.status === "On hold"
+                              ? "bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                              : "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              wo.status === "Done"
+                                ? "bg-emerald-500"
+                                : wo.status === "On hold"
+                                ? "bg-amber-500"
+                                : "bg-blue-500"
+                            }`}
+                          />
+                          {wo.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Operations List */}
+                    <div className="space-y-2.5 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+                      {wo.operations.map((op) => (
+                        <div key={op.id} className="flex items-center justify-between gap-2 text-xs">
+                          <div className="min-w-0 flex items-start gap-1.5 flex-1">
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full mt-1 shrink-0 ${
+                                op.progress === 100
+                                  ? "bg-emerald-600 dark:bg-emerald-400"
+                                  : op.progress > 0
+                                  ? (op.rush ? "bg-rose-500" : "bg-blue-600 dark:bg-blue-400")
+                                  : "bg-stone-300 dark:bg-stone-700"
+                              }`}
+                            />
+                            <div className="min-w-0">
+                              <p className="font-semibold text-slate-800 dark:text-stone-200 truncate leading-tight text-[11px]">
+                                {op.name}
+                              </p>
+                              <p className="text-[10px] text-stone-400 dark:text-stone-500 truncate">
+                                {op.statusText} · {op.techName}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Mini Progress Bar */}
+                          <div className="w-12 h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden shrink-0">
+                            <div
+                              className={`h-full rounded-full transition-all duration-300 ${
+                                op.progress === 100
+                                  ? "bg-emerald-600 dark:bg-emerald-500"
+                                  : op.progress > 0
+                                  ? (op.rush ? "bg-rose-600 dark:bg-rose-500" : "bg-blue-600 dark:bg-blue-500")
+                                  : "bg-transparent"
+                              }`}
+                              style={{ width: `${op.progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div className="space-y-2 text-xs">
-              <div className="p-3 bg-stone-50 dark:bg-stone-900 rounded-2xl flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-slate-900 dark:text-stone-100">WO-2043: Power Distribution Unit SMT</p>
-                  <p className="text-stone-500 dark:text-stone-400 text-[11px]">Supervisor: Elena Rostova · WC-101</p>
+
+            {/* Right Floor Telemetry Sidebar */}
+            <div className="w-full xl:w-72 2xl:w-80 shrink-0 bg-white dark:bg-[#18181B] rounded-2xl border border-stone-200/80 dark:border-stone-800 p-4 shadow-2xs space-y-4">
+              
+              {/* Section 1: On the floor now */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-stone-100 uppercase tracking-wider">
+                    On the floor now
+                  </h3>
                 </div>
-                <span className="font-mono text-blue-700 dark:text-blue-400 font-bold">100 units</span>
+
+                <div className="space-y-3.5">
+                  {/* Item 1 */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200 font-bold text-[10px] flex items-center justify-center shrink-0">
+                          AT
+                        </span>
+                        <span className="font-bold text-slate-900 dark:text-stone-100 text-xs">
+                          TIG welding
+                        </span>
+                      </div>
+                      <span className="font-mono text-[11px] text-stone-500 dark:text-stone-400">
+                        WO-2042
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
+                      <span>Tempo Road ×8</span>
+                      <span className="font-semibold text-slate-700 dark:text-stone-300">55%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-600 rounded-full" style={{ width: "55%" }} />
+                    </div>
+                  </div>
+
+                  {/* Item 2 */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200 font-bold text-[10px] flex items-center justify-center shrink-0">
+                          HK
+                        </span>
+                        <span className="font-bold text-slate-900 dark:text-stone-100 text-xs">
+                          Quality check
+                        </span>
+                      </div>
+                      <span className="font-mono text-[11px] text-stone-500 dark:text-stone-400">
+                        WO-2045
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
+                      <span>Halcyon Tourer ×10</span>
+                      <span className="font-semibold text-slate-700 dark:text-stone-300">60%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-600 rounded-full" style={{ width: "60%" }} />
+                    </div>
+                  </div>
+
+                  {/* Item 3 */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200 font-bold text-[10px] flex items-center justify-center shrink-0">
+                          BA
+                        </span>
+                        <span className="font-bold text-slate-900 dark:text-stone-100 text-xs">
+                          Wheel build
+                        </span>
+                      </div>
+                      <span className="font-mono text-[11px] text-stone-500 dark:text-stone-400">
+                        WO-2044
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
+                      <span>Juniper Trail ×6</span>
+                      <span className="font-semibold text-slate-700 dark:text-stone-300">50%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-600 rounded-full" style={{ width: "50%" }} />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="p-3 bg-stone-50 dark:bg-stone-900 rounded-2xl flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-slate-900 dark:text-stone-100">QC-803: Enclosure Dielectric Test & Packaging</p>
-                  <p className="text-stone-500 dark:text-stone-400 text-[11px]">Inspector: Hana Kim · WC-104</p>
+
+              {/* Section 2: Starting Next */}
+              <div className="pt-3 border-t border-stone-100 dark:border-stone-800 space-y-2.5">
+                <span className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider block">
+                  Starting next
+                </span>
+                
+                <div className="space-y-2 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                      <span className="text-slate-800 dark:text-stone-200 truncate text-[11px]">
+                        <strong>Assembly</strong> · WO-2044 · Juniper Trail
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 shrink-0">
+                      Tomorrow
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                      <span className="text-slate-800 dark:text-stone-200 truncate text-[11px]">
+                        <strong>Wheel build</strong> · WO-2045 · Halcyon Tourer
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 shrink-0">
+                      Tomorrow
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                      <span className="text-slate-800 dark:text-stone-200 truncate text-[11px]">
+                        <strong>Tube cutting</strong> · WO-2046 · Pico 20 Kids
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 shrink-0">
+                      Tomorrow
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="w-2 h-2 rounded-full bg-stone-400 shrink-0" />
+                      <span className="text-slate-800 dark:text-stone-200 truncate text-[11px]">
+                        <strong>Powder coat</strong> · WO-2041 · Ridgeline Gravel
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 shrink-0">
+                      in 2 days
+                    </span>
+                  </div>
                 </div>
-                <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">Release Gate</span>
+              </div>
+
+              {/* Section 3: Footer Drag Help Tip */}
+              <div className="pt-3 border-t border-stone-100 dark:border-stone-800 flex items-start gap-2 text-[11px] text-stone-400 dark:text-stone-500 leading-snug">
+                <Info className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
+                <span>Drag a bar to reschedule — anything after it moves too. Drag its right edge to change its length.</span>
               </div>
             </div>
+
           </div>
         </div>
       )}
