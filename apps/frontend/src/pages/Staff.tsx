@@ -10,7 +10,7 @@ import {
   RotateCcw,
   Check
 } from "lucide-react";
-import { Card, Button, Input } from "../components/ui";
+import { PageHeader, Card, Button, Input } from "../components/ui";
 import { useStaffStore, type StaffMember } from "../store/useStaffStore";
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -128,35 +128,32 @@ export function Staff() {
   return (
     <div className="space-y-6">
       {/* ── Top Header: Title & Actions ── */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 mt-1">
-            Directory
-          </h1>
-        </div>
+      <PageHeader
+        title="Workforce Directory"
+        description="Monitor staff presence, shift schedules, and department allocations."
+        action={
+          <>
+            <Button
+              variant="secondary"
+              onClick={resetStaff}
+              className="gap-1.5 text-xs font-semibold"
+              title="Reset to default roster"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset</span>
+            </Button>
 
-        {/* Right Action Controls */}
-        <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
-          <Button
-            variant="secondary"
-            onClick={resetStaff}
-            className="text-xs font-medium text-slate-600 gap-1.5 rounded-full border-stone-200/90 hover:bg-stone-50"
-            title="Reset to default roster"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Reset
-          </Button>
-
-          <Button
-            variant="primary"
-            onClick={() => setEditingMember(staff[0])}
-            className="text-xs font-medium bg-[#18181B] hover:bg-black text-white gap-1.5 rounded-full shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Update Attendance
-          </Button>
-        </div>
-      </div>
+            <Button
+              variant="primary"
+              onClick={() => setEditingMember(staff[0])}
+              className="gap-1.5 text-xs font-semibold"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Update Attendance</span>
+            </Button>
+          </>
+        }
+      />
 
       {/* ── Sub-navigation Tabs (Cleanly separated under title) ── */}
       <div className="flex items-center gap-2">

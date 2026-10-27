@@ -1,10 +1,28 @@
 import React from 'react';
 
 // Typography
-export const PageHeader = ({ title, description }: { title: string; description?: string }) => (
-  <div className="mb-6">
-    <h1 className="text-2xl font-semibold text-slate-900 dark:text-stone-100 tracking-tight">{title}</h1>
-    {description && <p className="text-sm text-slate-500 dark:text-stone-400 mt-1">{description}</p>}
+export interface PageHeaderProps {
+  title: string;
+  description?: string;
+  badge?: React.ReactNode;
+  action?: React.ReactNode;
+  className?: string;
+}
+
+export const PageHeader = ({ title, description, badge, action, className = '' }: PageHeaderProps) => (
+  <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-stone-200/80 dark:border-stone-800 ${className}`}>
+    <div className="min-w-0">
+      <div className="flex items-center gap-2.5 flex-wrap">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-stone-100 tracking-tight">{title}</h1>
+        {badge}
+      </div>
+      {description && <p className="text-sm text-slate-500 dark:text-stone-400 mt-1 leading-relaxed">{description}</p>}
+    </div>
+    {action && (
+      <div className="flex items-center flex-wrap gap-2 sm:gap-2.5 shrink-0 self-start sm:self-center">
+        {action}
+      </div>
+    )}
   </div>
 );
 

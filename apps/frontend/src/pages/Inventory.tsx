@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getInventory, adjustInventory } from "../api/inventory";
 import { Search, AlertTriangle, X, PackagePlus, ArrowRight, Layers, CheckCircle2, ShieldAlert, SlidersHorizontal } from "lucide-react";
-import { Card, Table, Th, Td, Button, Input, Label, Badge, StockLevelBar } from "../components/ui";
+import { PageHeader, Card, Table, Th, Td, Button, Input, Label, Badge, StockLevelBar } from "../components/ui";
 import { sanitizeNumberInput } from "../utils/number";
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -109,54 +109,41 @@ export function Inventory() {
 
   return (
     <div className="space-y-6 max-w-7xl">
-      {/* ── Domain Sub-Page Tabs: Stock & Materials ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-stone-200/70">
-        <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-full border border-stone-200/80 shadow-2xs">
-          <Link
-            to="/inventory"
-            className="px-4 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white shadow-xs flex items-center gap-1.5"
-          >
-            <Layers className="w-3.5 h-3.5 text-amber-400" />
-            <span>Inventory Stock</span>
-            {lowStockItems.length > 0 && (
-              <span className="px-1.5 py-0.2 text-[10px] bg-amber-500 text-white rounded-full font-mono">{lowStockItems.length}</span>
-            )}
-          </Link>
-          <Link
-            to="/materials"
-            className="px-4 py-1.5 rounded-full text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-stone-200/60 transition-colors flex items-center gap-1.5"
-          >
-            <PackagePlus className="w-3.5 h-3.5 text-slate-500" />
-            <span>Material Master</span>
-          </Link>
-        </div>
-
-        {/* Quick Shortcut Buttons */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          {canManageStock && lowStockItems.length > 0 && (
+      {/* ── Page Header with Actions ── */}
+      <PageHeader
+        title="Inventory Management"
+        description="Monitor stock thresholds, warehouse ledger movements, and replenishment allocations."
+        action={
+          canManageStock && lowStockItems.length > 0 ? (
             <Link to="/procurement">
-              <Button variant="accent" className="py-1.5 px-3.5 text-xs font-semibold rounded-full">
-                <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
-                Procure Shortages ({lowStockItems.length})
+              <Button variant="accent" className="gap-1.5 text-xs font-semibold">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span>Procure Shortages ({lowStockItems.length})</span>
               </Button>
             </Link>
-          )}
-        </div>
-      </div>
+          ) : null
+        }
+      />
 
-      {/* ── Title & Description ── */}
-      <div>
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-            Inventory Management
-          </h1>
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            Warehouse Ledger
-          </span>
-        </div>
-        <p className="text-xs text-slate-500 font-medium mt-1">
-          Monitor stock thresholds, cycle count discrepancies, and staging allocations
-        </p>
+      {/* ── Domain Sub-Page Tabs: Stock & Materials ── */}
+      <div className="flex items-center gap-1.5 p-1 bg-stone-100 dark:bg-stone-900 rounded-full border border-stone-200/80 dark:border-stone-800 shadow-2xs w-fit">
+        <Link
+          to="/inventory"
+          className="px-4 py-1.5 rounded-full text-xs font-semibold bg-slate-900 dark:bg-amber-600 text-white shadow-xs flex items-center gap-1.5"
+        >
+          <Layers className="w-3.5 h-3.5 text-amber-400 dark:text-white" />
+          <span>Inventory Stock</span>
+          {lowStockItems.length > 0 && (
+            <span className="px-1.5 py-0.2 text-[10px] bg-amber-500 text-white rounded-full font-mono">{lowStockItems.length}</span>
+          )}
+        </Link>
+        <Link
+          to="/materials"
+          className="px-4 py-1.5 rounded-full text-xs font-semibold text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800 transition-colors flex items-center gap-1.5"
+        >
+          <PackagePlus className="w-3.5 h-3.5 text-slate-500 dark:text-stone-400" />
+          <span>Material Master</span>
+        </Link>
       </div>
 
       {/* ── Row 2: 4 Modern Metric Hero Cards ── */}

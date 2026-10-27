@@ -141,24 +141,23 @@ export function Reports() {
   return (
     <div className="space-y-6 max-w-7xl">
       {/* ── Page Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <PageHeader
-          title="Operational Reporting & Insights"
-          description="Traceable manufacturing performance metrics, inventory balances, procurement spend, production yield, and defect analysis."
-        />
-
-        {activeTab !== "overview" && (
-          <Button
-            variant="secondary"
-            onClick={() => handleExport(activeTab)}
-            disabled={exporting || loading}
-            className="flex items-center gap-2 self-start sm:self-auto"
-          >
-            <Download className="w-4 h-4 text-slate-500" />
-            {exporting ? "Exporting..." : "Export CSV"}
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        title="Operational Reporting & Insights"
+        description="Traceable manufacturing performance metrics, inventory balances, procurement spend, production yield, and defect analysis."
+        action={
+          activeTab !== "overview" ? (
+            <Button
+              variant="secondary"
+              onClick={() => handleExport(activeTab)}
+              disabled={exporting || loading}
+              className="gap-1.5 text-xs font-semibold"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-500 dark:text-stone-400" />
+              <span>{exporting ? "Exporting..." : "Export CSV"}</span>
+            </Button>
+          ) : null
+        }
+      />
 
       {/* ── Date Range Controls Bar ── */}
       <Card className="p-4 bg-slate-50/50">

@@ -308,31 +308,32 @@ export function Procurement() {
 
   return (
     <div className="space-y-6 max-w-7xl">
-      {/* Page header with Create PR action */}
-      <div className="flex items-start justify-between mb-4">
-        <PageHeader
-          title="Procurement Management"
-          description="Manage purchase requests, purchase orders, and supplier information."
-        />
-        {activeTab === "PR" && (
-          <button 
-            onClick={openCreatePR} 
-            className="px-4 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center shadow-xs transition-colors shrink-0 cursor-pointer"
-          >
-            <Plus className="w-4 h-4 mr-1.5" />
-            New PR
-          </button>
-        )}
-      </div>
+      {/* Page Header with Create PR action */}
+      <PageHeader
+        title="Procurement Management"
+        description="Manage purchase requests, purchase orders, and supplier information."
+        action={
+          activeTab === "PR" ? (
+            <Button 
+              variant="primary"
+              onClick={openCreatePR} 
+              className="gap-1.5 text-xs font-semibold"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New PR</span>
+            </Button>
+          ) : null
+        }
+      />
 
       {/* Sub-Navigation Pill Tabs */}
-      <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-full border border-stone-200/80 w-fit mb-6 shadow-2xs">
+      <div className="flex items-center gap-1.5 p-1 bg-stone-100 dark:bg-stone-900 rounded-full border border-stone-200/80 dark:border-stone-800 w-fit shadow-2xs">
         <button
           onClick={() => setActiveTab("PR")}
           className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
             activeTab === "PR"
-              ? "bg-white text-slate-900 shadow-xs"
-              : "text-slate-500 hover:text-slate-900"
+              ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold border border-transparent dark:border-stone-700"
+              : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
           }`}
         >
           Purchase Requests
@@ -341,8 +342,8 @@ export function Procurement() {
           onClick={() => setActiveTab("PO")}
           className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
             activeTab === "PO"
-              ? "bg-white text-slate-900 shadow-xs"
-              : "text-slate-500 hover:text-slate-900"
+              ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold border border-transparent dark:border-stone-700"
+              : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
           }`}
         >
           Purchase Orders
@@ -351,8 +352,8 @@ export function Procurement() {
           onClick={() => setActiveTab("Supplier")}
           className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
             activeTab === "Supplier"
-              ? "bg-white text-slate-900 shadow-xs"
-              : "text-slate-500 hover:text-slate-900"
+              ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold border border-transparent dark:border-stone-700"
+              : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
           }`}
         >
           Suppliers

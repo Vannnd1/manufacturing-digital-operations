@@ -245,45 +245,42 @@ export function Dashboard() {
   return (
     <div className="space-y-6 max-w-7xl">
       {/* ── Top Header & Operational Actions Bar ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1 border-b border-slate-200/80 dark:border-stone-800">
-        <div>
-          <PageHeader 
-            title="Operational Command Center" 
-            description="Real-time manufacturing operations status, inventory deficit alerts, and critical quality gate events."
-          />
-        </div>
+      <PageHeader 
+        title="Operational Command Center" 
+        description="Real-time manufacturing operations status, inventory deficit alerts, and critical quality gate events."
+        action={
+          <>
+            {/* Active status indicator */}
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold uppercase tracking-wider rounded-full">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true"></span>
+              <span>Live System</span>
+            </div>
 
-        <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0 mb-4 sm:mb-0">
-          {/* Active status indicator */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold uppercase tracking-wider">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true"></span>
-            <span>Live System</span>
-          </div>
+            {/* Quick refresh button */}
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="p-1.5 text-slate-500 dark:text-stone-400 hover:text-slate-800 dark:hover:text-stone-100 hover:bg-slate-100 dark:hover:bg-stone-800 border border-slate-300 dark:border-stone-700 rounded-full transition-colors disabled:opacity-50 cursor-pointer"
+              title="Refresh operational data"
+              aria-label="Refresh operational data"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-amber-600" : ""}`} />
+            </button>
 
-          {/* Quick refresh button */}
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="p-1.5 text-slate-500 dark:text-stone-400 hover:text-slate-800 dark:hover:text-stone-100 hover:bg-slate-100 dark:hover:bg-stone-800 border border-slate-300 dark:border-stone-700 rounded-none transition-colors disabled:opacity-50"
-            title="Refresh operational data"
-            aria-label="Refresh operational data"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-amber-600" : ""}`} />
-          </button>
-
-          {/* Collapsible Tour Button */}
-          <Button 
-            variant="secondary" 
-            onClick={toggleGuide}
-            className="flex items-center gap-1.5 border-slate-300 dark:border-stone-700 bg-white dark:bg-stone-800 py-1 px-2.5 text-xs font-medium text-slate-700 dark:text-stone-200"
-            aria-expanded={showGuide}
-          >
-            <BookOpen className="w-3.5 h-3.5 text-amber-600" />
-            <span>{showGuide ? "Hide Tour" : "Workflow Tour"}</span>
-            {showGuide ? <ChevronUp className="w-3 h-3 text-slate-400" /> : <ChevronDown className="w-3 h-3 text-slate-400" />}
-          </Button>
-        </div>
-      </div>
+            {/* Collapsible Tour Button */}
+            <Button 
+              variant="secondary" 
+              onClick={toggleGuide}
+              className="gap-1.5 text-xs font-semibold"
+              aria-expanded={showGuide}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+              <span>{showGuide ? "Hide Tour" : "Workflow Tour"}</span>
+              {showGuide ? <ChevronUp className="w-3 h-3 text-slate-400" /> : <ChevronDown className="w-3 h-3 text-slate-400" />}
+            </Button>
+          </>
+        }
+      />
 
       {/* ── Collapsible Workflow Tour (Tightly Structured) ── */}
       {showGuide && (

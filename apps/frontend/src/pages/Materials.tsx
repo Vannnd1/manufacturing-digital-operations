@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMaterials, createMaterial, updateMaterial } from "../api/inventory";
 import { Plus, Search, Edit, X, AlertTriangle, Layers, PackagePlus } from "lucide-react";
-import { PageHeader, Card, Table, Th, Td, Input, Label, Badge } from "../components/ui";
+import { PageHeader, Card, Table, Th, Td, Input, Label, Badge, Button } from "../components/ui";
 import { sanitizeNumberInput } from "../utils/number";
 import { UnitSelect } from "../components/UnitSelect";
 import { isCanonicalUnit } from "../constants/uom";
@@ -97,36 +97,39 @@ export function Materials() {
 
   return (
     <div className="space-y-6 max-w-7xl">
+      {/* ── Page Header ── */}
+      <PageHeader 
+        title="Material Master" 
+        description="Manage raw materials, components, and tracking thresholds." 
+        action={
+          <Button 
+            variant="primary"
+            onClick={() => openForm()} 
+            className="gap-1.5 text-xs font-semibold"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Material</span>
+          </Button>
+        }
+      />
+
       {/* ── Domain Sub-Page Tabs: Stock & Materials ── */}
-      <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-full border border-stone-200/80 w-fit shadow-2xs">
+      <div className="flex items-center gap-1.5 p-1 bg-stone-100 dark:bg-stone-900 rounded-full border border-stone-200/80 dark:border-stone-800 shadow-2xs w-fit">
         <Link
           to="/inventory"
-          className="px-4 py-1.5 rounded-full text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-stone-200/60 transition-colors flex items-center gap-1.5"
+          className="px-4 py-1.5 rounded-full text-xs font-semibold text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800 transition-colors flex items-center gap-1.5"
         >
-          <Layers className="w-3.5 h-3.5 text-slate-500" />
+          <Layers className="w-3.5 h-3.5 text-slate-500 dark:text-stone-400" />
           <span>Inventory Stock</span>
         </Link>
         <Link
           to="/materials"
-          className="px-4 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white shadow-xs flex items-center gap-1.5"
+          className="px-4 py-1.5 rounded-full text-xs font-semibold bg-slate-900 dark:bg-amber-600 text-white shadow-xs flex items-center gap-1.5"
         >
-          <PackagePlus className="w-3.5 h-3.5 text-amber-400" />
+          <PackagePlus className="w-3.5 h-3.5 text-amber-400 dark:text-white" />
           <span>Material Master</span>
           <span className="px-1.5 py-0.2 text-[10px] bg-white/20 rounded-full font-mono">{materials.length}</span>
         </Link>
-      </div>
-
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <PageHeader 
-          title="Material Master" 
-          description="Manage raw materials, components, and tracking thresholds." 
-        />
-        <button 
-          onClick={() => openForm()} 
-          className="mb-6 px-4 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center shadow-xs transition-colors cursor-pointer"
-        >
-          <Plus className="w-4 h-4 mr-2" /> New Material
-        </button>
       </div>
 
       <Card className="rounded-2xl border border-stone-200/80 bg-white shadow-2xs overflow-hidden">

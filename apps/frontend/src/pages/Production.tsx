@@ -28,7 +28,7 @@ import {
   Download,
   CheckCircle
 } from "lucide-react";
-import { Card, Table, Th, Td, Button, Input, Label, RoutePipeline } from "../components/ui";
+import { PageHeader, Card, Table, Th, Td, Button, Input, Label, RoutePipeline } from "../components/ui";
 import { sanitizeNumberInput } from "../utils/number";
 import { InteractiveGanttSchedule } from "../components/InteractiveGanttSchedule";
 
@@ -354,94 +354,97 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
   const canCreate = user?.role === "Admin" || user?.role === "Manager" || user?.role === "Production";
 
   const subPageTitles = {
-    scheduling: "Scheduling",
-    orders: "Work orders",
-    quality: "Quality control",
+    scheduling: "Production Scheduling",
+    orders: "Work Orders Execution",
+    quality: "Quality Control Inspections",
+  };
+
+  const subPageDescriptions = {
+    scheduling: "Interactive Gantt timeline, machine capacity planning, and operational shift sequencing.",
+    orders: "Execute shop floor production orders, bill of materials reservations, and output tracking.",
+    quality: "Quality assurance inspections, pass/fail thresholds, and non-conformance quarantine signoffs.",
   };
 
   return (
     <div className="space-y-6 max-w-7xl">
       
-      {/* ── Heading Title ── */}
-      <div className="pb-1 border-b border-stone-200/70 dark:border-stone-800">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-stone-100">
-          {subPageTitles[activeSubPage]}
-        </h1>
-      </div>
-
-      {/* ── Row 2: Sub-Navigation Capsule Bar + Action Buttons ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-stone-200/70 dark:border-stone-800">
-        
-        {/* The Signature Pill Slider Capsule */}
-        <div className="flex items-center p-1 bg-[#EBEAE5] dark:bg-[#18181B] rounded-full border border-stone-300/80 dark:border-stone-800 shadow-2xs self-start">
-          <button
-            type="button"
-            onClick={() => setActiveSubPage("scheduling")}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-              activeSubPage === "scheduling"
-                ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold border border-transparent dark:border-stone-700"
-                : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            Scheduling
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSubPage("orders")}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-              activeSubPage === "orders"
-                ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold border border-transparent dark:border-stone-700"
-                : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            <span>Work orders</span>
-            <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${
-              activeSubPage === "orders" ? "bg-amber-600 text-white" : "bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-200"
-            }`}>
-              {orders.length}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSubPage("quality")}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-              activeSubPage === "quality"
-                ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold border border-transparent dark:border-stone-700"
-                : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            <span>Quality control</span>
-            <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${
-              activeSubPage === "quality" ? "bg-emerald-600 text-white" : "bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-200"
-            }`}>
-              Gate
-            </span>
-          </button>
-        </div>
-
-        {/* Right Action Buttons (Export & New Work Order) */}
-        <div className="flex items-center gap-2.5 self-start sm:self-auto">
-          <button
-            type="button"
-            onClick={handleExport}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 border border-stone-300/80 dark:border-stone-700 text-xs font-semibold text-slate-700 dark:text-stone-200 shadow-2xs transition-colors cursor-pointer"
-            title="Export CSV data"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export</span>
-          </button>
-
-          {canCreate && (
-            <button
+      {/* ── Page Header with Title, Description, and Actions ── */}
+      <PageHeader
+        title={subPageTitles[activeSubPage]}
+        description={subPageDescriptions[activeSubPage]}
+        action={
+          <>
+            <Button
               type="button"
-              onClick={openCreateOrder}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 dark:bg-amber-600 dark:hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              variant="secondary"
+              onClick={handleExport}
+              className="gap-1.5 text-xs font-semibold"
+              title="Export CSV data"
             >
-              <Plus className="w-4 h-4" />
-              <span>New work order</span>
-            </button>
-          )}
-        </div>
+              <Download className="w-3.5 h-3.5" />
+              <span>Export</span>
+            </Button>
+
+            {canCreate && (
+              <Button
+                type="button"
+                variant="primary"
+                onClick={openCreateOrder}
+                className="gap-1.5 text-xs font-semibold"
+              >
+                <Plus className="w-4 h-4" />
+                <span>New Work Order</span>
+              </Button>
+            )}
+          </>
+        }
+      />
+
+      {/* ── Sub-Navigation Capsule Bar ── */}
+      <div className="flex items-center p-1 bg-[#EBEAE5] dark:bg-stone-900 rounded-full border border-stone-300/80 dark:border-stone-800 shadow-2xs w-fit">
+        <button
+          type="button"
+          onClick={() => setActiveSubPage("scheduling")}
+          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+            activeSubPage === "scheduling"
+              ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold border border-transparent dark:border-stone-700"
+              : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
+          }`}
+        >
+          Scheduling
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveSubPage("orders")}
+          className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+            activeSubPage === "orders"
+              ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold border border-transparent dark:border-stone-700"
+              : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
+          }`}
+        >
+          <span>Work orders</span>
+          <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${
+            activeSubPage === "orders" ? "bg-amber-600 text-white" : "bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-200"
+          }`}>
+            {orders.length}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveSubPage("quality")}
+          className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+            activeSubPage === "quality"
+              ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold border border-transparent dark:border-stone-700"
+              : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
+          }`}
+        >
+          <span>Quality control</span>
+          <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${
+            activeSubPage === "quality" ? "bg-emerald-600 text-white" : "bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-200"
+          }`}>
+            Gate
+          </span>
+        </button>
       </div>
 
       {/* ── Sub-Page 1: Scheduling (Interactive Visual Timeline Gantt Board) ── */}
