@@ -95,6 +95,9 @@ html.dark body {
 .dark .bg-stone-50\/50,
 .dark .bg-stone-50\/70,
 .dark .bg-stone-50\/80,
+.dark .bg-slate-50\/40,
+.dark .bg-slate-50\/50,
+.dark .bg-slate-50\/60,
 .dark .bg-slate-50\/70,
 .dark .bg-slate-50\/80 {
   background-color: #1C1D22 !important;

@@ -509,15 +509,15 @@ export function Procurement() {
 
       {/* ── Create Purchase Request Modal ──────────────────────────────────── */}
       {showCreatePR && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white shadow-xl w-full max-w-xl flex flex-col border border-slate-200 rounded-sm max-h-[90vh]">
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#18181B] shadow-2xl w-full max-w-xl flex flex-col border border-slate-200 dark:border-stone-800 rounded-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-150">
 
             {/* Modal header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50 shrink-0">
-              <h3 className="font-semibold text-slate-900 tracking-tight">New Purchase Request</h3>
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/60 shrink-0">
+              <h3 className="font-semibold text-slate-900 dark:text-stone-100 tracking-tight text-base">New Purchase Request</h3>
               <button
                 onClick={closeCreatePR}
-                className="text-slate-400 hover:text-slate-900 transition-colors"
+                className="text-slate-400 hover:text-slate-900 dark:hover:text-stone-200 p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
@@ -526,16 +526,16 @@ export function Procurement() {
 
             {/* Modal body */}
             <div className="p-6 overflow-y-auto flex-1">
-              <p className="text-sm text-slate-500 mb-5">
+              <p className="text-sm text-slate-500 dark:text-stone-400 mb-5 leading-relaxed">
                 Add the materials you need to request. Each item requires a material and a positive quantity.
-                The request will be submitted with <strong>Pending</strong> status for manager approval.
+                The request will be submitted with <strong className="text-slate-800 dark:text-stone-200 font-semibold">Pending</strong> status for manager approval.
               </p>
 
               <form id="create-pr-form" onSubmit={handleCreatePR} className="space-y-4">
                 {/* Column headers */}
                 <div className="grid grid-cols-[1fr_120px_32px] gap-3 items-center">
-                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Material</span>
-                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Quantity</span>
+                  <span className="text-xs font-bold text-slate-500 dark:text-stone-400 uppercase tracking-wider">Material</span>
+                  <span className="text-xs font-bold text-slate-500 dark:text-stone-400 uppercase tracking-wider">Quantity</span>
                   <span />
                 </div>
 
@@ -551,7 +551,7 @@ export function Procurement() {
                           required
                           value={item.material_id}
                           onChange={e => updatePrItem(index, "material_id", e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-shadow"
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-stone-700 bg-white dark:bg-stone-900 text-sm text-slate-900 dark:text-stone-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-shadow cursor-pointer"
                         >
                           <option value="">Select material…</option>
                           {materials.map(m => (
@@ -578,6 +578,7 @@ export function Procurement() {
                           placeholder="0"
                           value={item.quantity}
                           onChange={e => updatePrItem(index, "quantity", sanitizeNumberInput(e.target.value))}
+                          className="rounded-xl"
                         />
                       </div>
 
@@ -586,7 +587,7 @@ export function Procurement() {
                         type="button"
                         onClick={() => removePrItem(index)}
                         disabled={prItems.length === 1}
-                        className="mt-0.5 p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="mt-1 p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                         aria-label={`Remove item ${index + 1}`}
                         title="Remove row"
                       >
@@ -600,7 +601,7 @@ export function Procurement() {
                 <button
                   type="button"
                   onClick={addPrItem}
-                  className="flex items-center gap-1.5 text-sm text-amber-700 hover:text-amber-900 font-medium transition-colors mt-1"
+                  className="inline-flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-semibold transition-colors mt-2 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   Add material
@@ -609,9 +610,9 @@ export function Procurement() {
             </div>
 
             {/* Modal footer */}
-            <div className="p-5 border-t border-slate-200 bg-slate-50/50 space-y-3 shrink-0">
+            <div className="p-5 border-t border-slate-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/60 space-y-3 shrink-0">
               {prFormError && (
-                <div role="alert" aria-live="assertive" className="p-3 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">
+                <div role="alert" aria-live="assertive" className="p-3 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm border-l-4 border-red-500 rounded-r-xl">
                   {prFormError}
                 </div>
               )}
@@ -634,17 +635,17 @@ export function Procurement() {
 
       {/* ── Create Purchase Order Modal ──────────────────────────────────── */}
       {showCreatePO && selectedPR && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white shadow-xl w-full max-w-2xl flex flex-col border border-slate-200 rounded-sm max-h-[90vh]">
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#18181B] shadow-2xl w-full max-w-2xl flex flex-col border border-slate-200 dark:border-stone-800 rounded-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-150">
             {/* Modal header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50 shrink-0">
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/60 shrink-0">
               <div>
-                <h3 className="font-semibold text-slate-900 tracking-tight">Create Purchase Order</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Originating from PR #{selectedPR.id.slice(0, 8)}</p>
+                <h3 className="font-semibold text-slate-900 dark:text-stone-100 tracking-tight text-base">Create Purchase Order</h3>
+                <p className="text-xs text-slate-500 dark:text-stone-400 mt-0.5 font-mono">Originating from PR #{selectedPR.id.slice(0, 8)}</p>
               </div>
               <button
                 onClick={() => setShowCreatePO(false)}
-                className="text-slate-400 hover:text-slate-900 transition-colors"
+                className="text-slate-400 hover:text-slate-900 dark:hover:text-stone-200 p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
@@ -654,14 +655,14 @@ export function Procurement() {
             {/* Modal body */}
             <div className="p-6 overflow-y-auto flex-1 space-y-4">
               <div>
-                <label htmlFor="po-supplier-select" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                <label htmlFor="po-supplier-select" className="block text-xs font-bold text-slate-700 dark:text-stone-300 uppercase tracking-wider mb-1.5">
                   Supplier <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="po-supplier-select"
                   value={poSupplierId}
                   onChange={e => setPoSupplierId(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-shadow"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-stone-700 bg-white dark:bg-stone-900 text-sm text-slate-900 dark:text-stone-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-shadow cursor-pointer"
                   required
                 >
                   <option value="">Select a supplier…</option>
@@ -674,28 +675,28 @@ export function Procurement() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-700 dark:text-stone-300 uppercase tracking-wider mb-2">
                   Line Items & Unit Prices
                 </label>
-                <div className="border border-slate-200 overflow-hidden">
+                <div className="border border-slate-200 dark:border-stone-800 rounded-xl overflow-hidden">
                   <table className="w-full text-left border-collapse text-sm">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      <tr className="bg-slate-50 dark:bg-stone-900/80 border-b border-slate-200 dark:border-stone-800 text-xs font-bold text-slate-500 dark:text-stone-400 uppercase tracking-wider">
                         <th className="py-2.5 px-3">Material</th>
                         <th className="py-2.5 px-3 text-right">Quantity</th>
                         <th className="py-2.5 px-3 text-right">Unit Price ($)</th>
                         <th className="py-2.5 px-3 text-right">Subtotal</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-100 dark:divide-stone-800">
                       {poItems.map((item, idx) => {
                         const subtotal = (Number(item.quantity) || 0) * (Number(item.unit_price) || 0);
                         return (
-                          <tr key={item.material_id || idx} className="hover:bg-slate-50/50">
-                            <td className="py-2.5 px-3 font-medium text-slate-900">
+                          <tr key={item.material_id || idx} className="hover:bg-slate-50/50 dark:hover:bg-stone-800/40 transition-colors">
+                            <td className="py-2.5 px-3 font-medium text-slate-900 dark:text-stone-100">
                               {item.material_name}
                             </td>
-                            <td className="py-2.5 px-3 text-right text-slate-600 font-mono">
+                            <td className="py-2.5 px-3 text-right text-slate-600 dark:text-stone-400 font-mono">
                               {item.quantity} {item.unit}
                             </td>
                             <td className="py-2.5 px-3 text-right w-36">
@@ -709,10 +710,10 @@ export function Procurement() {
                                   const val = sanitizeNumberInput(e.target.value);
                                   setPoItems(prev => prev.map((p, i) => i === idx ? { ...p, unit_price: val } : p));
                                 }}
-                                className="text-right py-1 px-2 text-sm font-mono"
+                                className="text-right py-1 px-2 text-sm font-mono rounded-lg"
                               />
                             </td>
-                            <td className="py-2.5 px-3 text-right font-mono font-medium text-slate-800">
+                            <td className="py-2.5 px-3 text-right font-mono font-medium text-slate-800 dark:text-stone-200">
                               ${subtotal.toFixed(2)}
                             </td>
                           </tr>
@@ -720,9 +721,9 @@ export function Procurement() {
                       })}
                     </tbody>
                     <tfoot>
-                      <tr className="bg-slate-50/75 border-t border-slate-200 font-medium">
-                        <td colSpan={3} className="py-2.5 px-3 text-right text-xs uppercase tracking-wider text-slate-600">Total:</td>
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
+                      <tr className="bg-slate-50/75 dark:bg-stone-900/80 border-t border-slate-200 dark:border-stone-800 font-medium">
+                        <td colSpan={3} className="py-2.5 px-3 text-right text-xs uppercase tracking-wider text-slate-600 dark:text-stone-400 font-bold">Total:</td>
+                        <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-stone-100">
                           ${poItems.reduce((acc, it) => acc + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0), 0).toFixed(2)}
                         </td>
                       </tr>
@@ -733,9 +734,9 @@ export function Procurement() {
             </div>
 
             {/* Modal footer */}
-            <div className="p-5 border-t border-slate-200 bg-slate-50/50 space-y-3 shrink-0">
+            <div className="p-5 border-t border-slate-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/60 space-y-3 shrink-0">
               {poFormError && (
-                <div role="alert" aria-live="assertive" className="p-3 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">
+                <div role="alert" aria-live="assertive" className="p-3 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm border-l-4 border-red-500 rounded-r-xl">
                   {poFormError}
                 </div>
               )}
@@ -757,17 +758,17 @@ export function Procurement() {
 
       {/* ── Receive Goods Modal ────────────────────────────────────────────── */}
       {showReceivePO && selectedPO && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white shadow-xl w-full max-w-2xl flex flex-col border border-slate-200 rounded-sm max-h-[90vh]">
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#18181B] shadow-2xl w-full max-w-2xl flex flex-col border border-slate-200 dark:border-stone-800 rounded-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-150">
             {/* Modal header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50 shrink-0">
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/60 shrink-0">
               <div>
-                <h3 className="font-semibold text-slate-900 tracking-tight">Receive Goods against PO</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Purchase Order #{selectedPO.id.slice(0, 8)}</p>
+                <h3 className="font-semibold text-slate-900 dark:text-stone-100 tracking-tight text-base">Receive Goods against PO</h3>
+                <p className="text-xs text-slate-500 dark:text-stone-400 mt-0.5 font-mono">Purchase Order #{selectedPO.id.slice(0, 8)}</p>
               </div>
               <button
                 onClick={() => setShowReceivePO(false)}
-                className="text-slate-400 hover:text-slate-900 transition-colors"
+                className="text-slate-400 hover:text-slate-900 dark:hover:text-stone-200 p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
@@ -776,26 +777,26 @@ export function Procurement() {
 
             {/* Modal body */}
             <div className="p-6 overflow-y-auto flex-1 space-y-4">
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-slate-600 dark:text-stone-400 leading-relaxed">
                 Verify the delivered quantities and confirm receipt. Stock balances will be automatically updated upon submission.
               </p>
 
-              <div className="border border-slate-200 overflow-hidden">
+              <div className="border border-slate-200 dark:border-stone-800 rounded-xl overflow-hidden">
                 <table className="w-full text-left border-collapse text-sm">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <tr className="bg-slate-50 dark:bg-stone-900/80 border-b border-slate-200 dark:border-stone-800 text-xs font-bold text-slate-500 dark:text-stone-400 uppercase tracking-wider">
                       <th className="py-2.5 px-3">Material</th>
                       <th className="py-2.5 px-3 text-right">Ordered Qty</th>
                       <th className="py-2.5 px-3 text-right">Received Qty</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-stone-800">
                     {grItems.map((item, idx) => (
-                      <tr key={item.po_item_id || idx} className="hover:bg-slate-50/50">
-                        <td className="py-2.5 px-3 font-medium text-slate-900">
+                      <tr key={item.po_item_id || idx} className="hover:bg-slate-50/50 dark:hover:bg-stone-800/40 transition-colors">
+                        <td className="py-2.5 px-3 font-medium text-slate-900 dark:text-stone-100">
                           {item.material_name}
                         </td>
-                        <td className="py-2.5 px-3 text-right text-slate-600 font-mono">
+                        <td className="py-2.5 px-3 text-right text-slate-600 dark:text-stone-400 font-mono">
                           {item.ordered_quantity} {item.unit}
                         </td>
                         <td className="py-2.5 px-3 text-right w-40">
@@ -811,9 +812,9 @@ export function Procurement() {
                                 const val = sanitizeNumberInput(e.target.value);
                                 setGrItems(prev => prev.map((g, i) => i === idx ? { ...g, received_quantity: val } : g));
                               }}
-                              className="text-right py-1 px-2 text-sm font-mono w-28"
+                              className="text-right py-1 px-2 text-sm font-mono w-28 rounded-lg"
                             />
-                            <span className="text-xs text-slate-500 font-mono">{item.unit}</span>
+                            <span className="text-xs text-slate-500 dark:text-stone-400 font-mono">{item.unit}</span>
                           </div>
                         </td>
                       </tr>
@@ -824,9 +825,9 @@ export function Procurement() {
             </div>
 
             {/* Modal footer */}
-            <div className="p-5 border-t border-slate-200 bg-slate-50/50 space-y-3 shrink-0">
+            <div className="p-5 border-t border-slate-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/60 space-y-3 shrink-0">
               {grFormError && (
-                <div role="alert" aria-live="assertive" className="p-3 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">
+                <div role="alert" aria-live="assertive" className="p-3 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm border-l-4 border-red-500 rounded-r-xl">
                   {grFormError}
                 </div>
               )}

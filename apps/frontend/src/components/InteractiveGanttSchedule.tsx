@@ -215,16 +215,29 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       note: "Completed early run for Lumen Bike Studio. Zero paint defects, release signed off.",
       operations: [
         {
+          id: "op-2047-0",
+          name: "Tube cutting",
+          techInitial: "FW",
+          techName: "Felix Wagner",
+          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
+          startDay: 0,
+          durationDays: 1,
+          progress: 100,
+          colorScheme: "emerald",
+          statusText: "Nov 6",
+          workCenter: "WC-101 · Laser & Stamping",
+        },
+        {
           id: "op-2047-1",
           name: "TIG welding",
           techInitial: "KM",
           techName: "Kwame Mensah",
           techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
-          startDay: 0,
+          startDay: 1,
           durationDays: 2,
           progress: 100,
           colorScheme: "emerald",
-          statusText: "Nov 6 – Nov 8",
+          statusText: "Nov 7 – Nov 8",
           workCenter: "WC-102 · Structural TIG Welding Bay",
         },
         {
@@ -233,7 +246,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           techInitial: "LV",
           techName: "Lena Vogel",
           techColor: "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-200",
-          startDay: 2,
+          startDay: 3,
           durationDays: 2,
           progress: 100,
           colorScheme: "emerald",
@@ -246,11 +259,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           techInitial: "JB",
           techName: "Jonas Berg",
           techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
-          startDay: 4,
+          startDay: 5,
           durationDays: 2,
           progress: 100,
           colorScheme: "emerald",
-          statusText: "Nov 12 – Nov 13",
+          statusText: "Nov 11 – Nov 13",
           workCenter: "WC-103 · Finishing & Powder Coating",
         },
       ],
@@ -2080,7 +2093,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                   <div
                     key={wo.id}
                     onClick={() => setSelectedWorkOrderModal(wo)}
-                    className="bg-white dark:bg-[#18181B] rounded-2xl border border-stone-200/80 dark:border-stone-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs hover:border-amber-500/50 dark:hover:border-amber-500/50 transition-all cursor-pointer flex flex-col justify-between space-y-3.5 group"
+                    className="bg-white dark:bg-[#18181B] rounded-2xl border border-stone-200/80 dark:border-stone-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs hover:border-amber-500/50 dark:hover:border-amber-500/50 transition-all cursor-pointer flex flex-col justify-start group"
                   >
                     {/* Header */}
                     <div>
@@ -2169,7 +2182,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     </div>
 
                     {/* Operations List */}
-                    <div className="space-y-2.5 pt-2.5 border-t border-stone-100 dark:border-stone-800/80">
+                    <div className="space-y-2.5 pt-2.5 mt-3 border-t border-stone-100 dark:border-stone-800/80">
                       {wo.operations.map((op) => (
                         <div key={op.id} className="space-y-1">
                           <div className="flex items-center justify-between gap-1.5 text-xs">
