@@ -167,17 +167,17 @@ export function AuditTrail() {
           title="Audit Trail & Traceability"
           description="Inspect immutable compliance logs, physical stock ledger movements, and end-to-end manufacturing lot genealogy."
         />
-        <Card className="p-10 text-center max-w-2xl mx-auto border-amber-200 bg-amber-50/40">
-          <div className="w-12 h-12 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Card className="p-10 text-center max-w-2xl mx-auto border-amber-200 dark:border-amber-800/60 bg-amber-50/40 dark:bg-amber-950/20">
+          <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 rounded-full flex items-center justify-center mx-auto mb-4">
             <ShieldCheck className="w-6 h-6" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900 mb-2">Access Restricted (RBAC Policy)</h2>
-          <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-stone-100 mb-2">Access Restricted (RBAC Policy)</h2>
+          <p className="text-sm text-slate-600 dark:text-stone-300 mb-6 leading-relaxed">
             Halaman <strong>Audit Trail & Traceability</strong> merupakan modul audit kepatuhan (*compliance*) yang dibatasi secara ketat hanya untuk pengguna dengan wewenang <strong>Admin</strong> dan <strong>Manager</strong>.
           </p>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-sm text-xs font-medium text-slate-700 mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-stone-900 border border-slate-200 dark:border-stone-800 rounded-lg text-xs font-medium text-slate-700 dark:text-stone-300 mb-6">
             <span>Role Aktif Anda:</span>
-            <span className="font-bold text-amber-700 uppercase">{user?.role || "Quality Control"}</span>
+            <span className="font-bold text-amber-700 dark:text-amber-400 uppercase">{user?.role || "Quality Control"}</span>
           </div>
           <div className="flex justify-center gap-3">
             <Link to="/quality">
@@ -200,35 +200,35 @@ export function AuditTrail() {
       />
 
       {/* Navigation Tabs */}
-      <div className="border-b border-slate-200">
+      <div className="border-b border-slate-200 dark:border-stone-800">
         <nav className="flex space-x-8" aria-label="Tabs">
           <button
             onClick={() => setActiveTab("LOGS")}
-            className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${
+            className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors cursor-pointer ${
               activeTab === "LOGS"
-                ? "border-amber-600 text-amber-700"
-                : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                ? "border-amber-600 text-amber-700 dark:text-amber-500 font-semibold"
+                : "border-transparent text-slate-500 dark:text-stone-400 hover:text-slate-700 dark:hover:text-stone-200 hover:border-slate-300 dark:hover:border-stone-700"
             }`}
           >
             <History className="w-4 h-4" />
             System Audit Logs
-            <span className="ml-1 px-1.5 py-0.5 text-xs bg-slate-100 text-slate-600 rounded-sm">
+            <span className="ml-1 px-1.5 py-0.5 text-xs bg-slate-100 dark:bg-stone-800 text-slate-600 dark:text-stone-300 rounded-full font-medium">
               {logs.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("LEDGER")}
-            className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${
+            className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors cursor-pointer ${
               activeTab === "LEDGER"
-                ? "border-amber-600 text-amber-700"
-                : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                ? "border-amber-600 text-amber-700 dark:text-amber-500 font-semibold"
+                : "border-transparent text-slate-500 dark:text-stone-400 hover:text-slate-700 dark:hover:text-stone-200 hover:border-slate-300 dark:hover:border-stone-700"
             }`}
           >
             <GitCommit className="w-4 h-4" />
             Inventory Transaction Ledger
             {ledger.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 text-xs bg-slate-100 text-slate-600 rounded-sm">
+              <span className="ml-1 px-1.5 py-0.5 text-xs bg-slate-100 dark:bg-stone-800 text-slate-600 dark:text-stone-300 rounded-full font-medium">
                 {ledger.length}
               </span>
             )}
@@ -236,10 +236,10 @@ export function AuditTrail() {
 
           <button
             onClick={() => setActiveTab("TRACE")}
-            className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${
+            className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors cursor-pointer ${
               activeTab === "TRACE"
-                ? "border-amber-600 text-amber-700"
-                : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                ? "border-amber-600 text-amber-700 dark:text-amber-500 font-semibold"
+                : "border-transparent text-slate-500 dark:text-stone-400 hover:text-slate-700 dark:hover:text-stone-200 hover:border-slate-300 dark:hover:border-stone-700"
             }`}
           >
             <Layers className="w-4 h-4" />
@@ -251,28 +251,28 @@ export function AuditTrail() {
       {/* ── TAB 1: System Audit Logs ────────────────────────────────────────── */}
       {activeTab === "LOGS" && (
         <div className="space-y-4">
-          <Card>
-            <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row gap-3 items-center justify-between">
+          <Card className="overflow-hidden">
+            <div className="p-4 border-b border-slate-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/60 flex flex-col md:flex-row gap-3 items-center justify-between">
               <div className="relative w-full md:max-w-md">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-slate-400 dark:text-stone-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <Input
                   type="text"
                   placeholder="Filter by action, description, or actor..."
                   value={logSearch}
                   onChange={(e) => setLogSearch(e.target.value)}
-                  className="pl-9"
+                  className="pl-9.5 text-xs rounded-xl"
                 />
               </div>
 
               <div className="flex items-center gap-2 w-full md:w-auto">
-                <label htmlFor="entity-filter" className="text-xs font-semibold text-slate-500 uppercase">
+                <label htmlFor="entity-filter" className="text-xs font-semibold text-slate-500 dark:text-stone-400 uppercase tracking-wider">
                   Entity:
                 </label>
                 <select
                   id="entity-filter"
                   value={selectedEntityFilter}
                   onChange={(e) => setSelectedEntityFilter(e.target.value)}
-                  className="px-3 py-1.5 border border-slate-300 bg-white text-sm text-slate-800 rounded-none focus:outline-none focus:border-amber-500"
+                  className="px-3 py-2 border border-slate-300 dark:border-stone-700 bg-white dark:bg-[#141519] text-xs text-slate-800 dark:text-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all cursor-pointer"
                 >
                   <option value="ALL">All Entities</option>
                   <option value="PURCHASE_REQUEST">Purchase Requests</option>
@@ -289,9 +289,9 @@ export function AuditTrail() {
             </div>
 
             {logsLoading ? (
-              <div className="p-12 text-center text-slate-400 italic">Loading audit trail records...</div>
+              <div className="p-12 text-center text-slate-400 dark:text-stone-500 italic text-sm">Loading audit trail records...</div>
             ) : logsError ? (
-              <div className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{logsError}</div>
+              <div className="p-4 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm border-l-4 border-red-500">{logsError}</div>
             ) : (
               <Table>
                 <thead>
@@ -303,17 +303,17 @@ export function AuditTrail() {
                     <Th>Description</Th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-stone-800">
                   {filteredLogs.length === 0 ? (
                     <tr>
-                      <Td colSpan={5} className="text-center py-8 text-slate-400 italic">
+                      <Td colSpan={5} className="text-center py-8 text-slate-400 dark:text-stone-500 italic">
                         No audit events match the selected criteria.
                       </Td>
                     </tr>
                   ) : (
                     filteredLogs.map((log) => (
-                      <tr key={log.id} className="hover:bg-slate-50/50">
-                        <Td className="font-mono text-xs text-slate-500">
+                      <tr key={log.id} className="hover:bg-slate-50/60 dark:hover:bg-stone-800/40 transition-colors">
+                        <Td className="font-mono text-xs text-slate-500 dark:text-stone-400">
                           {new Date(log.created_at).toLocaleString()}
                         </Td>
                         <Td>
@@ -322,22 +322,22 @@ export function AuditTrail() {
                           </Badge>
                         </Td>
                         <Td>
-                          <div className="text-xs font-semibold text-slate-800">{log.entity_name}</div>
-                          <div className="text-[11px] font-mono text-slate-400">
+                          <div className="text-xs font-semibold text-slate-800 dark:text-stone-200">{log.entity_name}</div>
+                          <div className="text-[11px] font-mono text-slate-400 dark:text-stone-500">
                             {log.entity_id ? `${log.entity_id.slice(0, 8)}…` : "—"}
                           </div>
                         </Td>
                         <Td>
-                          <div className="text-xs font-medium text-slate-900">
+                          <div className="text-xs font-medium text-slate-900 dark:text-stone-100">
                             {log.user_name || "System"}
                           </div>
                           {log.user_role && (
-                            <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                            <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-stone-400">
                               {log.user_role}
                             </div>
                           )}
                         </Td>
-                        <Td className="text-xs text-slate-600 max-w-md truncate" title={log.description}>
+                        <Td className="text-xs text-slate-600 dark:text-stone-300 max-w-md truncate" title={log.description}>
                           {log.description}
                         </Td>
                       </tr>
@@ -353,28 +353,28 @@ export function AuditTrail() {
       {/* ── TAB 2: Inventory Transaction Ledger ─────────────────────────────── */}
       {activeTab === "LEDGER" && (
         <div className="space-y-4">
-          <Card>
-            <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row gap-3 items-center justify-between">
+          <Card className="overflow-hidden">
+            <div className="p-4 border-b border-slate-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/60 flex flex-col md:flex-row gap-3 items-center justify-between">
               <div className="relative w-full md:max-w-md">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-slate-400 dark:text-stone-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <Input
                   type="text"
                   placeholder="Filter by SKU, material name, or reference ID..."
                   value={ledgerSearch}
                   onChange={(e) => setLedgerSearch(e.target.value)}
-                  className="pl-9"
+                  className="pl-9.5 text-xs rounded-xl"
                 />
               </div>
 
               <div className="flex items-center gap-2 w-full md:w-auto">
-                <label htmlFor="tx-filter" className="text-xs font-semibold text-slate-500 uppercase">
+                <label htmlFor="tx-filter" className="text-xs font-semibold text-slate-500 dark:text-stone-400 uppercase tracking-wider">
                   Movement:
                 </label>
                 <select
                   id="tx-filter"
                   value={ledgerTypeFilter}
                   onChange={(e) => setLedgerTypeFilter(e.target.value)}
-                  className="px-3 py-1.5 border border-slate-300 bg-white text-sm text-slate-800 rounded-none focus:outline-none focus:border-amber-500"
+                  className="px-3 py-2 border border-slate-300 dark:border-stone-700 bg-white dark:bg-[#141519] text-xs text-slate-800 dark:text-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all cursor-pointer"
                 >
                   <option value="ALL">All Movements</option>
                   <option value="Receipt">Receipt (+)</option>
@@ -387,9 +387,9 @@ export function AuditTrail() {
             </div>
 
             {ledgerLoading ? (
-              <div className="p-12 text-center text-slate-400 italic">Loading inventory ledger entries...</div>
+              <div className="p-12 text-center text-slate-400 dark:text-stone-500 italic text-sm">Loading inventory ledger entries...</div>
             ) : ledgerError ? (
-              <div className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{ledgerError}</div>
+              <div className="p-4 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm border-l-4 border-red-500">{ledgerError}</div>
             ) : (
               <Table>
                 <thead>
@@ -401,40 +401,40 @@ export function AuditTrail() {
                     <Th>Reference Document</Th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-stone-800">
                   {filteredLedger.length === 0 ? (
                     <tr>
-                      <Td colSpan={5} className="text-center py-8 text-slate-400 italic">
+                      <Td colSpan={5} className="text-center py-8 text-slate-400 dark:text-stone-500 italic">
                         No inventory transactions found.
                       </Td>
                     </tr>
                   ) : (
                     filteredLedger.map((tx) => (
-                      <tr key={tx.id} className="hover:bg-slate-50/50">
-                        <Td className="font-mono text-xs text-slate-500">
+                      <tr key={tx.id} className="hover:bg-slate-50/60 dark:hover:bg-stone-800/40 transition-colors">
+                        <Td className="font-mono text-xs text-slate-500 dark:text-stone-400">
                           {new Date(tx.created_at).toLocaleString()}
                         </Td>
                         <Td>
-                          <div className="text-xs font-medium text-slate-900">{tx.material_name}</div>
-                          <div className="text-[11px] font-mono text-slate-500">{tx.material_sku}</div>
+                          <div className="text-xs font-medium text-slate-900 dark:text-stone-100">{tx.material_name}</div>
+                          <div className="text-[11px] font-mono text-slate-500 dark:text-stone-400">{tx.material_sku}</div>
                         </Td>
                         <Td>{getTxBadge(tx.transaction_type)}</Td>
                         <Td className="text-right font-mono text-xs font-semibold">
                           <span
                             className={
                               tx.quantity_change > 0
-                                ? "text-emerald-700"
+                                ? "text-emerald-700 dark:text-emerald-400"
                                 : tx.quantity_change < 0
-                                ? "text-amber-800"
-                                : "text-slate-600"
+                                ? "text-amber-800 dark:text-amber-400"
+                                : "text-slate-600 dark:text-stone-400"
                             }
                           >
                             {tx.quantity_change > 0 ? `+${tx.quantity_change}` : tx.quantity_change} {tx.unit}
                           </span>
                         </Td>
-                        <Td className="font-mono text-xs text-slate-600">
+                        <Td className="font-mono text-xs text-slate-600 dark:text-stone-400">
                           {tx.reference_id ? (
-                            <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200">
+                            <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-stone-800 border border-slate-200 dark:border-stone-700 rounded text-slate-700 dark:text-stone-300">
                               REF: {tx.reference_id.slice(0, 8)}…
                             </span>
                           ) : (
@@ -454,17 +454,17 @@ export function AuditTrail() {
       {/* ── TAB 3: Order & Lot Traceability ─────────────────────────────────── */}
       {activeTab === "TRACE" && (
         <div className="space-y-6">
-          <Card className="p-4 bg-slate-50/60 border-slate-200">
+          <Card className="p-4 bg-slate-50/60 dark:bg-stone-900/60 border-slate-200 dark:border-stone-800">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <div>
-                <label htmlFor="select-prodo" className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                <label htmlFor="select-prodo" className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-stone-300 mb-1.5">
                   Select Production Order for Lineage Trace:
                 </label>
                 <select
                   id="select-prodo"
                   value={selectedOrderId}
                   onChange={(e) => setSelectedOrderId(e.target.value)}
-                  className="px-3 py-2 border border-slate-300 bg-white text-sm text-slate-900 font-medium min-w-[320px] focus:outline-none focus:border-amber-500"
+                  className="px-3.5 py-2 border border-slate-300 dark:border-stone-700 bg-white dark:bg-[#141519] text-xs text-slate-900 dark:text-stone-100 font-medium rounded-xl min-w-[320px] focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all cursor-pointer"
                 >
                   {orders.length === 0 ? (
                     <option value="">No production orders available</option>
@@ -478,7 +478,7 @@ export function AuditTrail() {
                 </select>
               </div>
 
-              <div className="text-xs text-slate-500 max-w-sm">
+              <div className="text-xs text-slate-500 dark:text-stone-400 max-w-sm leading-relaxed">
                 Traces the full manufacturing genealogy: from raw material purchase orders and inbound receipts,
                 through factory floor reservation & consumption, to final QC signoff.
               </div>
@@ -486,41 +486,41 @@ export function AuditTrail() {
           </Card>
 
           {traceLoading ? (
-            <div className="p-16 text-center text-slate-400 italic">Building traceability genealogy tree...</div>
+            <div className="p-16 text-center text-slate-400 dark:text-stone-500 italic text-sm">Building traceability genealogy tree...</div>
           ) : traceError ? (
-            <div className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{traceError}</div>
+            <div className="p-4 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm border-l-4 border-red-500">{traceError}</div>
           ) : !traceData ? null : (
             <div className="space-y-6">
               {/* Stage 1: Order Header & Yield */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card className="p-5 border-l-4 border-l-blue-600">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-stone-400 mb-2">
                     <Factory className="w-4 h-4 text-blue-600" />
                     Target Output
                   </div>
-                  <div className="text-lg font-semibold text-slate-900">{traceData.order.product_name}</div>
-                  <div className="text-xs font-mono text-slate-500 mt-0.5">{traceData.order.product_sku}</div>
-                  <div className="mt-3 flex items-center justify-between text-xs pt-3 border-t border-slate-100">
-                    <span className="text-slate-500">Planned Quantity:</span>
-                    <span className="font-bold text-slate-900 font-mono">
+                  <div className="text-lg font-semibold text-slate-900 dark:text-stone-100">{traceData.order.product_name}</div>
+                  <div className="text-xs font-mono text-slate-500 dark:text-stone-400 mt-0.5">{traceData.order.product_sku}</div>
+                  <div className="mt-3 flex items-center justify-between text-xs pt-3 border-t border-slate-100 dark:border-stone-800">
+                    <span className="text-slate-500 dark:text-stone-400">Planned Quantity:</span>
+                    <span className="font-bold text-slate-900 dark:text-stone-100 font-mono">
                       {traceData.order.planned_quantity} {traceData.order.product_unit}
                     </span>
                   </div>
                 </Card>
 
                 <Card className="p-5 border-l-4 border-l-amber-600">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-stone-400 mb-2">
                     <GitCommit className="w-4 h-4 text-amber-600" />
                     Execution Status
                   </div>
-                  <div className="text-lg font-semibold text-slate-900">
+                  <div className="text-lg font-semibold text-slate-900 dark:text-stone-100">
                     <Badge variant={traceData.order.status === "Completed" ? "success" : "warning"}>
                       {traceData.order.status}
                     </Badge>
                   </div>
-                  <div className="mt-3 flex items-center justify-between text-xs pt-3 border-t border-slate-100">
-                    <span className="text-slate-500">Actual Produced:</span>
-                    <span className="font-bold text-slate-900 font-mono">
+                  <div className="mt-3 flex items-center justify-between text-xs pt-3 border-t border-slate-100 dark:border-stone-800">
+                    <span className="text-slate-500 dark:text-stone-400">Actual Produced:</span>
+                    <span className="font-bold text-slate-900 dark:text-stone-100 font-mono">
                       {traceData.production_record ? traceData.production_record.actual_quantity_produced : 0}{" "}
                       {traceData.order.product_unit}
                     </span>
@@ -528,26 +528,26 @@ export function AuditTrail() {
                 </Card>
 
                 <Card className="p-5 border-l-4 border-l-emerald-600">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-stone-400 mb-2">
                     <ShieldCheck className="w-4 h-4 text-emerald-600" />
                     Quality Signoff
                   </div>
                   {traceData.quality_inspection ? (
                     <div>
-                      <div className="text-lg font-semibold text-emerald-800 flex items-center gap-1.5">
+                      <div className="text-lg font-semibold text-emerald-800 dark:text-emerald-400 flex items-center gap-1.5">
                         <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                         Inspected & Released
                       </div>
-                      <div className="mt-2 text-xs text-slate-600">
-                        Inspector: <strong className="text-slate-900">{traceData.quality_inspection.inspector_name}</strong>
+                      <div className="mt-2 text-xs text-slate-600 dark:text-stone-300">
+                        Inspector: <strong className="text-slate-900 dark:text-stone-100">{traceData.quality_inspection.inspector_name}</strong>
                       </div>
-                      <div className="mt-1 text-xs text-slate-600 font-mono">
-                        Passed: <span className="font-bold text-emerald-700">{traceData.quality_inspection.pass_quantity}</span> | 
-                        Failed: <span className="font-bold text-red-600">{traceData.quality_inspection.fail_quantity}</span>
+                      <div className="mt-1 text-xs text-slate-600 dark:text-stone-300 font-mono">
+                        Passed: <span className="font-bold text-emerald-700 dark:text-emerald-400">{traceData.quality_inspection.pass_quantity}</span> | 
+                        Failed: <span className="font-bold text-red-600 dark:text-red-400">{traceData.quality_inspection.fail_quantity}</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="text-slate-400 italic text-sm py-2">
+                    <div className="text-slate-400 dark:text-stone-500 italic text-sm py-2">
                       Pending quality verification.
                     </div>
                   )}
@@ -555,10 +555,10 @@ export function AuditTrail() {
               </div>
 
               {/* Stage 2: Upstream Sourcing Linkage */}
-              <Card>
-                <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex items-center gap-2">
-                  <Truck className="w-4 h-4 text-slate-600" />
-                  <h4 className="font-semibold text-slate-900 text-sm">
+              <Card className="overflow-hidden">
+                <div className="p-4 border-b border-slate-200 dark:border-stone-800/80 bg-stone-50/50 dark:bg-stone-900/60 flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-slate-600 dark:text-stone-400" />
+                  <h4 className="font-semibold text-slate-900 dark:text-stone-100 text-sm">
                     Upstream Sourcing Origin (Goods Receipts & Purchase Orders)
                   </h4>
                 </div>
@@ -573,25 +573,25 @@ export function AuditTrail() {
                       <Th className="text-right">Qty Received</Th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-stone-800">
                     {traceData.upstream_procurement.length === 0 ? (
                       <tr>
-                        <Td colSpan={6} className="text-center py-6 text-slate-400 italic">
+                        <Td colSpan={6} className="text-center py-6 text-slate-400 dark:text-stone-500 italic">
                           No upstream procurement records linked directly to this batch.
                         </Td>
                       </tr>
                     ) : (
                       traceData.upstream_procurement.map((u: any, idx: number) => (
-                        <tr key={idx} className="hover:bg-slate-50/50">
+                        <tr key={idx} className="hover:bg-slate-50/60 dark:hover:bg-stone-800/40 transition-colors">
                           <Td>
-                            <span className="font-medium text-slate-900">{u.material_name}</span>{" "}
-                            <span className="font-mono text-slate-400 text-xs">({u.material_sku})</span>
+                            <span className="font-medium text-slate-900 dark:text-stone-100">{u.material_name}</span>{" "}
+                            <span className="font-mono text-slate-400 dark:text-stone-500 text-xs">({u.material_sku})</span>
                           </Td>
-                          <Td className="font-medium text-slate-800">{u.supplier_name}</Td>
-                          <Td className="font-mono text-xs text-slate-600">#{u.po_id.slice(0, 8)}…</Td>
-                          <Td className="font-mono text-xs text-slate-600">#{u.receipt_id.slice(0, 8)}…</Td>
-                          <Td className="text-xs text-slate-600">{new Date(u.receipt_date).toLocaleDateString()}</Td>
-                          <Td className="text-right font-mono text-xs font-semibold text-slate-900">
+                          <Td className="font-medium text-slate-800 dark:text-stone-200">{u.supplier_name}</Td>
+                          <Td className="font-mono text-xs text-slate-600 dark:text-stone-400">#{u.po_id.slice(0, 8)}…</Td>
+                          <Td className="font-mono text-xs text-slate-600 dark:text-stone-400">#{u.receipt_id.slice(0, 8)}…</Td>
+                          <Td className="text-xs text-slate-600 dark:text-stone-400">{new Date(u.receipt_date).toLocaleDateString()}</Td>
+                          <Td className="text-right font-mono text-xs font-semibold text-slate-900 dark:text-stone-100">
                             {u.received_quantity} {u.unit}
                           </Td>
                         </tr>
@@ -602,10 +602,10 @@ export function AuditTrail() {
               </Card>
 
               {/* Stage 3: Shop Floor Material Requirements vs Consumptions */}
-              <Card>
-                <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex items-center gap-2">
-                  <Box className="w-4 h-4 text-slate-600" />
-                  <h4 className="font-semibold text-slate-900 text-sm">
+              <Card className="overflow-hidden">
+                <div className="p-4 border-b border-slate-200 dark:border-stone-800/80 bg-stone-50/50 dark:bg-stone-900/60 flex items-center gap-2">
+                  <Box className="w-4 h-4 text-slate-600 dark:text-stone-400" />
+                  <h4 className="font-semibold text-slate-900 dark:text-stone-100 text-sm">
                     Bill of Materials Consumption & Inventory Ledger Trace
                   </h4>
                 </div>
@@ -617,32 +617,32 @@ export function AuditTrail() {
                       <Th>Stock Movements Recorded for Order</Th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-stone-800">
                     {traceData.bom_requirements.map((bom: any) => {
                       const relatedTxs = traceData.stock_movements.filter(
                         (sm: any) => sm.material_id === bom.material_id
                       );
                       return (
-                        <tr key={bom.material_id} className="hover:bg-slate-50/50">
+                        <tr key={bom.material_id} className="hover:bg-slate-50/60 dark:hover:bg-stone-800/40 transition-colors">
                           <Td>
-                            <div className="font-medium text-slate-900">{bom.material_name}</div>
-                            <div className="font-mono text-xs text-slate-500">{bom.material_sku}</div>
+                            <div className="font-medium text-slate-900 dark:text-stone-100">{bom.material_name}</div>
+                            <div className="font-mono text-xs text-slate-500 dark:text-stone-400">{bom.material_sku}</div>
                           </Td>
-                          <Td className="text-right font-mono font-semibold text-slate-900">
+                          <Td className="text-right font-mono font-semibold text-slate-900 dark:text-stone-100">
                             {bom.required_quantity} {bom.unit}
                           </Td>
                           <Td>
                             {relatedTxs.length === 0 ? (
-                              <span className="text-slate-400 italic text-xs">No movements recorded</span>
+                              <span className="text-slate-400 dark:text-stone-500 italic text-xs">No movements recorded</span>
                             ) : (
                               <div className="space-y-1">
                                 {relatedTxs.map((sm: any) => (
                                   <div key={sm.id} className="flex items-center gap-2 text-xs font-mono">
                                     {getTxBadge(sm.transaction_type)}
-                                    <span className="text-slate-700 font-semibold">
+                                    <span className="text-slate-700 dark:text-stone-300 font-semibold">
                                       {sm.quantity_change} {bom.unit}
                                     </span>
-                                    <span className="text-slate-400 text-[11px]">
+                                    <span className="text-slate-400 dark:text-stone-500 text-[11px]">
                                       ({new Date(sm.created_at).toLocaleTimeString()})
                                     </span>
                                   </div>
@@ -659,9 +659,9 @@ export function AuditTrail() {
 
               {/* Stage 4: Defect Analysis if any */}
               {traceData.defects.length > 0 && (
-                <Card className="border-red-200">
-                  <div className="p-4 border-b border-red-200 bg-red-50/50 flex items-center gap-2 text-red-800">
-                    <AlertCircle className="w-4 h-4 text-red-600" />
+                <Card className="border-red-200 dark:border-red-900/50 overflow-hidden">
+                  <div className="p-4 border-b border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/30 flex items-center gap-2 text-red-800 dark:text-red-300">
+                    <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
                     <h4 className="font-semibold text-sm">Quality Defect Records Logged for this Batch</h4>
                   </div>
                   <Table>
@@ -671,11 +671,11 @@ export function AuditTrail() {
                         <Th className="text-right">Defective Quantity</Th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-100 dark:divide-stone-800">
                       {traceData.defects.map((d: any) => (
-                        <tr key={d.id}>
-                          <Td className="font-medium text-slate-900">{d.defect_reason}</Td>
-                          <Td className="text-right font-mono font-bold text-red-600">{d.quantity}</Td>
+                        <tr key={d.id} className="hover:bg-slate-50/60 dark:hover:bg-stone-800/40 transition-colors">
+                          <Td className="font-medium text-slate-900 dark:text-stone-100">{d.defect_reason}</Td>
+                          <Td className="text-right font-mono font-bold text-red-600 dark:text-red-400">{d.quantity}</Td>
                         </tr>
                       ))}
                     </tbody>
