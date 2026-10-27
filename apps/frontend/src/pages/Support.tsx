@@ -127,7 +127,7 @@ export function Support() {
           id: "r1",
           author: "Felix Wagner",
           role: "CNC Operator",
-          message: "Tekanan gas turun tiba-tiba ke 9 bar saat memotong lembaran chassis ke-12.",
+          message: "Gas assist pressure dropped suddenly to 9.2 bar while cutting the 12th chassis sheet blank.",
           time: "24 min ago",
         },
         {
@@ -160,14 +160,14 @@ export function Support() {
           id: "r3",
           author: "Amara Okafor",
           role: "Assembly Tech",
-          message: "Part number busbar pada kotak fisik Cu-BUS-2026-09 berbeda kode revisi di sistem MES.",
+          message: "Busbar physical lot tag Cu-BUS-2026-09 shows revision code discrepancy against the MES bill of materials.",
           time: "3.5 hours ago",
         },
         {
           id: "r4",
           author: "Diego Alvarez",
           role: "Warehouse Lead",
-          message: "Drawing Rev C terkonfirmasi sah. Barcode lot sudah diverifikasi dan di-unblock di sistem.",
+          message: "Engineering Drawing Rev C confirmed valid. Barcode lot verified and released in MES inventory.",
           time: "3 hours ago",
         },
       ],
@@ -212,7 +212,7 @@ export function Support() {
       category: formCategory,
       priority: formPriority,
       status: "Open",
-      timeAgo: "Baru saja",
+      timeAgo: "Just now",
       reporter: `${userName} (${userRole})`,
       replies: [
         {
@@ -220,7 +220,7 @@ export function Support() {
           author: `${userName}`,
           role: userRole,
           message: formDescription,
-          time: "Baru saja",
+          time: "Just now",
         },
       ],
     };
@@ -230,7 +230,7 @@ export function Support() {
     setFormWorkOrder("");
     setFormDescription("");
     setFormSubmitted(true);
-    showToast(`Tiket ${newTicket.id} berhasil diajukan ke tim shift!`);
+    showToast(`Ticket ${newTicket.id} successfully dispatched to shift team!`);
     setTimeout(() => setFormSubmitted(false), 4500);
   };
 
@@ -242,7 +242,7 @@ export function Support() {
       author: userName,
       role: userRole,
       message: ticketFollowUpText.trim(),
-      time: "Baru saja",
+      time: "Just now",
     };
 
     setTickets((prev) =>
@@ -262,7 +262,7 @@ export function Support() {
     }
 
     setTicketFollowUpText("");
-    showToast("Pembaruan observasi berhasil ditambahkan ke tiket.");
+    showToast("Field observation note added to ticket.");
   };
 
   // Update ticket status
@@ -273,7 +273,7 @@ export function Support() {
     if (selectedTicket && selectedTicket.id === ticketId) {
       setSelectedTicket((prev) => (prev ? { ...prev, status: newStatus } : null));
     }
-    showToast(`Status tiket ${ticketId} diubah ke ${newStatus}.`);
+    showToast(`Ticket ${ticketId} status updated to ${newStatus}.`);
   };
 
   // All Manufacturing SOPs database
@@ -285,22 +285,22 @@ export function Support() {
       workCenter: "WC-101 · Laser Cutting & CNC Bending",
       category: "Machining",
       readTime: "3 min",
-      desc: "Kalibrasi nozzle cutting, focal distance, dan tekanan gas nitrogen untuk pemotongan lembaran chassis galvannealed.",
-      ppe: ["Kacamata Pelindung Laser (OD 6+)", "Sarung Tangan Tahan Potong Level 5", "Sepatu Safety Toe"],
+      desc: "Calibration of cutting nozzle, focal distance, and nitrogen assist gas pressure for galvannealed chassis sheet cutting.",
+      ppe: ["Laser Protective Goggles (OD 6+)", "Cut-Resistant Gloves (Level 5)", "Steel-Toe Safety Boots"],
       parameters: [
-        { label: "Gas Assist", value: "Nitrogen (N2) @ 14.5 ± 0.5 Bar" },
-        { label: "Kecepatan Potong", value: "3.2 m/min (2mm Galvannealed)" },
+        { label: "Assist Gas", value: "Nitrogen (N2) @ 14.5 ± 0.5 Bar" },
+        { label: "Cutting Feed Rate", value: "3.2 m/min (2mm Galvannealed)" },
         { label: "Nozzle Orifice", value: "Ø 1.5 mm Double Chrome" },
         { label: "Focal Position", value: "-1.0 mm (Sub-surface)" },
       ],
       steps: [
-        "Periksa kebersihan kaca pelindung optik laser, pastikan bebas dari partikel debu & percikan dross.",
-        "Nyalakan suplai gas nitrogen dan pastikan regulator botol/manifold berada pada tekanan minimal 20 bar.",
-        "Lakukan kalibrasi pemusatan nozzle (nozzle centering tape test) menggunakan selotip optik khusus.",
-        "Jalankan uji pemotongan sampel lembaran 100x100mm dan periksa tepi potong dengan mikrometer digital.",
-        "Konfirmasi toleransi kerf pemotongan (toleransi spesifikasi: ±0.05 mm) sebelum memulai batch produksi.",
+        "Inspect laser optical protective lens; ensure clean and free from dust particles and dross spatter.",
+        "Turn on nitrogen supply and verify manifold regulator delivers minimum 20 bar supply pressure.",
+        "Execute nozzle centering tape test using dedicated optical alignment adhesive.",
+        "Perform trial test cut on 100x100mm coupon sample and inspect edge kerf using digital micrometer.",
+        "Verify cutting kerf tolerance within specification (±0.05 mm) before commencing batch production.",
       ],
-      criteria: "Tepi potong harus bersih tanpa burr, bebas dross bawah, dan deviasi dimensi tidak melebihi ±0.05 mm.",
+      criteria: "Cut edge must be burr-free with zero underside dross and dimensional deviation within ±0.05 mm.",
       icon: Cpu,
     },
     {
@@ -310,22 +310,22 @@ export function Support() {
       workCenter: "WC-102 · Structural TIG Welding Bay",
       category: "Welding",
       readTime: "4 min",
-      desc: "Prosedur gas argon 99.99%, sudut tungsten torch, dan inspeksi penetrasi las untuk kabinet switchgear industri.",
-      ppe: ["Topeng Las Auto-Darkening (Shade 10-12)", "Sarung Tangan Las Kulit Kambing", "Apron Las Tahan Panas"],
+      desc: "Procedures for 99.99% pure argon shielding gas, tungsten torch angle, and weld penetration verification for switchgear cabinets.",
+      ppe: ["Auto-Darkening Welding Helmet (Shade 10-12)", "Goatskin TIG Welding Gloves", "Flame-Retardant Leather Apron"],
       parameters: [
-        { label: "Gas Lindung", value: "Argon Murni 99.99% @ 12 L/min" },
-        { label: "Arus Pengelasan", value: "115 - 130 A (DCEN)" },
-        { label: "Elektroda", value: "Tungsten EWTh-2 Ø 2.4 mm" },
-        { label: "Post-Flow Gas", value: "5.0 Detik" },
+        { label: "Shielding Gas", value: "Pure Argon 99.99% @ 12 L/min" },
+        { label: "Welding Current", value: "115 - 130 A (DCEN)" },
+        { label: "Electrode Spec", value: "Tungsten EWTh-2 Ø 2.4 mm" },
+        { label: "Gas Post-Flow", value: "5.0 Seconds" },
       ],
       steps: [
-        "Bersihkan permukaan plat dari minyak, oli, dan residu oksidasi menggunakan cairan pembersih non-korosif.",
-        "Periksa sudut pengasahan elektroda tungsten (ujung runcing 30° untuk busur terfokus).",
-        "Pasang klem grounding sedekat mungkin ke zona pengelasan untuk mencegah distorsi busur (arc wander).",
-        "Lakukan pengelasan sambungan sudut dengan postur stabil dan jarak torch ke benda kerja 2-3 mm.",
-        "Tunggu aliran gas post-flow selesai sebelum mengangkat torch agar kawah las tidak mengalami oksidasi.",
+        "Clean joint surfaces free of oil, grease, and oxidation residues using non-corrosive industrial solvent.",
+        "Verify tungsten electrode grind angle (sharp 30° conical tip for focused arc stability).",
+        "Clamp work grounding cable as close as possible to the weld joint to prevent arc wander.",
+        "Execute fillet weld pass maintaining stable posture and 2-3 mm torch standoff distance.",
+        "Hold torch steady until post-flow gas timer expires to shield molten puddle against oxidation.",
       ],
-      criteria: "Penetrasi sambungan 100%, permukaan manik las rapat dan seragam, tanpa porositas atau retak.",
+      criteria: "100% root penetration, uniform bead contour, zero porosity, cracks, or undercut.",
       icon: Wrench,
     },
     {
@@ -335,22 +335,22 @@ export function Support() {
       workCenter: "WC-104 · Sub-assembly & QC Gate",
       category: "Quality",
       readTime: "3 min",
-      desc: "Pengujian ketahanan insulasi tegangan tinggi (2.5 kV AC) dan kontinuitas grounding sebelum rilis produk.",
-      ppe: ["Sepatu Sol Isolasi 10 kV", "Sarung Tangan Karet Dielektrik Kelas 0", "Gelang Grounding ESD"],
+      desc: "High-voltage insulation withstand testing (2.5 kV AC) and chassis grounding continuity check prior to final release.",
+      ppe: ["10 kV Insulated Safety Boots", "Class 0 Dielectric Rubber Gloves", "ESD Grounding Wrist Strap"],
       parameters: [
-        { label: "Tegangan Uji", value: "2.5 kV AC (50/60 Hz)" },
-        { label: "Waktu Paparan", value: "60 Detik" },
-        { label: "Ambang Arus Bocor", value: "< 5.0 mA (Trip Cut-off)" },
-        { label: "Resistansi Isolasi", value: "> 100 MΩ (@ 500V DC)" },
+        { label: "Test Voltage", value: "2.5 kV AC (50/60 Hz)" },
+        { label: "Dwell Duration", value: "60 Seconds" },
+        { label: "Leakage Threshold", value: "< 5.0 mA (Trip Cut-off)" },
+        { label: "Insulation Resistance", value: "> 100 MΩ (@ 500V DC)" },
       ],
       steps: [
-        "Pastikan produk (PDU atau Modul Baterai) telah selesai dirakit dan semua baut terminal terkunci kuat.",
-        "Sambungkan kabel ground tester ke sasis bodi logam produk dan probe tegangan ke terminal fasa.",
-        "Tutup sangkar pelindung isolasi (safety interlock cage) sebelum menyalakan daya pengujian.",
-        "Tekan tombol uji ganda dan monitor nilai arus bocor selama pengujian 60 detik penuh.",
-        "Tempelkan label hijau lolos QC (QC Pass Sticker) jika hasil menunjukkan tidak ada kebocoran arus.",
+        "Ensure product (PDU or Battery Module) is fully assembled with all terminal lugs torqued.",
+        "Connect ground return lead to metal chassis earth stud and high-voltage probe to live phase busbar.",
+        "Close safety interlock cage before energizing high-voltage supply.",
+        "Press dual test buttons and observe leakage current reading across the full 60-second dwell.",
+        "Affix serialized green QC Pass sticker upon zero-breakdown confirmation.",
       ],
-      criteria: "Arus bocor terukur < 5.0 mA, tidak terjadi sparkover/arc, dan resistansi isolasi > 100 MΩ.",
+      criteria: "Measured leakage current < 5.0 mA, zero arc/flashover, and insulation resistance > 100 MΩ.",
       icon: Zap,
     },
     {
@@ -360,21 +360,21 @@ export function Support() {
       workCenter: "Warehouse Bay 3 · Material Storage",
       category: "Inventory",
       readTime: "2 min",
-      desc: "Langkah isolasi lot cacat, penandaan kartu merah (quarantine hold), dan alokasi lot pengganti di gudang.",
-      ppe: ["Sepatu Safety", "Rompi Reflektor Gudang", "Sarung Tangan Handling"],
+      desc: "Procedures for isolating non-conforming lots, applying red quarantine holds, and re-allocating substitute inventory in warehouse.",
+      ppe: ["Steel-Toe Safety Shoes", "High-Visibility Warehouse Vest", "Grip Handling Gloves"],
       parameters: [
-        { label: "Tag Identifikasi", value: "Digital Red Quarantine Tag" },
-        { label: "Lokasi Karantina", value: "Rak Khusus Bay 3G (Isolasi)" },
-        { label: "SLA Alokasi Pengganti", value: "< 45 Menit" },
+        { label: "Identification Tag", value: "Digital Red Quarantine Tag" },
+        { label: "Quarantine Zone", value: "Dedicated Bay 3G Secure Cage" },
+        { label: "Re-allocation SLA", value: "< 45 Minutes" },
       ],
       steps: [
-        "Pindai barcode lot material bermasalah menggunakan scanner terminal genggam.",
-        "Ubah status inventaris lot dari 'Available' menjadi 'Quarantine Hold' di sistem MES.",
-        "Pasang tag fisik merah bertuliskan 'HOLD - JANGAN DIPAKAI' pada palet/kotak komponen.",
-        "Pindahkan fisik material ke area karantina berpagar di Bay 3G.",
-        "Buat permintaan alokasi lot alternatif pada Work Order terdampak agar lini perakitan tidak terhenti.",
+        "Scan non-conforming material lot barcode using handheld wireless terminal scanner.",
+        "Update lot inventory status from 'Available' to 'Quarantine Hold' in MES.",
+        "Affix physical red 'HOLD - DO NOT USE' tag to pallet or component container.",
+        "Transfer physical lot into locked quarantine zone at Bay 3G.",
+        "Trigger substitute lot reservation request on affected Work Order to maintain line continuity.",
       ],
-      criteria: "Lot terkarantina terisolasi total secara sistem dan fisik; Work Order dialokasikan lot pengganti valid.",
+      criteria: "Quarantined lot isolated both physically and digitally; Work Order allocated valid substitute lot.",
       icon: Package,
     },
     {
@@ -384,43 +384,43 @@ export function Support() {
       workCenter: "WC-104 · Sub-assembly & QC Gate",
       category: "Assembly",
       readTime: "3 min",
-      desc: "Pemasangan terminal ferrule berisolasi, crimping pneumatik, dan pengencangan baut torsi standar kabinet PDU.",
-      ppe: ["Gelang ESD Anti-Statik", "Kacamata Keselamatan"],
+      desc: "Insulated ferrule crimping, pneumatic compression, and standard torque fastening for PDU electrical terminal blocks.",
+      ppe: ["Anti-Static ESD Wrist Strap", "Protective Safety Glasses"],
       parameters: [
-        { label: "Torsi Baut M6", value: "4.5 ± 0.3 N·m" },
-        { label: "Torsi Baut M8", value: "9.0 ± 0.5 N·m" },
-        { label: "Uji Tarik Crimping", value: "Min. 450 N (Pull Test)" },
+        { label: "Torque Spec M6 Bolt", value: "4.5 ± 0.3 N·m" },
+        { label: "Torque Spec M8 Bolt", value: "9.0 ± 0.5 N·m" },
+        { label: "Crimp Pull Test", value: "Min. 450 N (Pull Test)" },
       ],
       steps: [
-        "Kupas isolasi kabel tembaga sesuai panjang selongsong ferrule (12 mm tepat tanpa merusak serabut).",
-        "Masukkan ferrule tembaga berlapis timah dan lakukan crimping dengan alat pneumatik terkalibrasi.",
-        "Kencangkan baut terminal block menggunakan obeng torsi digital hingga berbunyi 'klik'.",
-        "Bubuhkan cairan penanda segel torsi (torque seal marker hijau) pada sambungan baut.",
+        "Strip copper cable insulation to exact ferrule sleeve depth (12 mm clean cut without fraying strands).",
+        "Insert tin-plated copper ferrule and crimp using calibrated pneumatic crimping die.",
+        "Fasten terminal block screw using calibrated digital torque screwdriver until audible click.",
+        "Apply green torque seal inspection witness paint across the fastened bolt head.",
       ],
-      criteria: "Semua koneksi kabel kokoh tanpa serabut putus dan bertanda segel torsi inspeksi visual.",
+      criteria: "All connections mechanically secure with zero strand damage, verified by torque seal mark.",
       icon: Layers,
     },
     {
       code: "SOP-IOT-06",
       title: "PLC Edge Gateway Connectivity Reset & Buffer Flush Protocol",
       revision: "Rev 1.5 · Approved",
-      workCenter: "WC-101 s/d WC-104",
+      workCenter: "WC-101 thru WC-104",
       category: "IoT",
       readTime: "3 min",
-      desc: "Prosedur penanganan offline edge gateway, verifikasi integritas buffer lokal, dan sinkronisasi data telemetri.",
-      ppe: ["Sepatu Sol ESD"],
+      desc: "Protocol for offline edge gateway recovery, local buffer verification, and telemetry resynchronization.",
+      ppe: ["ESD Dissipative Footwear"],
       parameters: [
-        { label: "Protokol", value: "OPC UA / Modbus TCP over TLS" },
-        { label: "Batas Latensi", value: "< 25 ms ke Server MES" },
-        { label: "Ambang Buffer", value: "Maksimal 128 MB Local Cache" },
+        { label: "Protocol", value: "OPC UA / Modbus TCP over TLS" },
+        { label: "Target Latency", value: "< 25 ms to MES Server" },
+        { label: "Buffer Capacity", value: "Max 128 MB Local Cache" },
       ],
       steps: [
-        "Periksa lampu LED status link pada switch industri di panel kontrol stasiun kerja.",
-        "Jika gateway berkedip merah (offline), jalankan perintah 'Gateway Diagnostic Ping' di konsol.",
-        "Biarkan local cache mengumpulkan data telemetri selama jaringan diperiksa.",
-        "Saat koneksi pulih, klik 'Flush Buffer' agar data runtime & counter mesin masuk kembali ke MES.",
+        "Inspect industrial Ethernet switch link LEDs inside the work center control cabinet.",
+        "If gateway LED flashes amber/red (offline), execute 'Gateway Diagnostic Ping' from console.",
+        "Allow local edge cache to collect machine telemetry during network troubleshooting.",
+        "Once link is restored, execute 'Flush Buffer' to resynchronize runtime and part counters into MES.",
       ],
-      criteria: "Data telemetri tersinkronisasi 100% tanpa adanya celah waktu (zero time-gap record).",
+      criteria: "100% telemetry synced to database with zero time-gap records or lost counters.",
       icon: Cpu,
     },
   ];
@@ -445,39 +445,39 @@ export function Support() {
   // Manufacturing FAQs
   const allFaqs = [
     {
-      q: "Apa tindakan standar saat terjadi Line Stoppage atau kendala mesin darurat (Andon)?",
-      a: "Operator wajib menekan tombol sinyal kendala stasiun atau membuat tiket P1 Stoppage di portal ini. Teknisi pemeliharaan (Plant Maintenance) dan Supervisor Shift wajib merespons ke stasiun kerja dalam waktu < 5 menit sesuai target SLA operasional.",
-      domain: "Mesin & Stasiun Kerja",
+      q: "What is the standard procedure when a Line Stoppage or machine emergency (Andon) occurs?",
+      a: "The operator must press the station Andon cord/button or log a P1 Stoppage ticket in this portal. Plant Maintenance and Shift Supervisors are dispatched immediately with a mandatory < 5 minute response SLA target.",
+      domain: "Machining & Work Centers",
     },
     {
-      q: "Bagaimana jika gateway PLC di stasiun kerja mengalami offline / putus koneksi jaringan?",
-      a: "Setiap Work Center dilengkapi buffer memori lokal (Edge Cache). Selama koneksi offline, mesin tetap dapat beroperasi normal. Begitu koneksi Ethernet/Modbus pulih, data telemetri suhu, RPM, dan counter output akan otomatis disinkronkan ke sistem MES tanpa kehilangan data.",
-      domain: "IoT & Gateway PLC",
+      q: "What happens if a work center PLC gateway disconnects or experiences a network outage?",
+      a: "Each Work Center is equipped with local edge buffering (Edge Cache). Machines continue running uninterrupted offline. Once Ethernet/Modbus connectivity is restored, telemetry (temperatures, RPMs, output counts) automatically syncs to the MES server with zero data loss.",
+      domain: "IoT & PLC Gateways",
     },
     {
-      q: "Bagaimana prosedur pelepasan komponen yang terkena Quality Hold di QC Gate?",
-      a: "Pemeriksaan ulang harus dilakukan oleh petugas Quality Control bersama supervisor stasiun. Jika hasil verifikasi memenuhi standar toleransi dan ditandatangani oleh QC Lead, status hold dapat dicabut melalui modul Quality Control sehingga Work Order dapat dilanjutkan.",
-      domain: "Quality Gate & QC",
+      q: "What is the procedure to release components flagged with a Quality Hold at the QC Gate?",
+      a: "Re-inspection must be conducted jointly by Quality Control and the station supervisor. If verified within engineering tolerances and approved with the QC Lead digital sign-off, the hold status is released in the Quality module and the Work Order proceeds.",
+      domain: "Quality Gate & Inspection",
     },
     {
-      q: "Apakah dua operator dapat mencatat progres operasi berbeda pada satu Work Order yang sama?",
-      a: "Ya. Sistem Digital Operations mendukung pencatatan atomik per operasi (operation-level tracking). Contohnya, operator stasiun Laser Cutting dapat menyelesaikan proses potong sementara operator Wiring memulai sub-perakitan tanpa tumpang tindih data.",
-      domain: "Perakitan & Wiring",
+      q: "Can multiple operators log progress on different operations of the same Work Order concurrently?",
+      a: "Yes. The Digital Operations system supports atomic, operation-level tracking. For example, a laser cutting operator can complete cutting sheets while a wiring technician begins sub-assembly on an earlier batch without concurrency conflicts.",
+      domain: "Assembly & Electrical Wiring",
     },
     {
-      q: "Bagaimana cara mengekspor silsilah lot (lot genealogy tree) untuk kebutuhan audit mutu pelanggan?",
-      a: "Buka menu Audit & Traceability, cari nomor Work Order (misal WO-2042) atau nomor lot material. Sistem akan menghasilkan diagram silsilah multi-tier lengkap yang menghubungkan Purchase Order vendor, Goods Receipt, Work Center pengerjaan, hingga sertifikat uji QC dalam format PDF/CSV.",
+      q: "How can I export a full lot genealogy tree for a customer quality compliance audit?",
+      a: "Navigate to the Audit & Traceability module, enter the Work Order (e.g. WO-2042) or material lot number. The system generates a complete multi-tier genealogy chart linking vendor Purchase Orders, Goods Receipts, Work Centers, and QC certificates in PDF/CSV.",
       domain: "Audit & Traceability",
     },
     {
-      q: "Di mana operator dapat memeriksa jadwal kalibrasi alat ukur dan perkakas bengkel?",
-      a: "Daftar status kalibrasi alat (torsi meter, penguji dielektrik, micrometer) tercatat di modul Equipment Maintenance dan tercantum pada kartu stasiun kerja masing-masing Work Center dengan tanggal jatuh tempo berkala.",
-      domain: "Mesin & Stasiun Kerja",
+      q: "Where can operators check calibration expiration dates for shop floor gauges and tools?",
+      a: "Calibration records (torque screwdrivers, dielectric testers, micrometers) are maintained in the Equipment Maintenance module and displayed directly on each Work Center card with periodic expiration warnings.",
+      domain: "Machining & Work Centers",
     },
     {
-      q: "Bagaimana cara mencetak ulang barcode lot material yang rusak atau sobek di gudang?",
-      a: "Pilih modul Inventory, cari kode item atau lot ID terkait, lalu klik tombol 'Print Lot Barcode'. Printer barcode termal di Bay 3 akan otomatis mencetak label pengganti dengan checksum terverifikasi.",
-      domain: "Material & Gudang",
+      q: "How do I re-print damaged or unreadable material lot barcode labels in the warehouse?",
+      a: "Open the Inventory module, search for the item or lot number, and click 'Print Lot Barcode'. The industrial thermal barcode printer at Warehouse Bay 3 will immediately produce a replacement label with verified checksums.",
+      domain: "Material & Inventory",
     },
   ];
 
@@ -494,11 +494,11 @@ export function Support() {
 
       const matchDomain =
         !selectedDomain ||
-        (selectedDomain === "Mesin & Stasiun Kerja" && (sop.category === "Machining" || sop.category === "Welding")) ||
-        (selectedDomain === "Perakitan & Wiring" && sop.category === "Assembly") ||
-        (selectedDomain === "Quality Gate & QC" && sop.category === "Quality") ||
-        (selectedDomain === "Material & Gudang" && sop.category === "Inventory") ||
-        (selectedDomain === "IoT & Gateway PLC" && sop.category === "IoT") ||
+        (selectedDomain === "Machining & Work Centers" && (sop.category === "Machining" || sop.category === "Welding")) ||
+        (selectedDomain === "Assembly & Electrical Wiring" && sop.category === "Assembly") ||
+        (selectedDomain === "Quality Gate & Inspection" && sop.category === "Quality") ||
+        (selectedDomain === "Material & Inventory" && sop.category === "Inventory") ||
+        (selectedDomain === "IoT & PLC Gateways" && sop.category === "IoT") ||
         (selectedDomain === "Audit & Traceability" && (sop.category === "Quality" || sop.category === "Inventory"));
 
       return matchSearch && matchDomain;
@@ -538,11 +538,11 @@ export function Support() {
 
       const matchDomain =
         !selectedDomain ||
-        (selectedDomain === "Mesin & Stasiun Kerja" && t.category === "Machine & Tooling") ||
-        (selectedDomain === "Perakitan & Wiring" && t.category === "Production Flow") ||
-        (selectedDomain === "Quality Gate & QC" && t.category === "Quality Hold") ||
-        (selectedDomain === "Material & Gudang" && t.category === "Material & BOM") ||
-        (selectedDomain === "IoT & Gateway PLC" && t.category === "Digital Ops & IoT") ||
+        (selectedDomain === "Machining & Work Centers" && t.category === "Machine & Tooling") ||
+        (selectedDomain === "Assembly & Electrical Wiring" && t.category === "Production Flow") ||
+        (selectedDomain === "Quality Gate & Inspection" && t.category === "Quality Hold") ||
+        (selectedDomain === "Material & Inventory" && t.category === "Material & BOM") ||
+        (selectedDomain === "IoT & PLC Gateways" && t.category === "Digital Ops & IoT") ||
         (selectedDomain === "Audit & Traceability" && t.category === "Quality Hold");
 
       return matchStatus && matchSearch && matchDomain;
@@ -574,7 +574,7 @@ export function Support() {
             Operations & Technical Support Center
           </h1>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-            Pusat bantuan teknis lini produksi, pemeliharaan mesin, kepatuhan mutu (QC), dan penanganan kendala stasiun kerja.
+            Plant floor technical assistance, preventive maintenance, quality compliance (QC), and work center incident resolution.
           </p>
         </div>
 
@@ -586,7 +586,7 @@ export function Support() {
           </div>
           <div className="h-4 w-px bg-stone-200 dark:bg-stone-700" />
           <div className="text-xs text-stone-500 dark:text-stone-400">
-            <span className="font-bold text-slate-900 dark:text-white">4 Work Centers</span> · Lini Normal
+            <span className="font-bold text-slate-900 dark:text-white">4 Work Centers</span> · Normal Line Rate
           </div>
         </div>
       </div>
@@ -603,7 +603,7 @@ export function Support() {
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Ada kendala operasional, {userName}?
+              Need operational assistance, {userName}?
             </h2>
 
             {/* Quick Search Input */}
@@ -613,7 +613,7 @@ export function Support() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder='Cari panduan SOP, kode error mesin, atau prosedur mutu (misal: "SOP-QC-04", "WC-101", "Dielektrik")...'
+                placeholder='Search standard operating procedures (SOP), machine error codes, or QC protocols (e.g., "SOP-QC-04", "WC-101", "Dielectric")...'
                 className="w-full pl-11 pr-24 py-3 bg-white dark:bg-[#18181B] rounded-2xl border border-stone-200 dark:border-stone-700 text-sm text-slate-900 dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs transition-all"
               />
               {searchQuery ? (
@@ -633,11 +633,11 @@ export function Support() {
 
             {/* Popular Factory Search Keywords */}
             <div className="flex items-center gap-2 flex-wrap text-xs">
-              <span className="text-stone-500 dark:text-stone-400 font-medium">Topik Cepat:</span>
+              <span className="text-stone-500 dark:text-stone-400 font-medium">Quick Searches:</span>
               {[
                 "SOP-PRD-01 Laser",
                 "TIG Welding Gas",
-                "Dielektrik QC",
+                "Dielectric QC",
                 "BOM Re-allocation",
                 "PLC Reconnect",
                 "Barcode Scanner",
@@ -661,15 +661,15 @@ export function Support() {
             <div className="pt-4 border-t border-stone-200/80 dark:border-stone-800 grid grid-cols-3 gap-4">
               <div>
                 <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">&lt; 5 min</div>
-                <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">SLA Respon Andon P1</div>
+                <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">P1 Andon Response SLA</div>
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold font-mono text-slate-900 dark:text-white">99.85%</div>
-                <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">Konektivitas PLC Gateway</div>
+                <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">PLC Gateway Connectivity</div>
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold font-mono text-slate-900 dark:text-white">16</div>
-                <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">Dokumen SOP Standar</div>
+                <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">Standard SOP Documents</div>
               </div>
             </div>
           </div>
@@ -677,13 +677,13 @@ export function Support() {
           {/* Right: Key Manufacturing SOPs Most Read */}
           <div className="lg:col-span-5 space-y-3">
             <div className="flex items-center justify-between text-xs font-bold text-stone-600 dark:text-stone-400 tracking-wider uppercase">
-              <span>Prosedur Standar (SOP) Utama</span>
+              <span>Core Standard Operating Procedures (SOP)</span>
               <button
                 type="button"
                 onClick={() => setIsAllSopsOpen(true)}
                 className="text-[11px] text-blue-600 dark:text-blue-400 font-bold hover:underline cursor-pointer flex items-center gap-1"
               >
-                <span>Lihat Semua SOP ({allSops.length})</span>
+                <span>View All SOPs ({allSops.length})</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -694,7 +694,7 @@ export function Support() {
                   key={sop.code}
                   onClick={() => setSelectedSop(sop)}
                   className="p-3 bg-white/90 dark:bg-stone-900/85 hover:bg-white dark:hover:bg-stone-900 hover:border-blue-400 dark:hover:border-blue-500 rounded-2xl border border-stone-200/80 dark:border-stone-800 transition-all cursor-pointer flex items-center justify-between gap-3 group shadow-2xs hover:shadow-xs"
-                  title="Klik untuk membuka dokumen panduan SOP lengkap"
+                  title="Click to open full SOP work instruction document"
                 >
                   <div className="flex items-start gap-2.5 min-w-0">
                     <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/60 dark:border-blue-900/60 flex items-center justify-center shrink-0 text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform">
@@ -723,7 +723,7 @@ export function Support() {
 
               {filteredSops.length === 0 && (
                 <div className="p-4 bg-white/60 dark:bg-stone-900/60 rounded-2xl border border-dashed border-stone-300 dark:border-stone-700 text-center text-xs text-stone-500">
-                  Tidak ada SOP yang cocok dengan &quot;{searchQuery}&quot;.
+                  No SOPs matched &quot;{searchQuery}&quot;.
                   <button
                     type="button"
                     onClick={() => {
@@ -732,7 +732,7 @@ export function Support() {
                     }}
                     className="block mx-auto mt-2 text-blue-600 font-bold hover:underline cursor-pointer"
                   >
-                    Reset Filter Pencarian
+                    Reset Search Filter
                   </button>
                 </div>
               )}
@@ -745,7 +745,7 @@ export function Support() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-            Kategori Bantuan & Spesialisasi Lantai Pabrik
+            Shop Floor Support Categories & Domain Specializations
           </span>
           {selectedDomain && (
             <button
@@ -762,44 +762,44 @@ export function Support() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           {[
             {
-              title: "Mesin & Stasiun Kerja",
-              desc: "WC-101 Laser, WC-102 TIG Welding, Kalibrasi",
-              guides: "4 SOP aktif",
+              title: "Machining & Work Centers",
+              desc: "WC-101 Laser, WC-102 TIG Welding, Calibration",
+              guides: "4 Active SOPs",
               icon: Wrench,
               color: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
             },
             {
-              title: "Perakitan & Wiring",
-              desc: "Modul Baterai, Switchgear & Power Unit",
-              guides: "3 SOP aktif",
+              title: "Assembly & Electrical Wiring",
+              desc: "Battery Modules, Switchgears & Power Units",
+              guides: "3 Active SOPs",
               icon: Layers,
               color: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
             },
             {
-              title: "Quality Gate & QC",
-              desc: "Dielektrik Hi-Pot, Uji Kebocoran, Inspeksi",
-              guides: "3 SOP aktif",
+              title: "Quality Gate & Inspection",
+              desc: "Dielectric Hi-Pot, Leakage Tests, Inspection",
+              guides: "3 Active SOPs",
               icon: CheckCircle2,
               color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
             },
             {
-              title: "Material & Gudang",
-              desc: "Alokasi BOM, Transfer Bin, Lot Quarantine",
-              guides: "3 SOP aktif",
+              title: "Material & Inventory",
+              desc: "BOM Allocation, Bin Transfers, Lot Quarantine",
+              guides: "3 Active SOPs",
               icon: Package,
               color: "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300",
             },
             {
-              title: "IoT & Gateway PLC",
-              desc: "Telemetri Modbus, Scanner Barcode, Tablet",
-              guides: "2 SOP aktif",
+              title: "IoT & PLC Gateways",
+              desc: "Modbus Telemetry, Barcode Scanners, Tablets",
+              guides: "2 Active SOPs",
               icon: Cpu,
               color: "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300",
             },
             {
               title: "Audit & Traceability",
-              desc: "Genealogy Tree, Log Kepatuhan, LOTO",
-              guides: "1 SOP aktif",
+              desc: "Genealogy Tree, Compliance Audit Logs, LOTO",
+              guides: "2 Active SOPs",
               icon: ShieldCheck,
               color: "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
             },
@@ -814,7 +814,7 @@ export function Support() {
                     ? "bg-blue-50/80 dark:bg-blue-950/40 border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/30 scale-[1.02]"
                     : "bg-white dark:bg-[#18181B] border-stone-200/80 dark:border-stone-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs"
                 }`}
-                title={`Klik untuk memfilter bantuan ke kategori ${domain.title}`}
+                title={`Click to filter support to ${domain.title}`}
               >
                 <div>
                   <div className={`w-8 h-8 rounded-xl ${domain.color} flex items-center justify-center mb-3 transition-transform group-hover:scale-110`}>
@@ -831,7 +831,7 @@ export function Support() {
                 </div>
                 <div className="pt-3 mt-3 border-t border-stone-100 dark:border-stone-800 text-[10px] font-semibold text-stone-400 flex items-center justify-between">
                   <span>{domain.guides}</span>
-                  {isSelected && <span className="text-blue-600 font-bold">Aktif ✓</span>}
+                  {isSelected && <span className="text-blue-600 font-bold">Active ✓</span>}
                 </div>
               </div>
             );
@@ -851,7 +851,7 @@ export function Support() {
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-slate-700 dark:text-stone-300" />
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                  Log Kendala & Eskalasi Lapangan (Tickets)
+                  Floor Incident & Escalation Log (Tickets)
                 </h3>
               </div>
 
@@ -868,7 +868,7 @@ export function Support() {
                         : "text-stone-500 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
-                    {tab === "All" ? `Semua (${tickets.length})` : tab === "Active" ? "Sedang Ditangani" : tab === "Resolved" ? "Selesai" : "Tutup"}
+                    {tab === "All" ? `All (${tickets.length})` : tab === "Active" ? "In Progress" : tab === "Resolved" ? "Resolved" : "Closed"}
                   </button>
                 ))}
               </div>
@@ -878,7 +878,7 @@ export function Support() {
             <div className="space-y-3">
               {filteredTickets.length === 0 ? (
                 <div className="text-center py-8 text-stone-400 text-xs">
-                  Tidak ada kendala dalam kategori ini. Semua stasiun berjalan normal.
+                  No incidents in this category. All work centers operating normally.
                   {(searchQuery || selectedDomain) && (
                     <button
                       type="button"
@@ -888,7 +888,7 @@ export function Support() {
                       }}
                       className="block mx-auto mt-2 text-blue-600 font-bold hover:underline cursor-pointer"
                     >
-                      Bersihkan Filter Pencarian
+                      Clear Search Filter
                     </button>
                   )}
                 </div>
@@ -898,7 +898,7 @@ export function Support() {
                     key={t.id}
                     onClick={() => setSelectedTicket(t)}
                     className="p-4 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/40 hover:bg-stone-100/60 dark:hover:bg-stone-900/80 hover:border-blue-300 dark:hover:border-blue-700 transition-all cursor-pointer space-y-2.5 shadow-2xs group"
-                    title="Klik untuk membuka detail tiket, histori obrolan, dan tindakan"
+                    title="Click to view ticket thread, history, and status updates"
                   >
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -912,7 +912,7 @@ export function Support() {
                               navigate("/orders");
                             }}
                             className="font-mono text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-100 hover:bg-blue-200 text-blue-900 dark:bg-blue-950 dark:text-blue-300 cursor-pointer transition-colors"
-                            title="Klik untuk melihat Work Order ini di halaman Orders"
+                            title="Click to open this Work Order in Orders"
                           >
                             {t.workOrderId} ↗
                           </span>
@@ -928,7 +928,7 @@ export function Support() {
                               : "bg-stone-200 text-stone-700 dark:bg-stone-800 dark:text-stone-400"
                           }`}
                         >
-                          ● {t.status === "In Progress" ? "Sedang Diperiksa" : t.status === "Resolved" ? "Selesai Ditangani" : t.status}
+                          ● {t.status}
                         </span>
                       </div>
                       <span className="text-[11px] text-stone-400">{t.timeAgo}</span>
@@ -953,9 +953,9 @@ export function Support() {
                       >
                         {t.priority}
                       </span>
-                      <span className="text-stone-400">Pelapor: {t.reporter}</span>
+                      <span className="text-stone-400">Reporter: {t.reporter}</span>
                       <span className="text-blue-600 dark:text-blue-400 font-semibold ml-auto flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                        <span>Buka Detail</span>
+                        <span>Open Details</span>
                         <ChevronRight className="w-3.5 h-3.5" />
                       </span>
                     </div>
@@ -987,7 +987,7 @@ export function Support() {
             <div className="flex items-center gap-2 pb-3 border-b border-stone-100 dark:border-stone-800">
               <BookOpen className="w-4 h-4 text-slate-700 dark:text-stone-300" />
               <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                Tanya Jawab & Pedoman Standar Operasional (FAQ)
+                Frequently Asked Questions & Standard Operating Procedures (FAQ)
               </h3>
             </div>
 
@@ -1024,7 +1024,7 @@ export function Support() {
 
               {filteredFaqs.length === 0 && (
                 <div className="text-center py-6 text-xs text-stone-400">
-                  Tidak ada FAQ yang cocok dengan filter aktif.
+                  No FAQs matched the current search criteria.
                 </div>
               )}
             </div>
@@ -1034,36 +1034,36 @@ export function Support() {
         {/* ── Right Column (5 cols): Incident Form, System Health & Shift Contacts ── */}
         <div className="lg:col-span-5 space-y-6">
           
-          {/* Form: Laporkan Kendala / Escalation Form */}
+          {/* Form: Dispatch Incident Ticket */}
           <div className="bg-white dark:bg-[#18181B] rounded-2xl border border-stone-200/80 dark:border-stone-800 p-5 shadow-2xs space-y-4">
             <div>
               <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
                 <Send className="w-4 h-4 text-slate-700 dark:text-stone-300" />
-                Laporkan Kendala Stasiun (Dispatch Ticket)
+                Dispatch Station Incident Ticket
               </h3>
               <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                Tiket diteruskan langsung ke Teknisi Pemeliharaan dan Supervisor Shift aktif.
+                Tickets are dispatched directly to on-duty Maintenance Technicians and Shift Supervisors.
               </p>
             </div>
 
             {formSubmitted && (
               <div className="p-3 bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-200 flex items-center gap-2 animate-in fade-in">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Tiket berhasil diajukan! Teknisi pemeliharaan shift telah dinotifikasi.</span>
+                <span>Ticket successfully submitted! On-duty technicians have been notified.</span>
               </div>
             )}
 
             <form onSubmit={handleSubmitTicket} className="space-y-3.5 text-xs">
               <div>
                 <label className="block font-semibold text-slate-700 dark:text-stone-300 mb-1">
-                  Judul Kendala / Deskripsi Singkat
+                  Incident Title / Brief Summary
                 </label>
                 <input
                   type="text"
                   required
                   value={formSubject}
                   onChange={(e) => setFormSubject(e.target.value)}
-                  placeholder="Contoh: Tekanan gas assist nitrogen turun di stasiun WC-101"
+                  placeholder="e.g., Nitrogen assist gas pressure warning on laser station WC-101"
                   className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
@@ -1071,7 +1071,7 @@ export function Support() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-700 dark:text-stone-300 mb-1">
-                    Stasiun / Work Center
+                    Work Center / Station
                   </label>
                   <select
                     value={formWorkCenter}
@@ -1088,13 +1088,13 @@ export function Support() {
 
                 <div>
                   <label className="block font-semibold text-slate-700 dark:text-stone-300 mb-1">
-                    Work Order Terkait (Opsional)
+                    Associated Work Order (Optional)
                   </label>
                   <input
                     type="text"
                     value={formWorkOrder}
                     onChange={(e) => setFormWorkOrder(e.target.value)}
-                    placeholder="Contoh: WO-2042"
+                    placeholder="e.g., WO-2042"
                     className="w-full px-2.5 py-2 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none"
                   />
                 </div>
@@ -1103,15 +1103,15 @@ export function Support() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-700 dark:text-stone-300 mb-1">
-                    Kategori Kendala
+                    Incident Category
                   </label>
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value as any)}
                     className="w-full px-2.5 py-2 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none"
                   >
-                    <option value="Machine & Tooling">Mesin & Perkakas</option>
-                    <option value="Production Flow">Alur Produksi</option>
+                    <option value="Machine & Tooling">Machine & Tooling</option>
+                    <option value="Production Flow">Production Flow</option>
                     <option value="Material & BOM">Material & BOM</option>
                     <option value="Quality Hold">Quality Hold (QC)</option>
                     <option value="Digital Ops & IoT">Digital Ops & IoT</option>
@@ -1120,7 +1120,7 @@ export function Support() {
 
                 <div>
                   <label className="block font-semibold text-slate-700 dark:text-stone-300 mb-1">
-                    Tingkat Keparahan
+                    Severity Level
                   </label>
                   <select
                     value={formPriority}
@@ -1128,23 +1128,23 @@ export function Support() {
                     className="w-full px-2.5 py-2 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none font-bold"
                   >
                     <option value="Critical (P1)">Critical (P1 - Line Stop)</option>
-                    <option value="High (P2)">High (P2 - Impak Hasil)</option>
-                    <option value="Normal (P3)">Normal (P3 - Operasional)</option>
-                    <option value="Low (P4)">Low (P4 - Pertanyaan)</option>
+                    <option value="High (P2)">High (P2 - Output Impact)</option>
+                    <option value="Normal (P3)">Normal (P3 - Operational)</option>
+                    <option value="Low (P4)">Low (P4 - Inquiry)</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="block font-semibold text-slate-700 dark:text-stone-300 mb-1">
-                  Rincian Observasi di Lantai Pabrik
+                  Shop Floor Observation Details
                 </label>
                 <textarea
                   rows={3}
                   required
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
-                  placeholder="Jelaskan kondisi mesin/material, kode indikator alarm, atau tindakan darurat yang sudah dilakukan..."
+                  placeholder="Detail the machine state, alarm indicator codes, or emergency containment actions taken..."
                   maxLength={1000}
                   className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
                 />
@@ -1153,12 +1153,12 @@ export function Support() {
               <div className="flex items-center justify-between pt-2 border-t border-stone-100 dark:border-stone-800">
                 <div className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-stone-400">
                   <Lock className="w-3.5 h-3.5" />
-                  <span>Pelapor: {userName} ({userRole})</span>
+                  <span>Reporter: {userName} ({userRole})</span>
                 </div>
 
                 <Button type="submit" variant="primary" className="gap-1.5 text-xs py-1.5 px-4 font-bold shadow-xs">
                   <Send className="w-3.5 h-3.5" />
-                  <span>Kirim ke Tim Shift</span>
+                  <span>Dispatch to Shift Team</span>
                 </Button>
               </div>
             </form>
@@ -1169,7 +1169,7 @@ export function Support() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Radio className="w-4 h-4 text-emerald-600" />
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Status Sistem & Gateway Pabrik</h3>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Plant Floor Gateway & System Status</h3>
               </div>
               <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -1204,7 +1204,7 @@ export function Support() {
             <div className="flex items-center justify-between pb-2 border-b border-stone-100 dark:border-stone-800">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-slate-700 dark:text-stone-300" />
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Kontak Petugas Shift Saat Ini</h3>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Current Shift On-Duty Contacts</h3>
               </div>
               <span className="text-[11px] font-mono text-stone-400">Shift 1</span>
             </div>
@@ -1215,7 +1215,7 @@ export function Support() {
                   key={idx}
                   onClick={() => setContactModalPerson(st)}
                   className="flex items-center justify-between text-xs p-1.5 rounded-xl hover:bg-stone-100/70 dark:hover:bg-stone-800/60 transition-colors cursor-pointer group"
-                  title={`Klik untuk mengirim radio page / memanggil ${st.name}`}
+                  title={`Click to radio page or call ${st.name}`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 ${st.color}`}>
@@ -1243,12 +1243,12 @@ export function Support() {
             <div
               onClick={() => setIsEmergencyModalOpen(true)}
               className="pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-[11px] cursor-pointer hover:bg-rose-50/50 dark:hover:bg-rose-950/20 p-1.5 rounded-xl transition-colors group"
-              title="Klik untuk membuka hotline darurat dan protokol stoppage"
+              title="Click to open plant emergency hotline and line stoppage desk"
             >
               <div className="flex items-center gap-1.5">
                 <AlertOctagon className="w-3.5 h-3.5 text-rose-600" />
                 <span className="text-stone-700 dark:text-stone-300 font-semibold group-hover:text-rose-600 transition-colors">
-                  Control Desk Darurat Pabrik:
+                  Plant Emergency Control Desk:
                 </span>
               </div>
               <span className="font-mono font-bold text-rose-600 dark:text-rose-400 group-hover:underline">
@@ -1300,7 +1300,7 @@ export function Support() {
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                 <HardHat className="w-3.5 h-3.5 text-amber-500" />
-                <span>Alat Pelindung Diri (APD) Wajib</span>
+                <span>Mandatory Personal Protective Equipment (PPE)</span>
               </h4>
               <div className="flex items-center gap-2 flex-wrap">
                 {selectedSop.ppe.map((item, idx) => (
@@ -1318,7 +1318,7 @@ export function Support() {
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                 <Cpu className="w-3.5 h-3.5 text-blue-500" />
-                <span>Parameter & Nilai Setelan Standar Mesin</span>
+                <span>Standard Machine Parameters & Setpoints</span>
               </h4>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {selectedSop.parameters.map((p, idx) => (
@@ -1334,7 +1334,7 @@ export function Support() {
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Langkah Eksekusi Operasional</span>
+                <span>Operational Execution Checklist</span>
               </h4>
               <div className="space-y-2">
                 {selectedSop.steps.map((st, idx) => (
@@ -1350,7 +1350,7 @@ export function Support() {
 
             {/* Criteria Box */}
             <div className="p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs space-y-1">
-              <div className="font-bold text-emerald-900 dark:text-emerald-300">Kriteria Keberhasilan & Syarat Mutu:</div>
+              <div className="font-bold text-emerald-900 dark:text-emerald-300">Success Criteria & Quality Standards:</div>
               <p className="text-emerald-800 dark:text-emerald-200 text-[11px] leading-relaxed">
                 {selectedSop.criteria}
               </p>
@@ -1361,14 +1361,14 @@ export function Support() {
               <button
                 type="button"
                 onClick={() => {
-                  setFormSubject(`Konsultasi parameter untuk ${selectedSop.code}`);
+                  setFormSubject(`Parameter inquiry for ${selectedSop.code}`);
                   setFormWorkCenter(selectedSop.workCenter);
                   setSelectedSop(null);
-                  showToast(`Form pelaporan otomatis disesuaikan dengan ${selectedSop.code}.`);
+                  showToast(`Incident form pre-populated for ${selectedSop.code}.`);
                 }}
                 className="text-xs text-blue-600 dark:text-blue-400 font-bold hover:underline cursor-pointer"
               >
-                + Buat Tiket Konsultasi Mengenai SOP Ini
+                + Create Inquiry Ticket For This SOP
               </button>
 
               <div className="flex items-center gap-2">
@@ -1376,15 +1376,15 @@ export function Support() {
                   variant="secondary"
                   onClick={() => {
                     window.print();
-                    showToast("Dokumen SOP dicetak untuk kartu stasiun.");
+                    showToast("SOP work instruction sent to station printer.");
                   }}
                   className="text-xs gap-1.5"
                 >
                   <Printer className="w-3.5 h-3.5" />
-                  <span>Cetak SOP Stasiun</span>
+                  <span>Print Station SOP</span>
                 </Button>
                 <Button variant="primary" onClick={() => setSelectedSop(null)} className="text-xs px-4">
-                  Selesai Membaca
+                  Done Reading
                 </Button>
               </div>
             </div>
@@ -1399,10 +1399,10 @@ export function Support() {
             <div className="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800">
               <div>
                 <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
-                  Pustaka Lengkap Standar Operasional Prosedur (SOP)
+                  Standard Operating Procedures (SOP) Full Library
                 </h3>
                 <p className="text-xs text-stone-500 dark:text-stone-400">
-                  Daftar seluruh protokol standar permesinan, perakitan, dan kontrol mutu pabrik.
+                  Comprehensive catalog of plant machining, assembly, and quality control protocols.
                 </p>
               </div>
               <button
@@ -1437,7 +1437,7 @@ export function Support() {
                     {sop.desc}
                   </p>
                   <div className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold pt-1 flex items-center gap-1">
-                    <span>Buka Lembar Kerja</span>
+                    <span>Open Work Instruction</span>
                     <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 </div>
@@ -1446,7 +1446,7 @@ export function Support() {
 
             <div className="pt-3 border-t border-stone-200 dark:border-stone-800 text-right">
               <Button variant="secondary" onClick={() => setIsAllSopsOpen(false)} className="text-xs">
-                Tutup Katalog
+                Close Catalog
               </Button>
             </div>
           </div>
@@ -1541,7 +1541,7 @@ export function Support() {
                 </div>
               ) : (
                 <div className="text-center py-4 text-xs text-stone-400">
-                  Belum ada tanggapan teknis. Tiket baru saja dicatat di antrean shift.
+                  No technical responses yet. Ticket logged into active shift queue.
                 </div>
               )}
             </div>
@@ -1549,14 +1549,14 @@ export function Support() {
             {/* Follow-up reply box */}
             <div className="space-y-2 pt-2 border-t border-stone-200 dark:border-stone-800">
               <label className="block text-xs font-semibold text-slate-700 dark:text-stone-300">
-                Tambahkan Catatan / Pembaruan Observasi Lapangan:
+                Add Observation Note / Field Update:
               </label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={ticketFollowUpText}
                   onChange={(e) => setTicketFollowUpText(e.target.value)}
-                  placeholder="Ketik catatan teknisi atau konfirmasi status..."
+                  placeholder="Type technician notes or status confirmation..."
                   className="flex-1 px-3 py-2 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -1572,14 +1572,14 @@ export function Support() {
                   className="text-xs px-3"
                 >
                   <Send className="w-3.5 h-3.5 mr-1" />
-                  Kirim
+                  Send
                 </Button>
               </div>
             </div>
 
             {/* Status change actions */}
             <div className="pt-3 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between flex-wrap gap-2 text-xs">
-              <span className="text-stone-500">Ubah Status Tiket:</span>
+              <span className="text-stone-500">Update Ticket Status:</span>
               <div className="flex items-center gap-1.5">
                 <Button
                   variant="secondary"
@@ -1593,14 +1593,14 @@ export function Support() {
                   onClick={() => handleUpdateTicketStatus(selectedTicket.id, "Resolved")}
                   className="text-xs py-1 px-2.5 text-emerald-600 border-emerald-300 dark:border-emerald-800"
                 >
-                  Tandai Selesai ✓
+                  Mark Resolved ✓
                 </Button>
                 <Button
                   variant="secondary"
                   onClick={() => handleUpdateTicketStatus(selectedTicket.id, "Closed")}
                   className="text-xs py-1 px-2.5 text-stone-500"
                 >
-                  Tutup
+                  Close
                 </Button>
               </div>
             </div>
@@ -1640,23 +1640,23 @@ export function Support() {
 
             <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800 text-xs space-y-2">
               <div className="flex items-center justify-between text-stone-500">
-                <span>Ekstensi Telepon Lantai:</span>
+                <span>Shop Floor Phone Extension:</span>
                 <span className="font-mono font-bold text-slate-900 dark:text-white">{contactModalPerson.ext}</span>
               </div>
               <div className="flex items-center justify-between text-stone-500">
-                <span>Frekuensi Radio Walkie:</span>
+                <span>Two-Way Radio Channel:</span>
                 <span className="font-mono font-bold text-slate-900 dark:text-white">CH-02 (Maintenance & Ops)</span>
               </div>
               <div className="flex items-center justify-between text-stone-500">
-                <span>Status Kehadiran Shift:</span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">Aktif di Lini Pabrik</span>
+                <span>Shift Attendance Status:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">Active On-Site</span>
               </div>
             </div>
 
             {radioPagingSent ? (
               <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 text-xs text-emerald-800 dark:text-emerald-200 flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Sinyal panggilan radio paging berhasil dikirim ke {contactModalPerson.name}!</span>
+                <span>Radio paging signal sent to {contactModalPerson.name}!</span>
               </div>
             ) : null}
 
@@ -1665,26 +1665,26 @@ export function Support() {
                 variant="primary"
                 onClick={() => {
                   setRadioPagingSent(true);
-                  showToast(`Paging radio dikirim ke ${contactModalPerson.name} (${contactModalPerson.ext}).`);
+                  showToast(`Radio paging sent to ${contactModalPerson.name} (${contactModalPerson.ext}).`);
                 }}
                 className="w-full text-xs justify-center py-2"
               >
                 <Radio className="w-4 h-4 mr-1.5" />
-                Kirim Sinyal Panggilan Radio Stasiun
+                Dispatch Two-Way Radio Page
               </Button>
 
               <Button
                 variant="secondary"
                 onClick={() => {
-                  setFormSubject(`Permintaan bantuan langsung untuk ${contactModalPerson.name}`);
-                  setFormDescription(`Memerlukan asistensi teknis langsung dari ${contactModalPerson.name} di stasiun kerja.`);
+                  setFormSubject(`Direct assistance request for ${contactModalPerson.name}`);
+                  setFormDescription(`Urgent station assistance requested from ${contactModalPerson.name}.`);
                   setContactModalPerson(null);
-                  showToast(`Form pelaporan disiapkan untuk ${contactModalPerson.name}.`);
+                  showToast(`Ticket form pre-populated for ${contactModalPerson.name}.`);
                 }}
                 className="w-full text-xs justify-center py-2"
               >
                 <Send className="w-3.5 h-3.5 mr-1.5" />
-                Buka Tiket Langsung ke Petugas Ini
+                Open Ticket Directly to This Specialist
               </Button>
             </div>
           </div>
@@ -1700,10 +1700,10 @@ export function Support() {
                 <AlertOctagon className="w-6 h-6 shrink-0" />
                 <div>
                   <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
-                    Control Desk Darurat Pabrik (24/7)
+                    Plant Emergency Control Desk (24/7)
                   </h3>
                   <p className="text-xs text-stone-400">
-                    Protokol penanganan darurat keselamatan & line stoppage
+                    Emergency safety response and line stoppage protocol
                   </p>
                 </div>
               </div>
@@ -1718,50 +1718,50 @@ export function Support() {
 
             <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-2xl text-xs space-y-2">
               <div className="font-bold text-rose-900 dark:text-rose-200">
-                Hotline Langsung Control Room:
+                Control Room Direct Hotline:
               </div>
               <div className="text-xl font-mono font-extrabold text-rose-600 dark:text-rose-400">
                 Ext. 299 / Line 1-800-MFG-911
               </div>
               <p className="text-[11px] text-rose-800 dark:text-rose-300 leading-relaxed">
-                Gunakan saluran darurat ini jika terjadi insiden keselamatan, kebakaran, kegagalan hidrolik parah, atau kebocoran gas bertekanan.
+                Use this emergency channel for severe personal injuries, fire, critical hydraulic burst, or high-pressure gas leaks.
               </p>
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="font-bold text-slate-900 dark:text-white">Daftar Langkah Tanggap Cepat:</div>
+              <div className="font-bold text-slate-900 dark:text-white">Emergency Response Actions:</div>
               <ul className="space-y-1.5 text-stone-600 dark:text-stone-300 text-[11px]">
                 <li className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                  Tekan tombol E-Stop merah di stasiun kerja terdekat.
+                  Hit the red E-Stop (Emergency Stop) button on the nearest station.
                 </li>
                 <li className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                  Evakuasi personel dari zona bahaya mesin berputar/tegangan tinggi.
+                  Evacuate personnel immediately from rotating equipment or high-voltage zones.
                 </li>
                 <li className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                  Hubungi supervisor shift dan petugas K3 di Ext. 299.
+                  Contact Shift Supervisor and Safety Officer at Ext. 299.
                 </li>
               </ul>
             </div>
 
             <div className="pt-2 border-t border-stone-200 dark:border-stone-800 flex items-center justify-end gap-2">
               <Button variant="secondary" onClick={() => setIsEmergencyModalOpen(false)} className="text-xs">
-                Tutup
+                Close
               </Button>
               <Button
                 variant="primary"
                 onClick={() => {
-                  setFormSubject("EMERGENCY LINE STOPPAGE - WC-101 s/d WC-104");
+                  setFormSubject("EMERGENCY LINE STOPPAGE - WC-101 thru WC-104");
                   setFormPriority("Critical (P1)");
                   setFormCategory("Machine & Tooling");
                   setIsEmergencyModalOpen(false);
-                  showToast("Form darurat P1 Stoppage diaktifkan.");
+                  showToast("P1 Stoppage emergency ticket form primed.");
                 }}
                 className="text-xs bg-rose-600 hover:bg-rose-700 text-white border-rose-600"
               >
-                Picu Tiket P1 Line Stoppage
+                Trigger P1 Line Stoppage Ticket
               </Button>
             </div>
           </div>
