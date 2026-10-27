@@ -11,6 +11,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { AuditTrail } from "./pages/AuditTrail";
 import { Reports } from "./pages/Reports";
 import { Staff } from "./pages/Staff";
+import { Support } from "./pages/Support";
 import { 
   LogOut, 
   Target, 
@@ -117,10 +118,14 @@ function MainLayout() {
     if (location.pathname === "/staff") return "People & Staff";
     if (location.pathname === "/reports") return "Reports & Insights";
     if (location.pathname === "/audit") return "Audit & Traceability";
+    if (location.pathname === "/support") return "Support & Help Center";
     return "Operations";
   })();
 
   const domainInfo = (() => {
+    if (location.pathname === "/support") {
+      return { name: "Support", path: "/support" };
+    }
     if (location.pathname === "/production" || location.pathname === "/quality") {
       return { name: "Manufacturing", path: "/production" };
     }
@@ -195,14 +200,18 @@ function MainLayout() {
 
         {/* 4. Support (Circular button with signature tooltip badge) */}
         <div className="relative group">
-          <button
-            onClick={() => setSupportModalOpen(true)}
-            className="w-9 h-9 rounded-full bg-[#27272A] text-white flex items-center justify-center hover:bg-stone-700 transition-colors shadow-xs cursor-pointer"
-            title="Support & SOPs"
+          <Link
+            to="/support"
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shadow-xs cursor-pointer ${
+              location.pathname === "/support"
+                ? "bg-amber-600 text-white"
+                : "bg-[#27272A] text-white hover:bg-stone-700"
+            }`}
+            title="Support & SOP Help Center"
             aria-label="Support"
           >
             <LifeBuoy className="w-4 h-4" />
-          </button>
+          </Link>
           <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-white dark:bg-stone-800 text-slate-900 dark:text-white font-semibold text-xs rounded-xl shadow-lg border border-stone-200/90 dark:border-stone-700 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 flex items-center">
             Support
             <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-white dark:border-r-stone-800" />
@@ -525,6 +534,7 @@ function MainLayout() {
               <Route path="/staff" element={<Staff />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/audit" element={<AuditTrail />} />
+              <Route path="/support" element={<Support />} />
             </Routes>
           </div>
         </div>
