@@ -709,6 +709,40 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     }));
   };
 
+  // Filter work orders that have activity within the active timeline date range
+  const visibleWorkOrders = useMemo(() => {
+    if (granularity === "Week") {
+      // timeOffset 0 is primary active week (Nov 8 – Nov 14, 2026)
+      if (timeOffset === 0) {
+        return workOrders;
+      }
+      // timeOffset 1 is Nov 15 – Nov 21, 2026 (Frame alignment on Nov 15)
+      if (timeOffset === 1) {
+        return workOrders.filter((wo) =>
+          wo.operations.some((op) => op.startDay >= 7 && op.startDay < 14) ||
+          wo.dateRange?.includes("Nov 15") ||
+          wo.dateRange?.includes("Nov 16") ||
+          wo.dateRange?.includes("Nov 17")
+        );
+      }
+      // timeOffset >= 2 (e.g. Nov 22 – Nov 28, 2026) or timeOffset < 0: Empty schedule
+      return [];
+    }
+
+    if (granularity === "Month") {
+      if (timeOffset === 0) {
+        return workOrders;
+      }
+      return [];
+    }
+
+    // Quarter view
+    if (timeOffset === 0) {
+      return workOrders;
+    }
+    return [];
+  }, [workOrders, granularity, timeOffset]);
+
   const workCenterGroups = useMemo(() => {
     const centers = [
       { id: "WC-101", code: "WC-101", name: "Laser Cutting & CNC Bending", desc: "Laser Stamping & Sheet Prep" },
@@ -719,7 +753,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
 
     return centers.map((wc) => {
       const ops: { wo: WorkOrderItem; op: OperationItem }[] = [];
-      workOrders.forEach((wo) => {
+      visibleWorkOrders.forEach((wo) => {
         wo.operations.forEach((op) => {
           if (op.workCenter && op.workCenter.startsWith(wc.id)) {
             ops.push({ wo, op });
@@ -733,7 +767,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         operations: ops,
       };
     });
-  }, [workOrders, expandedWorkCenters]);
+  }, [visibleWorkOrders, expandedWorkCenters]);
 
   // Currently inspected operation in the right panel
   const inspectedData = useMemo(() => {
@@ -881,9 +915,18 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
 
   // Compute live capacity dynamically based on active operations & granularity
   const capacityRowData = useMemo(() => {
+    if (visibleWorkOrders.length === 0) {
+      if (granularity === "Week") return [0, 0, 0, 0, 0, 0, 0];
+      if (granularity === "Month") return new Array(35).fill(0);
+      return new Array(13).fill(0);
+    }
+
     if (granularity === "Week") {
-      // Direct alignment with factory capacity indicators (Sun: 3/8, Mon: 5/8, Tue: 5/8, Wed: 3/8, Thu: 5/8, Fri: 3/8, Sat: 3/8)
-      return [3, 5, 5, 3, 5, 3, 3];
+      if (timeOffset === 0) {
+        // Direct alignment with factory capacity indicators (Sun: 3/8, Mon: 5/8, Tue: 5/8, Wed: 3/8, Thu: 5/8, Fri: 3/8, Sat: 3/8)
+        return [3, 5, 5, 3, 5, 3, 3];
+      }
+      return [2, 1, 0, 0, 0, 0, 0];
     }
 
     if (granularity === "Month") {
@@ -894,7 +937,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         2, 2, 2, 2, 3, 1, 0,
         1, 2, 2, 2, 1, 0, 0
       ];
-      workOrders.forEach((wo) => {
+      visibleWorkOrders.forEach((wo) => {
         if (wo.expanded) {
           wo.operations.forEach((op) => {
             const start = 7 + op.startDay;
@@ -908,7 +951,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     }
 
     return [2, 2, 2, 2, 5, 4, 2, 1, 0, 0, 0, 0, 0];
-  }, [workOrders, granularity]);
+  }, [visibleWorkOrders, granularity, timeOffset]);
 
   // Position & width styles for operation bar
   const getOpBarStyle = (op: OperationItem) => {
@@ -1036,9 +1079,10 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           <button
             type="button"
             onClick={() => setTimeOffset(0)}
-            className="px-3 py-1 text-xs font-semibold rounded-full border border-stone-200 dark:border-stone-700 text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer ml-1"
+            className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border border-stone-200 dark:border-stone-700 text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer ml-1"
           >
-            Today
+            <Calendar className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400" />
+            <span>Today</span>
           </button>
         </div>
 
@@ -1101,8 +1145,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       {/* ── Operational Status Sub-Banner ── */}
       <div className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#18181B] border border-stone-200/80 dark:border-stone-800/80 rounded-2xl text-xs text-slate-700 dark:text-stone-300 shadow-2xs">
         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-        <span className="font-semibold text-slate-900 dark:text-stone-100">4 operations running</span>
-        <span className="text-stone-400 dark:text-stone-500">across 4 work centers</span>
+        <span className="font-semibold text-slate-900 dark:text-stone-100">3 operations running</span>
+        <span className="text-stone-400 dark:text-stone-500">across 3 work centers</span>
         <span className="text-stone-300 dark:text-stone-700">·</span>
         <span>5 start in the next two days</span>
         <span className="text-stone-300 dark:text-stone-700">·</span>
@@ -1136,8 +1180,10 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
 
                 {/* Left Row Labels (Orders mode vs Work centers mode) */}
                 <div className="divide-y divide-stone-100 dark:divide-stone-800/60 flex-1">
-                  {mode === "Orders" ? (
-                    workOrders.map((wo) => (
+                  {visibleWorkOrders.length === 0 ? (
+                    <div className="min-h-[260px] flex-1 bg-white dark:bg-[#18181B]" />
+                  ) : mode === "Orders" ? (
+                    visibleWorkOrders.map((wo) => (
                       <div key={wo.id} className="transition-colors hover:bg-stone-50/40 dark:hover:bg-stone-900/20">
                         {/* Order master row header */}
                         <div className="h-12 border-b border-stone-200/80 dark:border-stone-800 px-3 sm:px-4 flex items-center gap-2.5">
@@ -1315,22 +1361,13 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
                   >
                     {timelineConfig.cols.map((d) => {
-                      const isHighlight = granularity === "Week" && d.colIndex >= 1 && d.colIndex <= 3;
-                      const isHatch = granularity === "Week" && (d.colIndex === 5 || d.colIndex === 6);
+                      const isHighlight = granularity === "Week" && timeOffset === 0 && d.colIndex >= 1 && d.colIndex <= 3;
                       return (
                         <div
                           key={d.colIndex}
                           className={`h-full border-r border-stone-200/80 dark:border-stone-800 flex flex-col items-center justify-center px-0.5 ${
                             isHighlight ? "bg-sky-50/70 dark:bg-sky-950/30" : ""
                           }`}
-                          style={
-                            isHatch
-                              ? {
-                                  backgroundImage:
-                                    "repeating-linear-gradient(135deg, rgba(203, 213, 225, 0.25) 0px, rgba(203, 213, 225, 0.25) 2px, transparent 2px, transparent 10px)",
-                                }
-                              : undefined
-                          }
                         >
                           <span 
                             className={`uppercase tracking-wider ${
@@ -1374,12 +1411,12 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
                   >
                     {capacityRowData.map((cap, i) => {
-                      const isHighlight = granularity === "Week" && i >= 1 && i <= 3;
-                      const isHatch = granularity === "Week" && (i === 5 || i === 6);
+                      const isHighlight = granularity === "Week" && timeOffset === 0 && i >= 1 && i <= 3;
+                      const isHatch = granularity === "Week" && (i === 0 || i === 6);
                       return (
                         <div
                           key={i}
-                          className={`h-full border-r border-stone-200/80 dark:border-stone-800 flex items-center justify-center gap-1.5 px-0.5 ${
+                          className={`h-full border-r border-stone-200/80 dark:border-stone-800 flex items-center justify-between px-2.5 sm:px-3.5 ${
                             isHighlight ? "bg-sky-50/50 dark:bg-sky-950/20" : ""
                           }`}
                           style={
@@ -1392,12 +1429,12 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                           }
                         >
                           <span
-                            className={`w-3.5 h-1 rounded-full ${
-                              cap >= 5 ? "bg-amber-500" : cap >= 3 ? "bg-emerald-500" : "bg-stone-300 dark:bg-stone-700"
+                            className={`w-1 h-3 rounded-xs shrink-0 ${
+                              cap >= 5 ? "bg-amber-500" : "bg-emerald-500"
                             }`}
                           />
                           {granularity !== "Month" && (
-                            <span className="font-mono text-slate-700 dark:text-stone-300 text-xs font-bold">
+                            <span className="font-mono text-slate-700 dark:text-stone-300 text-xs font-bold shrink-0">
                               {cap}/8
                             </span>
                           )}
@@ -1422,9 +1459,46 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       </div>
                     )}
 
-                    {/* Timeline Rows: Orders mode vs Work centers mode */}
-                    {mode === "Orders" ? (
-                      workOrders.map((wo) => (
+                    {/* Timeline Rows: Empty state vs Orders mode vs Work centers mode */}
+                    {visibleWorkOrders.length === 0 ? (
+                      <div 
+                        className="relative min-h-[260px] grid"
+                        style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
+                      >
+                        {/* Background Grid Columns */}
+                        {timelineConfig.cols.map((col) => {
+                          const isHatch = granularity === "Week" && (col.colIndex === 0 || col.colIndex === 6);
+                          return (
+                            <div
+                              key={col.colIndex}
+                              className="h-full border-r border-stone-200/80 dark:border-stone-800/80"
+                              style={
+                                isHatch
+                                  ? {
+                                      backgroundImage:
+                                        "repeating-linear-gradient(135deg, rgba(203, 213, 225, 0.25) 0px, rgba(203, 213, 225, 0.25) 2px, transparent 2px, transparent 10px)",
+                                    }
+                                  : undefined
+                              }
+                            />
+                          );
+                        })}
+
+                        {/* Centered Empty State Overlay */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 pointer-events-auto">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-stone-400 dark:text-stone-500 mb-2">
+                            <Calendar className="w-7 h-7 stroke-[1.6]" />
+                          </div>
+                          <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-stone-100">
+                            Nothing scheduled in this range
+                          </h3>
+                          <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+                            Step forward or back, or plan a new work order.
+                          </p>
+                        </div>
+                      </div>
+                    ) : mode === "Orders" ? (
+                      visibleWorkOrders.map((wo) => (
                         <div key={wo.id} className="transition-colors hover:bg-stone-50/40 dark:hover:bg-stone-900/20">
                           {/* Master Order Timeline Cell */}
                           <div 
@@ -1433,8 +1507,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                           >
                             {/* Column drop backgrounds */}
                             {timelineConfig.cols.map((col) => {
-                              const isHighlight = granularity === "Week" && col.colIndex >= 1 && col.colIndex <= 3;
-                              const isHatch = granularity === "Week" && (col.colIndex === 5 || col.colIndex === 6);
+                              const isHighlight = granularity === "Week" && timeOffset === 0 && col.colIndex >= 1 && col.colIndex <= 3;
+                              const isHatch = granularity === "Week" && (col.colIndex === 0 || col.colIndex === 6);
                               return (
                                 <div 
                                   key={col.colIndex}
@@ -1579,8 +1653,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                   >
                                     {/* Column Drop Zones & Distinct Background Grid Separation */}
                                     {timelineConfig.cols.map((col) => {
-                                      const isHighlight = granularity === "Week" && col.colIndex >= 1 && col.colIndex <= 3;
-                                      const isHatch = granularity === "Week" && (col.colIndex === 5 || col.colIndex === 6);
+                                      const isHighlight = granularity === "Week" && timeOffset === 0 && col.colIndex >= 1 && col.colIndex <= 3;
+                                      const isHatch = granularity === "Week" && (col.colIndex === 0 || col.colIndex === 6);
                                       return (
                                         <div
                                           key={col.colIndex}
@@ -1789,8 +1863,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                             style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
                           >
                             {timelineConfig.cols.map((col) => {
-                              const isHighlight = granularity === "Week" && col.colIndex >= 1 && col.colIndex <= 3;
-                              const isHatch = granularity === "Week" && (col.colIndex === 5 || col.colIndex === 6);
+                              const isHighlight = granularity === "Week" && timeOffset === 0 && col.colIndex >= 1 && col.colIndex <= 3;
+                              const isHatch = granularity === "Week" && (col.colIndex === 0 || col.colIndex === 6);
                               return (
                                 <div 
                                   key={col.colIndex}
@@ -1823,8 +1897,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                   >
                                     {/* Column Drop Zones */}
                                     {timelineConfig.cols.map((col) => {
-                                      const isHighlight = granularity === "Week" && col.colIndex >= 1 && col.colIndex <= 3;
-                                      const isHatch = granularity === "Week" && (col.colIndex === 5 || col.colIndex === 6);
+                                      const isHighlight = granularity === "Week" && timeOffset === 0 && col.colIndex >= 1 && col.colIndex <= 3;
+                                      const isHatch = granularity === "Week" && (col.colIndex === 0 || col.colIndex === 6);
                                       return (
                                         <div
                                           key={col.colIndex}
