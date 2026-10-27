@@ -140,3 +140,47 @@ html.dark body {
   background-color: #26272E !important;
 }
 
+/* ── Standard Visible Horizontal Scrollbar for Timeline ───────────── */
+.timeline-scroll-container {
+  overflow-x: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #f1f5f9;
+}
+
+.dark .timeline-scroll-container {
+  scrollbar-color: #52525b #18181b;
+}
+
+.timeline-scroll-container::-webkit-scrollbar {
+  height: 10px;
+}
+
+.timeline-scroll-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+}
+
+.dark .timeline-scroll-container::-webkit-scrollbar-track {
+  background: #18181b;
+}
+
+.timeline-scroll-container::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 9999px;
+  border: 2px solid #f1f5f9;
+}
+
+.timeline-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+.dark .timeline-scroll-container::-webkit-scrollbar-thumb {
+  background: #52525b;
+  border: 2px solid #18181b;
+}
+
+.dark .timeline-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #71717a;
+}
+
+

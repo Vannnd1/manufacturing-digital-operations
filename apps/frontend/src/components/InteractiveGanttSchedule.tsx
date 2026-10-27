@@ -16,8 +16,7 @@ import {
   Pause,
   CheckCircle2,
   Layers,
-  Info,
-  SlidersHorizontal
+  Info
 } from "lucide-react";
 import { useLiveTime } from "../utils/useLiveTime";
 
@@ -89,46 +88,81 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
   } | null>(null);
   const [dragOverCol, setDragOverCol] = useState<number | null>(null);
 
+  // Timeline horizontal scroll ref & active week detector
+  const timelineScrollRef = useRef<HTMLDivElement>(null);
+  const [activeScrollWeek, setActiveScrollWeek] = useState(0);
+
+  const handleTimelineScroll = () => {
+    if (!timelineScrollRef.current) return;
+    const sl = timelineScrollRef.current.scrollLeft;
+    if (sl < 550) {
+      if (activeScrollWeek !== 0) setActiveScrollWeek(0);
+    } else if (sl < 1320) {
+      if (activeScrollWeek !== 1) setActiveScrollWeek(1);
+    } else {
+      if (activeScrollWeek !== 2) setActiveScrollWeek(2);
+    }
+  };
+
+  const handlePrevInterval = () => {
+    if (granularity === "Week" && timelineScrollRef.current) {
+      timelineScrollRef.current.scrollBy({ left: -770, behavior: "smooth" });
+    } else {
+      setTimeOffset((prev) => prev - 1);
+    }
+  };
+
+  const handleNextInterval = () => {
+    if (granularity === "Week" && timelineScrollRef.current) {
+      timelineScrollRef.current.scrollBy({ left: 770, behavior: "smooth" });
+    } else {
+      setTimeOffset((prev) => prev + 1);
+    }
+  };
+
+  const handleTodayClick = () => {
+    setTimeOffset(0);
+    if (timelineScrollRef.current) {
+      timelineScrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
+  };
+
   // When switching granularity, reset time offset to 0
   const handleGranularityChange = (g: "Week" | "Month" | "Quarter") => {
     setGranularity(g);
     setTimeOffset(0);
+    if (timelineScrollRef.current) {
+      timelineScrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
   };
 
   // Timeline configuration depending on granularity
   const timelineConfig = useMemo(() => {
     if (granularity === "Week") {
       const baseAnchor = new Date(2026, 10, 8); // Sun Nov 8, 2026
-      baseAnchor.setDate(baseAnchor.getDate() + timeOffset * 7);
-
       const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
       const cols = [];
 
-      for (let i = 0; i < 7; i++) {
+      // 21 continuous columns: Nov 8 through Nov 28 (3 weeks continuous)
+      for (let i = 0; i < 21; i++) {
         const d = new Date(baseAnchor);
         d.setDate(baseAnchor.getDate() + i);
         cols.push({
           colIndex: i,
-          topLabel: dayNames[i],
+          topLabel: dayNames[i % 7],
           bottomLabel: d.getDate().toString(),
-          isToday: i === 3 && timeOffset === 0, // Wed Nov 11 is index 3
+          isToday: i === 3, // Wed Nov 11 is index 3
           dateObj: d,
         });
       }
 
-      const first = cols[0].dateObj;
-      const last = cols[6].dateObj;
-      const fMonth = first.toLocaleDateString("en-US", { month: "short" });
-      const lMonth = last.toLocaleDateString("en-US", { month: "short" });
-      const label = `${fMonth} ${first.getDate()} – ${lMonth} ${last.getDate()}, ${first.getFullYear()}`;
-
       return {
-        totalCols: 7,
+        totalCols: 21,
         cols,
-        label,
-        activeColIndex: timeOffset === 0 ? 3 : -1,
+        label: "Nov 8 – Nov 14, 2026",
+        activeColIndex: 3,
         activeBadgeText: formattedShort || "Today",
-        gridMinWidth: "min-w-0",
+        gridMinWidth: "min-w-[2310px]",
       };
     }
 
@@ -710,37 +744,16 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     }));
   };
 
-  // Filter work orders that have activity within the active timeline date range
+  // In Week view, all 21 continuous days are directly rendered in the timeline
   const visibleWorkOrders = useMemo(() => {
     if (granularity === "Week") {
-      // timeOffset 0 is primary active week (Nov 8 – Nov 14, 2026)
-      if (timeOffset === 0) {
-        return workOrders;
-      }
-      // timeOffset 1 is Nov 15 – Nov 21, 2026 (Frame alignment on Nov 15)
-      if (timeOffset === 1) {
-        return workOrders.filter((wo) =>
-          wo.operations.some((op) => op.startDay >= 7 && op.startDay < 14) ||
-          wo.dateRange?.includes("Nov 15") ||
-          wo.dateRange?.includes("Nov 16") ||
-          wo.dateRange?.includes("Nov 17")
-        );
-      }
-      // timeOffset >= 2 (e.g. Nov 22 – Nov 28, 2026) or timeOffset < 0: Empty schedule
-      return [];
-    }
-
-    if (granularity === "Month") {
-      if (timeOffset === 0) {
-        return workOrders;
-      }
-      return [];
-    }
-
-    // Quarter view
-    if (timeOffset === 0) {
       return workOrders;
     }
+    if (granularity === "Month") {
+      if (timeOffset === 0) return workOrders;
+      return [];
+    }
+    if (timeOffset === 0) return workOrders;
     return [];
   }, [workOrders, granularity, timeOffset]);
 
@@ -917,17 +930,18 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
   // Compute live capacity dynamically based on active operations & granularity
   const capacityRowData = useMemo(() => {
     if (visibleWorkOrders.length === 0) {
-      if (granularity === "Week") return [0, 0, 0, 0, 0, 0, 0];
+      if (granularity === "Week") return new Array(21).fill(0);
       if (granularity === "Month") return new Array(35).fill(0);
       return new Array(13).fill(0);
     }
 
     if (granularity === "Week") {
-      if (timeOffset === 0) {
-        // Direct alignment with factory capacity indicators (Sun: 3/8, Mon: 5/8, Tue: 5/8, Wed: 3/8, Thu: 5/8, Fri: 3/8, Sat: 3/8)
-        return [3, 5, 5, 3, 5, 3, 3];
-      }
-      return [2, 1, 0, 0, 0, 0, 0];
+      // 21 days capacity: Week 1 (Nov 8-14), Week 2 (Nov 15-21), Week 3 (Nov 22-28)
+      return [
+        3, 5, 5, 3, 5, 3, 3, // Week 1 (Nov 8 – 14)
+        2, 4, 4, 2, 1, 0, 0, // Week 2 (Nov 15 – 21)
+        0, 0, 0, 0, 0, 0, 0, // Week 3 (Nov 22 – 28: Empty schedule)
+      ];
     }
 
     if (granularity === "Month") {
@@ -952,22 +966,16 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     }
 
     return [2, 2, 2, 2, 5, 4, 2, 1, 0, 0, 0, 0, 0];
-  }, [visibleWorkOrders, granularity, timeOffset]);
+  }, [visibleWorkOrders, granularity]);
 
   // Position & width styles for operation bar
   const getOpBarStyle = (op: OperationItem) => {
     if (granularity === "Week") {
-      const relStart = op.startDay - timeOffset * 7;
-      const relEnd = relStart + op.durationDays;
-      if (relEnd <= 0 || relStart >= 7) {
-        return { display: "none" };
-      }
-      const visibleStart = Math.max(0, relStart);
-      const visibleEnd = Math.min(7, relEnd);
-      const clampedDuration = Math.max(0.4, visibleEnd - visibleStart);
+      const colStart = Math.max(0, Math.min(20, op.startDay));
+      const colSpan = Math.max(1, op.durationDays);
       return {
-        left: `${(visibleStart / 7) * 100}%`,
-        width: `${(clampedDuration / 7) * 100}%`,
+        left: `${(colStart / 21) * 100}%`,
+        width: `${(colSpan / 21) * 100}%`,
         paddingLeft: "3px",
         paddingRight: "3px",
       };
@@ -999,10 +1007,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     let x1 = 0;
     let x2 = 0;
     if (granularity === "Week") {
-      const relEnd1 = op.startDay + op.durationDays - timeOffset * 7;
-      const relStart2 = nextOp.startDay - timeOffset * 7;
-      x1 = Math.min(1000, Math.max(0, (relEnd1 / 7) * 1000));
-      x2 = Math.min(1000, Math.max(0, (relStart2 / 7) * 1000));
+      x1 = ((op.startDay + op.durationDays) / 21) * 1000;
+      x2 = (nextOp.startDay / 21) * 1000;
     } else if (granularity === "Month") {
       x1 = Math.min(1000, Math.max(0, ((7 + op.startDay + op.durationDays - timeOffset * 35) / 35) * 1000));
       x2 = Math.min(1000, Math.max(0, ((7 + nextOp.startDay - timeOffset * 35) / 35) * 1000));
@@ -1020,16 +1026,10 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
   // Position & width for main order progress bar & collapsed bar
   const getMainOrderBarStyle = (wo: WorkOrderItem) => {
     if (granularity === "Week") {
-      const relStart = wo.startDay - timeOffset * 7;
-      const relEnd = relStart + wo.durationDays;
-      if (relEnd <= 0 || relStart >= 7) {
-        return { display: "none" };
-      }
-      const visibleStart = Math.max(0, relStart);
-      const visibleEnd = Math.min(7, relEnd);
-      const widthPct = Math.max(1, ((visibleEnd - visibleStart) / 7) * 100);
+      const leftPct = (Math.max(0, wo.startDay) / 21) * 100;
+      const widthPct = (Math.max(1, wo.durationDays) / 21) * 100;
       return {
-        left: `${(visibleStart / 7) * 100}%`,
+        left: `${leftPct}%`,
         width: `${widthPct}%`,
       };
     }
@@ -1055,6 +1055,15 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     };
   };
 
+  const displayLabel = useMemo(() => {
+    if (granularity === "Week") {
+      if (activeScrollWeek === 0) return "Nov 8 – Nov 14, 2026";
+      if (activeScrollWeek === 1) return "Nov 15 – Nov 21, 2026";
+      return "Nov 22 – Nov 28, 2026";
+    }
+    return timelineConfig.label;
+  }, [granularity, activeScrollWeek, timelineConfig.label]);
+
   return (
     <div className="space-y-4 animate-in fade-in duration-150">
       
@@ -1073,31 +1082,31 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             type="button"
-            onClick={() => setTimeOffset((prev) => prev - 1)}
+            onClick={handlePrevInterval}
             className="w-8 h-8 rounded-full border border-stone-200 dark:border-stone-700 flex items-center justify-center text-slate-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
             aria-label="Previous interval"
-            title={granularity === "Week" ? "Geser mundur 1 minggu" : granularity === "Month" ? "Geser mundur 1 bulan" : "Geser mundur 1 kuartal"}
+            title="Geser mundur 1 minggu"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           
           <span className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-stone-200 px-1 sm:px-2 select-none tracking-tight">
-            {timelineConfig.label}
+            {displayLabel}
           </span>
 
           <button
             type="button"
-            onClick={() => setTimeOffset((prev) => prev + 1)}
+            onClick={handleNextInterval}
             className="w-8 h-8 rounded-full border border-stone-200 dark:border-stone-700 flex items-center justify-center text-slate-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
             aria-label="Next interval"
-            title={granularity === "Week" ? "Geser maju 1 minggu" : granularity === "Month" ? "Geser maju 1 bulan" : "Geser maju 1 kuartal"}
+            title="Geser maju 1 minggu"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
 
           <button
             type="button"
-            onClick={() => setTimeOffset(0)}
+            onClick={handleTodayClick}
             className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border border-stone-200 dark:border-stone-700 text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer ml-1"
           >
             <Calendar className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400" />
@@ -1370,8 +1379,12 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                 </div>
               </div>
 
-              {/* Horizontally Scrollable Timeline Area */}
-              <div className="flex-1 overflow-x-auto relative scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700">
+              {/* Horizontally Scrollable Timeline Area with Standard Left-Right Scroller */}
+              <div 
+                ref={timelineScrollRef}
+                onScroll={handleTimelineScroll}
+                className="flex-1 timeline-scroll-container relative scrollbar-thin"
+              >
                 <div className={`${timelineConfig.gridMinWidth} relative min-h-[460px]`}>
                   
                   {/* Column Headers */}
@@ -1380,7 +1393,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
                   >
                     {timelineConfig.cols.map((d) => {
-                      const isHighlight = granularity === "Week" && timeOffset === 0 && d.colIndex >= 1 && d.colIndex <= 3;
+                      const isHighlight = granularity === "Week" && d.colIndex >= 1 && d.colIndex <= 3;
                       return (
                         <div
                           key={d.colIndex}
@@ -1430,8 +1443,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
                   >
                     {capacityRowData.map((cap, i) => {
-                      const isHighlight = granularity === "Week" && timeOffset === 0 && i >= 1 && i <= 3;
-                      const isHatch = granularity === "Week" && (i === 0 || i === 6);
+                      const isHighlight = granularity === "Week" && i >= 1 && i <= 3;
+                      const isHatch = granularity === "Week" && (i % 7 === 0 || i % 7 === 6 || i >= 14);
                       return (
                         <div
                           key={i}
@@ -1463,10 +1476,10 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                   </div>
 
                   {/* Main Gantt Rows & Timeline Area */}
-                  <div className="relative divide-y divide-stone-200/80 dark:divide-stone-800">
+                  <div className="relative divide-y divide-stone-200/80 dark:border-stone-800">
                     
                     {/* Live Time Vertical Red/Amber Marker Line */}
-                    {timeOffset === 0 && timelineConfig.activeColIndex >= 0 && (
+                    {timelineConfig.activeColIndex >= 0 && (
                       <div
                         aria-label="Current real time indicator"
                         className="absolute top-0 bottom-0 pointer-events-none z-30 flex flex-col items-center transition-all"
@@ -1478,45 +1491,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       </div>
                     )}
 
-                    {/* Timeline Rows: Empty state vs Orders mode vs Work centers mode */}
-                    {visibleWorkOrders.length === 0 ? (
-                      <div 
-                        className="relative min-h-[260px] grid"
-                        style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
-                      >
-                        {/* Background Grid Columns */}
-                        {timelineConfig.cols.map((col) => {
-                          const isHatch = granularity === "Week" && (col.colIndex === 0 || col.colIndex === 6);
-                          return (
-                            <div
-                              key={col.colIndex}
-                              className="h-full border-r border-stone-200/80 dark:border-stone-800/80"
-                              style={
-                                isHatch
-                                  ? {
-                                      backgroundImage:
-                                        "repeating-linear-gradient(135deg, rgba(203, 213, 225, 0.25) 0px, rgba(203, 213, 225, 0.25) 2px, transparent 2px, transparent 10px)",
-                                    }
-                                  : undefined
-                              }
-                            />
-                          );
-                        })}
-
-                        {/* Centered Empty State Overlay */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 pointer-events-auto">
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-stone-400 dark:text-stone-500 mb-2">
-                            <Calendar className="w-7 h-7 stroke-[1.6]" />
-                          </div>
-                          <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-stone-100">
-                            Nothing scheduled in this range
-                          </h3>
-                          <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
-                            Step forward or back, or plan a new work order.
-                          </p>
-                        </div>
-                      </div>
-                    ) : mode === "Orders" ? (
+                    {/* Timeline Rows: Orders mode vs Work centers mode */}
+                    {mode === "Orders" ? (
                       visibleWorkOrders.map((wo) => (
                         <div key={wo.id} className="transition-colors hover:bg-stone-50/40 dark:hover:bg-stone-900/20">
                           {/* Master Order Timeline Cell */}
@@ -1526,8 +1502,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                           >
                             {/* Column drop backgrounds */}
                             {timelineConfig.cols.map((col) => {
-                              const isHighlight = granularity === "Week" && timeOffset === 0 && col.colIndex >= 1 && col.colIndex <= 3;
-                              const isHatch = granularity === "Week" && (col.colIndex === 0 || col.colIndex === 6);
+                              const isHighlight = granularity === "Week" && col.colIndex >= 1 && col.colIndex <= 3;
+                              const isHatch = granularity === "Week" && (col.colIndex % 7 === 0 || col.colIndex % 7 === 6 || col.colIndex >= 14);
                               return (
                                 <div 
                                   key={col.colIndex}
@@ -1672,8 +1648,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                   >
                                     {/* Column Drop Zones & Distinct Background Grid Separation */}
                                     {timelineConfig.cols.map((col) => {
-                                      const isHighlight = granularity === "Week" && timeOffset === 0 && col.colIndex >= 1 && col.colIndex <= 3;
-                                      const isHatch = granularity === "Week" && (col.colIndex === 0 || col.colIndex === 6);
+                                      const isHighlight = granularity === "Week" && col.colIndex >= 1 && col.colIndex <= 3;
+                                      const isHatch = granularity === "Week" && (col.colIndex % 7 === 0 || col.colIndex % 7 === 6 || col.colIndex >= 14);
                                       return (
                                         <div
                                           key={col.colIndex}
@@ -1882,8 +1858,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                             style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
                           >
                             {timelineConfig.cols.map((col) => {
-                              const isHighlight = granularity === "Week" && timeOffset === 0 && col.colIndex >= 1 && col.colIndex <= 3;
-                              const isHatch = granularity === "Week" && (col.colIndex === 0 || col.colIndex === 6);
+                              const isHighlight = granularity === "Week" && col.colIndex >= 1 && col.colIndex <= 3;
+                              const isHatch = granularity === "Week" && (col.colIndex % 7 === 0 || col.colIndex % 7 === 6 || col.colIndex >= 14);
                               return (
                                 <div 
                                   key={col.colIndex}
@@ -1916,8 +1892,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                   >
                                     {/* Column Drop Zones */}
                                     {timelineConfig.cols.map((col) => {
-                                      const isHighlight = granularity === "Week" && timeOffset === 0 && col.colIndex >= 1 && col.colIndex <= 3;
-                                      const isHatch = granularity === "Week" && (col.colIndex === 0 || col.colIndex === 6);
+                                      const isHighlight = granularity === "Week" && col.colIndex >= 1 && col.colIndex <= 3;
+                                      const isHatch = granularity === "Week" && (col.colIndex % 7 === 0 || col.colIndex % 7 === 6 || col.colIndex >= 14);
                                       return (
                                         <div
                                           key={col.colIndex}
@@ -2022,120 +1998,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
               </div>
             </div>
 
-            {/* ── Interactive Horizontal Timeline Range Slider (Bilah Penggeser Rentang Jadwal) ── */}
-            <div className="p-3.5 sm:p-4 border-t border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/50 space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-                    <SlidersHorizontal className="w-4 h-4" />
-                  </span>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">
-                        Bilah Penggeser Timeline (Date Range Slider)
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                        {timelineConfig.label}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-stone-500 dark:text-stone-400">
-                      Geser bilah slider untuk menggeser rentang tanggal maju atau mundur secara langsung.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Quick Step Buttons */}
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setTimeOffset((prev) => Math.max(-2, prev - 1))}
-                    disabled={timeOffset <= -2}
-                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                    title="Geser mundur 1 periode"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                    <span>Mundur</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setTimeOffset(0)}
-                    className={`px-3 py-1 text-xs font-semibold rounded-lg border transition-colors cursor-pointer ${
-                      timeOffset === 0
-                        ? "bg-blue-600 border-blue-600 text-white shadow-xs font-bold"
-                        : "border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700"
-                    }`}
-                    title="Kembali ke minggu saat ini"
-                  >
-                    Hari Ini
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setTimeOffset((prev) => Math.min(3, prev + 1))}
-                    disabled={timeOffset >= 3}
-                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                    title="Geser maju 1 periode"
-                  >
-                    <span>Maju</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Slider Track with Custom Range Input */}
-              <div className="space-y-1.5 pt-1">
-                <div className="relative flex items-center">
-                  <input
-                    type="range"
-                    min={-2}
-                    max={3}
-                    step={1}
-                    value={timeOffset}
-                    onChange={(e) => setTimeOffset(parseInt(e.target.value, 10))}
-                    aria-label="Penggeser Rentang Tanggal Timeline"
-                    className="w-full h-2.5 bg-stone-200 dark:bg-stone-800 rounded-full appearance-none cursor-ew-resize accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                  />
-                </div>
-
-                {/* Milestone Tick Marks and Labels */}
-                <div className="grid grid-cols-6 text-center text-[10px] font-mono pt-1 text-stone-500 dark:text-stone-400 gap-1">
-                  {[
-                    { offset: -2, label: "25 Okt – 31 Okt", desc: "Lampau" },
-                    { offset: -1, label: "1 Nov – 7 Nov", desc: "Minggu Lalu" },
-                    { offset: 0, label: "8 Nov – 14 Nov", desc: "★ Minggu Ini" },
-                    { offset: 1, label: "15 Nov – 21 Nov", desc: "Minggu Depan" },
-                    { offset: 2, label: "22 Nov – 28 Nov", desc: "Kosong" },
-                    { offset: 3, label: "29 Nov – 5 Des", desc: "Kosong" },
-                  ].map((mark) => {
-                    const isSelected = timeOffset === mark.offset;
-                    return (
-                      <button
-                        key={mark.offset}
-                        type="button"
-                        onClick={() => setTimeOffset(mark.offset)}
-                        className={`py-1 px-1 rounded-md transition-all cursor-pointer truncate ${
-                          isSelected
-                            ? "bg-blue-600 text-white font-extrabold shadow-xs scale-[1.02]"
-                            : "hover:bg-stone-200/60 dark:hover:bg-stone-800/80 hover:text-slate-900 dark:hover:text-white"
-                        }`}
-                      >
-                        <span className="block truncate">{mark.label}</span>
-                        <span className={`block text-[9px] ${isSelected ? "text-blue-100" : "text-stone-400 dark:text-stone-500"}`}>
-                          {mark.desc}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
             {/* Bottom helper footnote */}
             <div className="p-3 border-t border-stone-100 dark:border-stone-800/80 bg-stone-50/40 dark:bg-stone-900/30 flex flex-wrap items-center justify-between gap-2 text-[11px] text-stone-500 dark:text-stone-400">
               <span className="flex items-center gap-1">
                 <GripHorizontal className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-                Klik bar untuk melihat detail operasi di panel kanan atau klik ID pesanan untuk Work Order
+                Geser horizontal timeline untuk melihat jadwal minggu lainnya · Klik bar untuk detail operasi
               </span>
               <span className="font-mono font-medium text-stone-400">
                 Live Capacity Auto-Recalculate Active
