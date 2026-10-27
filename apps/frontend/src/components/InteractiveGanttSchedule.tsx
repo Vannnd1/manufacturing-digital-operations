@@ -270,8 +270,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     },
     {
       id: "WO-2041",
-      model: "PROD-ENC-01 · Modular Industrial Automation Enclosure (×50)",
-      shortName: "Automation Enclosure",
+      model: "PROD-ENC-01 · Modular PLC Automation Control Cabinet (×50)",
+      shortName: "PLC Control Cabinet",
       clientOrDept: "Factory Automation Line",
       dateRange: "Nov 7 – Nov 17",
       rush: false,
@@ -337,8 +337,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     },
     {
       id: "WO-2042",
-      model: "PROD-BMOD-02 · Energy Storage Battery Module (×25)",
-      shortName: "Battery Module",
+      model: "PROD-BMOD-02 · Energy Storage Battery Module - 10.5 kWh (×25)",
+      shortName: "Battery Module 10.5kWh",
       clientOrDept: "Grid Power Systems",
       dateRange: "Nov 8 – Nov 15",
       rush: true,
@@ -502,16 +502,16 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     },
     {
       id: "WO-2043",
-      model: "PROD-ENC-01 · Industrial Server Rack Chassis (×20)",
-      shortName: "Server Rack Chassis",
-      clientOrDept: "Data Infrastructure",
+      model: "PROD-SRV-01 · Industrial AC Servo Motor & Driver - MINAS A6 (×40)",
+      shortName: "AC Servo Motor & Driver",
+      clientOrDept: "Factory Robotics Division",
       dateRange: "Nov 10 – Nov 17",
       rush: true,
       status: "In progress",
       startDay: 2,
       durationDays: 4,
       expanded: true,
-      note: "Delayed sheet cutting queue. Operator overtime approved.",
+      note: "Precision MINAS A6 series servo motor. Dynamometer torque testing and encoder calibration required.",
       operations: [
         {
           id: "op-2043-1",
@@ -557,16 +557,16 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     },
     {
       id: "WO-2046",
-      model: "PROD-PDU-04 · Compact Solar Inverter Unit (×40)",
-      shortName: "Solar Inverter",
-      clientOrDept: "Warehouse Replenishment",
+      model: "PROD-HP-01 · Air-to-Water Industrial Heat Pump & Inverter (×20)",
+      shortName: "Heat Pump Inverter",
+      clientOrDept: "Eco Systems Commercial",
       dateRange: "Nov 12 – Nov 18",
       rush: false,
       status: "In progress",
       startDay: 3,
       durationDays: 5,
       expanded: true,
-      note: "Standard seasonal build for inventory replenishment.",
+      note: "Commercial Aquarea eco-inverter series. Helium leak detection on hermetic compressor lines required.",
       operations: [
         {
           id: "op-2046-1",
@@ -611,16 +611,16 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     },
     {
       id: "WO-2048",
-      model: "PROD-BMOD-03 · High-Density Sub-Rack Frame (×12)",
-      shortName: "Sub-Rack Frame",
-      clientOrDept: "Industrial Storage Systems",
+      model: "PROD-SEN-02 · High-Precision CMOS Laser Sensor Unit (×100)",
+      shortName: "CMOS Laser Sensor",
+      clientOrDept: "Sensors & Measurement Lab",
       dateRange: "Nov 14 – Nov 18",
       rush: false,
       status: "On hold",
       startDay: 4,
       durationDays: 4,
       expanded: false,
-      note: "Awaiting custom bracket spec confirmation from client.",
+      note: "Sub-micron displacement sensing head. Optical alignment and thermal drift test required.",
       operations: [
         {
           id: "op-2048-1",
@@ -673,13 +673,32 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         const matchingDbOrder = orders[idx % orders.length];
         if (!matchingDbOrder) return wo;
 
-        const sku = matchingDbOrder.product_sku || "PROD-ENC-01";
-        const name = matchingDbOrder.product_name || "Modular Industrial Automation Enclosure";
+        const rawName = String(matchingDbOrder.product_name || "");
+        const lower = rawName.toLowerCase();
+        let name = rawName;
+        let sku = matchingDbOrder.product_sku || "PROD-ENC-01";
+        let shortName = wo.shortName;
+
+        if (lower.includes("sepeda")) {
+          sku = "PROD-BMOD-02";
+          name = "Energy Storage Battery Module (10.5 kWh)";
+          shortName = "Battery Module 10.5kWh";
+        } else if (lower.includes("skuter")) {
+          sku = "PROD-SRV-01";
+          name = "Industrial AC Servo Motor & Driver (MINAS A6)";
+          shortName = "AC Servo Motor & Driver";
+        } else if (lower.includes("industrial motor")) {
+          sku = "PROD-HP-01";
+          name = "Air-to-Water Industrial Heat Pump & Inverter";
+          shortName = "Heat Pump Inverter";
+        }
+
         const qty = matchingDbOrder.planned_quantity || 25;
 
         return {
           ...wo,
           model: `${sku} · ${name} (×${qty})`,
+          shortName: shortName || wo.shortName,
         };
       });
     });

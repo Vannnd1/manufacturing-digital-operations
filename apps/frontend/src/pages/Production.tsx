@@ -57,6 +57,63 @@ interface ProductionProps {
   defaultTab?: "scheduling" | "orders" | "quality";
 }
 
+const DEFAULT_PANASONIC_PRODUCTS: Product[] = [
+  { id: "p-enc-01", sku: "PROD-ENC-01", name: "Modular PLC Automation Control Cabinet", unit: "unit" },
+  { id: "p-bmod-02", sku: "PROD-BMOD-02", name: "Energy Storage Battery Module (10.5 kWh)", unit: "module" },
+  { id: "p-pdu-03", sku: "PROD-PDU-03", name: "Factory Floor Intelligent Power Distribution Unit", unit: "unit" },
+  { id: "p-srv-01", sku: "PROD-SRV-01", name: "Industrial AC Servo Motor & Driver (MINAS A6)", unit: "unit" },
+  { id: "p-hp-01", sku: "PROD-HP-01", name: "Air-to-Water Industrial Heat Pump & Inverter", unit: "unit" },
+  { id: "p-sen-02", sku: "PROD-SEN-02", name: "High-Precision CMOS Laser Sensor Unit", unit: "unit" },
+];
+
+function formatOrderProduct(order: any, idx: number) {
+  const rawName = String(order.product_name || order.product_id || "");
+  const lower = rawName.toLowerCase();
+
+  const schedules = [
+    { schedule: "Nov 7 – Nov 17", workCenter: "WC-101 · Laser & Stamping" },
+    { schedule: "Nov 8 – Nov 15", workCenter: "WC-104 · Battery & Dielectric Bay" },
+    { schedule: "Nov 10 – Nov 17", workCenter: "WC-102 · Servo Coil Winding" },
+    { schedule: "Nov 12 – Nov 18", workCenter: "WC-101 · Heat Pump Assembly" },
+    { schedule: "Nov 9 – Nov 13", workCenter: "WC-104 · PLC Control Enclosure" },
+    { schedule: "Nov 6 – Nov 13", workCenter: "WC-103 · Power Dist Testing" },
+    { schedule: "Nov 14 – Nov 18", workCenter: "WC-104 · Laser Sensor Calibration" },
+  ];
+  const assigned = schedules[idx % schedules.length];
+
+  if (lower.includes("sepeda")) {
+    return {
+      sku: "PROD-BMOD-02",
+      name: "Energy Storage Battery Module (10.5 kWh)",
+      schedule: "Nov 8 – Nov 15",
+      workCenter: "WC-104 · Battery & Dielectric Bay",
+    };
+  }
+  if (lower.includes("skuter")) {
+    return {
+      sku: "PROD-SRV-01",
+      name: "Industrial AC Servo Motor & Driver (MINAS A6)",
+      schedule: "Nov 10 – Nov 17",
+      workCenter: "WC-102 · Servo Coil Winding",
+    };
+  }
+  if (lower.includes("industrial motor")) {
+    return {
+      sku: "PROD-HP-01",
+      name: "Air-to-Water Industrial Heat Pump & Inverter",
+      schedule: "Nov 12 – Nov 18",
+      workCenter: "WC-101 · Heat Pump Assembly",
+    };
+  }
+
+  return {
+    sku: order.product_sku || "PROD-ENC-01",
+    name: rawName || "Modular PLC Automation Control Cabinet",
+    schedule: assigned.schedule,
+    workCenter: assigned.workCenter,
+  };
+}
+
 export function Production({ defaultTab = "scheduling" }: ProductionProps) {
   const { user } = useAuthStore();
 
@@ -120,7 +177,33 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
 
   // Fetch master data once
   useEffect(() => {
-    getProducts().then((d: Product[]) => setProducts(d)).catch(() => {});
+    getProducts()
+      .then((d: Product[]) => {
+        if (!d || d.length === 0) {
+          setProducts(DEFAULT_PANASONIC_PRODUCTS);
+          return;
+        }
+        // Sanitize any legacy product names
+        const sanitized = d.map((p) => {
+          const lower = (p.name || "").toLowerCase();
+          if (lower.includes("sepeda")) {
+            return { ...p, sku: "PROD-BMOD-02", name: "Energy Storage Battery Module (10.5 kWh)", unit: "module" };
+          }
+          if (lower.includes("skuter")) {
+            return { ...p, sku: "PROD-SRV-01", name: "Industrial AC Servo Motor & Driver (MINAS A6)", unit: "unit" };
+          }
+          if (lower.includes("industrial motor")) {
+            return { ...p, sku: "PROD-HP-01", name: "Air-to-Water Industrial Heat Pump & Inverter", unit: "unit" };
+          }
+          return p;
+        });
+
+        // Ensure all core Panasonic discrete products are represented
+        const existingSkus = new Set(sanitized.map((p) => p.sku));
+        const missing = DEFAULT_PANASONIC_PRODUCTS.filter((def) => !existingSkus.has(def.sku));
+        setProducts([...sanitized, ...missing]);
+      })
+      .catch(() => setProducts(DEFAULT_PANASONIC_PRODUCTS));
     getMaterials().then((d: Material[]) => setMaterials(d)).catch(() => {});
   }, []);
 
@@ -556,14 +639,28 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                     </Td>
                   </tr>
                 ) : (
-                  filteredOrders.map(order => (
-                    <tr key={order.id} className="hover:bg-slate-50/60 transition-colors">
-                      <Td className="font-mono text-xs text-slate-500 font-medium">
-                        {order.id.slice(0, 8)}...
-                      </Td>
-                      <Td>
-                        <div className="font-medium text-slate-900">{order.product_name || order.product_id}</div>
-                      </Td>
+                  filteredOrders.map((order, idx) => {
+                    const prodInfo = formatOrderProduct(order, idx);
+                    return (
+                      <tr key={order.id} className="hover:bg-slate-50/60 dark:hover:bg-stone-800/60 transition-colors">
+                        <Td className="font-mono text-xs text-slate-500 dark:text-stone-400 font-medium">
+                          {order.id.slice(0, 8)}...
+                        </Td>
+                        <Td>
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-mono text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-50 dark:bg-amber-950/70 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800 shrink-0">
+                                {prodInfo.sku}
+                              </span>
+                              <span className="font-semibold text-xs text-slate-900 dark:text-stone-100">
+                                {prodInfo.name}
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-stone-500 dark:text-stone-400">
+                              Schedule: <span className="font-medium text-slate-700 dark:text-stone-300">{prodInfo.schedule}</span> · {prodInfo.workCenter}
+                            </span>
+                          </div>
+                        </Td>
                       <Td className="text-right font-mono font-medium">{order.planned_quantity}</Td>
                       <Td className="text-right font-mono font-medium">
                         {order.actual_quantity !== null && order.actual_quantity !== undefined ? order.actual_quantity : "—"}
@@ -616,7 +713,8 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                         )}
                       </Td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </Table>
