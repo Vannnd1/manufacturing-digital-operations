@@ -203,20 +203,20 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
   const [workOrders, setWorkOrders] = useState<WorkOrderItem[]>([
     {
       id: "WO-2047",
-      model: "PROD-ENC-02 · Ridgeline Frameset Enclosure (×30)",
-      shortName: "Ridgeline Frameset",
-      clientOrDept: "Lumen Bike Studio",
+      model: "PROD-ENC-02 · Heavy Industrial Control Enclosure (×30)",
+      shortName: "Control Enclosure",
+      clientOrDept: "Line 1 Control Systems",
       dateRange: "Nov 6 – Nov 13",
       rush: false,
       status: "Done",
       startDay: 0,
       durationDays: 7,
       expanded: false,
-      note: "Completed early run for Lumen Bike Studio. Zero paint defects, release signed off.",
+      note: "Completed early run for Line 1 Control Systems. Zero paint defects, release signed off.",
       operations: [
         {
           id: "op-2047-0",
-          name: "Tube cutting",
+          name: "Laser sheet cutting",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
@@ -229,7 +229,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2047-1",
-          name: "TIG welding",
+          name: "Structural TIG welding",
           techInitial: "KM",
           techName: "Kwame Mensah",
           techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
@@ -242,7 +242,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2047-2",
-          name: "Frame alignment",
+          name: "Chassis alignment",
           techInitial: "LV",
           techName: "Lena Vogel",
           techColor: "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-200",
@@ -255,7 +255,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2047-3",
-          name: "Powder coat",
+          name: "Industrial powder coat",
           techInitial: "JB",
           techName: "Jonas Berg",
           techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
@@ -270,9 +270,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     },
     {
       id: "WO-2041",
-      model: "PROD-ENC-01 · Ridgeline Gravel Enclosure (×50)",
-      shortName: "Ridgeline Gravel",
-      clientOrDept: "Rosewood Bikes",
+      model: "PROD-ENC-01 · Modular Industrial Automation Enclosure (×50)",
+      shortName: "Automation Enclosure",
+      clientOrDept: "Factory Automation Line",
       dateRange: "Nov 7 – Nov 17",
       rush: false,
       status: "In progress",
@@ -283,7 +283,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       operations: [
         {
           id: "op-2041-1",
-          name: "Tube cutting",
+          name: "Sheet metal cutting",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
@@ -296,7 +296,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2041-2",
-          name: "TIG welding",
+          name: "Structural TIG welding",
           techInitial: "AT",
           techName: "Aiko Tanaka",
           techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
@@ -309,7 +309,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2041-3",
-          name: "Powder coat",
+          name: "Powder coat & bake",
           techInitial: "JB",
           techName: "Jonas Berg",
           techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
@@ -322,7 +322,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2041-4",
-          name: "Assembly",
+          name: "Mechanical assembly",
           techInitial: "DA",
           techName: "Diego Alvarez",
           techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
@@ -337,9 +337,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     },
     {
       id: "WO-2042",
-      model: "PROD-BMOD-02 · Tempo Road Battery Pack (×25)",
-      shortName: "Tempo Road",
-      clientOrDept: "Harbor & Hill Bikes",
+      model: "PROD-BMOD-02 · Energy Storage Battery Module (×25)",
+      shortName: "Battery Module",
+      clientOrDept: "Grid Power Systems",
       dateRange: "Nov 8 – Nov 15",
       rush: true,
       status: "In progress",
@@ -350,7 +350,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       operations: [
         {
           id: "op-2042-1",
-          name: "Mitering",
+          name: "CNC busbar mitering",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
@@ -364,7 +364,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2042-2",
-          name: "TIG welding",
+          name: "Structural TIG welding",
           techInitial: "AT",
           techName: "Aiko Tanaka",
           techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
@@ -378,7 +378,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2042-3",
-          name: "Frame alignment",
+          name: "Dielectric QC check",
           techInitial: "LV",
           techName: "Lena Vogel",
           techColor: "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-200",
@@ -393,9 +393,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     },
     {
       id: "WO-2045",
-      model: "PROD-PDU-03 · Halcyon Tourer PDU (×10)",
-      shortName: "Halcyon Tourer",
-      clientOrDept: "Fernhill Outfitters",
+      model: "PROD-PDU-03 · Intelligent Power Distribution Unit (×10)",
+      shortName: "Power Dist Unit",
+      clientOrDept: "Plant Infrastructure",
       dateRange: "Nov 8 – Nov 12",
       rush: false,
       status: "In progress",
@@ -406,7 +406,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       operations: [
         {
           id: "op-2045-1",
-          name: "Assembly",
+          name: "Busbar sub-assembly",
           techInitial: "AO",
           techName: "Amara Okafor",
           techColor: "bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-200",
@@ -419,7 +419,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2045-2",
-          name: "Quality check",
+          name: "Dielectric isolation test",
           techInitial: "HK",
           techName: "Hana Kim",
           techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
@@ -432,7 +432,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2045-3",
-          name: "Wheel build",
+          name: "Internal electrical wiring",
           techInitial: "BA",
           techName: "Bo Andersen",
           techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
@@ -441,15 +441,15 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           progress: 0,
           colorScheme: "stone",
           statusText: "Nov 12",
-          workCenter: "WC-102 · Mechanical Bay",
+          workCenter: "WC-102 · Electrical Bay",
         },
       ],
     },
     {
       id: "WO-2044",
-      model: "PROD-ENC-01 · Juniper Trail Cabinet (×15)",
-      shortName: "Juniper Trail",
-      clientOrDept: "Copper Canyon Cycles",
+      model: "PROD-ENC-01 · High-Voltage Switchgear Cabinet (×15)",
+      shortName: "Switchgear Cabinet",
+      clientOrDept: "Substation Tech",
       dateRange: "Nov 9 – Nov 13",
       rush: true,
       status: "In progress",
@@ -460,7 +460,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       operations: [
         {
           id: "op-2044-1",
-          name: "Powder coat",
+          name: "Industrial powder coat",
           techInitial: "JB",
           techName: "Jonas Berg",
           techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
@@ -474,7 +474,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2044-2",
-          name: "Wheel build",
+          name: "Terminal block wiring",
           techInitial: "BA",
           techName: "Bo Andersen",
           techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
@@ -483,11 +483,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           progress: 50,
           colorScheme: "blue",
           statusText: "Nov 11 – Nov 12",
-          workCenter: "WC-101 · Laser Cutting & CNC Bending",
+          workCenter: "WC-101 · Electrical Wiring Bay",
         },
         {
           id: "op-2044-3",
-          name: "Assembly",
+          name: "Enclosure assembly",
           techInitial: "DA",
           techName: "Diego Alvarez",
           techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
@@ -502,9 +502,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     },
     {
       id: "WO-2043",
-      model: "PROD-ENC-01 · Commuter Urban Chassis (×20)",
-      shortName: "Commuter Urban",
-      clientOrDept: "Gearhouse Collective",
+      model: "PROD-ENC-01 · Industrial Server Rack Chassis (×20)",
+      shortName: "Server Rack Chassis",
+      clientOrDept: "Data Infrastructure",
       dateRange: "Nov 10 – Nov 17",
       rush: true,
       status: "In progress",
@@ -515,7 +515,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       operations: [
         {
           id: "op-2043-1",
-          name: "Tube cutting",
+          name: "Laser sheet cutting",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
@@ -529,7 +529,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2043-2",
-          name: "Mitering",
+          name: "CNC press brake bending",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
@@ -538,11 +538,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           progress: 0,
           colorScheme: "stone",
           statusText: "Nov 13 – Nov 14",
-          workCenter: "WC-101 · CNC Mitering Bay",
+          workCenter: "WC-101 · CNC Bending Bay",
         },
         {
           id: "op-2043-3",
-          name: "TIG welding",
+          name: "Structural TIG welding",
           techInitial: "AT",
           techName: "Aiko Tanaka",
           techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
@@ -557,9 +557,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     },
     {
       id: "WO-2046",
-      model: "PROD-PDU-04 · Pico 20 Kids Inverter (×40)",
-      shortName: "Pico 20 Kids",
-      clientOrDept: "For stock",
+      model: "PROD-PDU-04 · Compact Solar Inverter Unit (×40)",
+      shortName: "Solar Inverter",
+      clientOrDept: "Warehouse Replenishment",
       dateRange: "Nov 12 – Nov 18",
       rush: false,
       status: "In progress",
@@ -570,7 +570,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       operations: [
         {
           id: "op-2046-1",
-          name: "Tube cutting",
+          name: "Chassis laser cutting",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
@@ -583,7 +583,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2046-2",
-          name: "TIG welding",
+          name: "Structural TIG welding",
           techInitial: "KM",
           techName: "Kwame Mensah",
           techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
@@ -596,7 +596,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2046-3",
-          name: "Powder coat",
+          name: "Anti-corrosion powder coat",
           techInitial: "JB",
           techName: "Jonas Berg",
           techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
@@ -611,9 +611,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     },
     {
       id: "WO-2048",
-      model: "PROD-BMOD-03 · Tempo Frameset Battery Rack (×12)",
-      shortName: "Tempo Frameset",
-      clientOrDept: "Ottoline Velo",
+      model: "PROD-BMOD-03 · High-Density Sub-Rack Frame (×12)",
+      shortName: "Sub-Rack Frame",
+      clientOrDept: "Industrial Storage Systems",
       dateRange: "Nov 14 – Nov 18",
       rush: false,
       status: "On hold",
@@ -624,7 +624,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       operations: [
         {
           id: "op-2048-1",
-          name: "Mitering",
+          name: "Aluminum profile mitering",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
@@ -637,7 +637,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2048-2",
-          name: "TIG welding",
+          name: "Structural TIG welding",
           techInitial: "AT",
           techName: "Aiko Tanaka",
           techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
@@ -650,7 +650,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         },
         {
           id: "op-2048-3",
-          name: "Frame alignment",
+          name: "Chassis alignment",
           techInitial: "LV",
           techName: "Lena Vogel",
           techColor: "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-200",
@@ -661,8 +661,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           statusText: "Nov 18",
           workCenter: "WC-104 · Alignment",
         },
-      ],
-    },
+      ],    },
   ]);
 
   // Synchronize real backend production orders if provided
@@ -2263,7 +2262,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
-                      <span>Tempo Road ×8</span>
+                      <span>Battery Module ×8</span>
                       <span className="font-semibold text-slate-700 dark:text-stone-300">55%</span>
                     </div>
                     <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
@@ -2287,7 +2286,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
-                      <span>Halcyon Tourer ×10</span>
+                      <span>Power Dist Unit ×10</span>
                       <span className="font-semibold text-slate-700 dark:text-stone-300">60%</span>
                     </div>
                     <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
@@ -2303,7 +2302,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                           BA
                         </span>
                         <span className="font-bold text-slate-900 dark:text-stone-100 text-xs">
-                          Wheel build
+                          Terminal wiring
                         </span>
                       </div>
                       <span className="font-mono text-[11px] text-stone-500 dark:text-stone-400">
@@ -2311,7 +2310,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
-                      <span>Juniper Trail ×6</span>
+                      <span>Switchgear Cabinet ×6</span>
                       <span className="font-semibold text-slate-700 dark:text-stone-300">50%</span>
                     </div>
                     <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
@@ -2332,7 +2331,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
                       <span className="text-slate-800 dark:text-stone-200 truncate text-[11px]">
-                        <strong>Assembly</strong> · WO-2044 · Juniper Trail
+                        <strong>Assembly</strong> · WO-2044 · Switchgear Cabinet
                       </span>
                     </div>
                     <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 shrink-0">
@@ -2344,7 +2343,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
                       <span className="text-slate-800 dark:text-stone-200 truncate text-[11px]">
-                        <strong>Wheel build</strong> · WO-2045 · Halcyon Tourer
+                        <strong>Busbar wiring</strong> · WO-2045 · Power Dist Unit
                       </span>
                     </div>
                     <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 shrink-0">
@@ -2356,7 +2355,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                       <span className="text-slate-800 dark:text-stone-200 truncate text-[11px]">
-                        <strong>Tube cutting</strong> · WO-2046 · Pico 20 Kids
+                        <strong>Chassis cutting</strong> · WO-2046 · Solar Inverter
                       </span>
                     </div>
                     <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 shrink-0">
@@ -2368,7 +2367,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="w-2 h-2 rounded-full bg-stone-400 shrink-0" />
                       <span className="text-slate-800 dark:text-stone-200 truncate text-[11px]">
-                        <strong>Powder coat</strong> · WO-2041 · Ridgeline Gravel
+                        <strong>Powder coat</strong> · WO-2041 · Automation Enclosure
                       </span>
                     </div>
                     <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 shrink-0">

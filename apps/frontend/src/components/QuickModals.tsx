@@ -389,7 +389,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <div className="space-y-2 text-[11px] text-slate-600 dark:text-stone-400 px-1">
             <div className="flex justify-between py-1 border-b border-stone-100 dark:border-stone-800">
               <span className="text-stone-400 dark:text-stone-500">Operating Facility:</span>
-              <span className="font-medium text-slate-800 dark:text-stone-200">Larkspur Assembly Plant</span>
+              <span className="font-medium text-slate-800 dark:text-stone-200">Main Assembly Plant</span>
             </div>
             <div className="flex justify-between py-1 border-b border-stone-100 dark:border-stone-800">
               <span className="text-stone-400 dark:text-stone-500">Application Version:</span>
