@@ -58,10 +58,12 @@ interface InteractiveGanttScheduleProps {
 const STAFF_ROSTER = [
   { id: "st-1", name: "Aiko Tanaka", role: "TIG Welder & Fabrication", initial: "AT", color: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200" },
   { id: "st-2", name: "Felix Wagner", role: "CNC & Laser Operator", initial: "FW", color: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200" },
-  { id: "st-3", name: "Jiro Bando", role: "Powder Coating Specialist", initial: "JB", color: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200" },
-  { id: "st-4", name: "David Adebayo", role: "Mechanical Assembly Tech", initial: "DA", color: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200" },
-  { id: "st-5", name: "Hana Kim", role: "Quality & Dielectric Inspector", initial: "HK", color: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200" },
-  { id: "st-6", name: "Budi Arto", role: "Electrical Wiring Tech", initial: "BA", color: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200" },
+  { id: "st-3", name: "Lena Vogel", role: "Frame Alignment & Precision", initial: "LV", color: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200" },
+  { id: "st-4", name: "Amara Okafor", role: "Mechanical Assembly Tech", initial: "AO", color: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200" },
+  { id: "st-5", name: "Hana Kim", role: "Quality & Dielectric Inspector", initial: "HK", color: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200" },
+  { id: "st-6", name: "Bo Andersen", role: "Electrical Wiring Tech", initial: "BA", color: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200" },
+  { id: "st-7", name: "Jiro Bando", role: "Powder Coating Specialist", initial: "JB", color: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200" },
+  { id: "st-8", name: "Diego Alvarez", role: "Sub-assembly Tech", initial: "DA", color: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200" },
 ];
 
 export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: InteractiveGanttScheduleProps) {
@@ -202,69 +204,110 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
   // Initial Work Orders & Sub-operations tailored to real project products and roster
   const [workOrders, setWorkOrders] = useState<WorkOrderItem[]>([
     {
-      id: "WO-2047",
-      model: "PROD-ENC-02 · Heavy Industrial Control Enclosure (×30)",
-      shortName: "Control Enclosure",
-      clientOrDept: "Line 1 Control Systems",
-      dateRange: "Nov 6 – Nov 13",
+      id: "WO-2042",
+      model: "PROD-BMOD-02 · Energy Storage Battery Module - 10.5 kWh (×25)",
+      shortName: "Battery Module 10.5kWh",
+      clientOrDept: "Line 1 Energy Systems",
+      dateRange: "Nov 9 – Nov 15",
       rush: false,
-      status: "Done",
-      startDay: 0,
-      durationDays: 7,
-      expanded: false,
-      note: "Completed early run for Line 1 Control Systems. Zero paint defects, release signed off.",
+      status: "In progress",
+      startDay: 1,
+      durationDays: 6,
+      expanded: true,
+      note: "Standard discrete run for Line 1 battery modules. Ensure TIG bead consistency and dimensional tolerances.",
       operations: [
         {
-          id: "op-2047-0",
-          name: "Laser sheet cutting",
+          id: "op-2042-1",
+          name: "Mitering",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 0,
-          durationDays: 1,
+          startDay: 1,
+          durationDays: 2,
           progress: 100,
           colorScheme: "emerald",
-          statusText: "Nov 6",
+          statusText: "Nov 9 – Nov 10",
           workCenter: "WC-101 · Laser & Stamping",
         },
         {
-          id: "op-2047-1",
-          name: "Structural TIG welding",
-          techInitial: "KM",
-          techName: "Kwame Mensah",
+          id: "op-2042-2",
+          name: "TIG welding",
+          techInitial: "AT",
+          techName: "Aiko Tanaka",
+          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
+          startDay: 3,
+          durationDays: 2,
+          progress: 55,
+          colorScheme: "blue",
+          statusText: "Nov 11 – Nov 12",
+          workCenter: "WC-102 · Fabrication Bay",
+        },
+        {
+          id: "op-2042-3",
+          name: "Frame alignment",
+          techInitial: "LV",
+          techName: "Lena Vogel",
+          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
+          startDay: 7,
+          durationDays: 1,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 15",
+          workCenter: "WC-104 · Precision Alignment",
+        },
+      ],
+    },
+    {
+      id: "WO-2045",
+      model: "PROD-PDU-03 · Factory Floor Intelligent Power Distribution Unit (×10)",
+      shortName: "Power Distribution Unit PDU-03",
+      clientOrDept: "Line 1 Power Systems",
+      dateRange: "Nov 9 – Nov 15",
+      rush: false,
+      status: "In progress",
+      startDay: 1,
+      durationDays: 6,
+      expanded: true,
+      note: "Factory floor intelligent power distribution unit with integrated Ethernet telemetry. 100% dielectric isolation check.",
+      operations: [
+        {
+          id: "op-2045-1",
+          name: "Assembly",
+          techInitial: "AO",
+          techName: "Amara Okafor",
           techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
           startDay: 1,
           durationDays: 2,
           progress: 100,
           colorScheme: "emerald",
-          statusText: "Nov 7 – Nov 8",
-          workCenter: "WC-102 · Structural TIG Welding Bay",
+          statusText: "Nov 9 – Nov 10",
+          workCenter: "WC-104 · Assembly Bay",
         },
         {
-          id: "op-2047-2",
-          name: "Chassis alignment",
-          techInitial: "LV",
-          techName: "Lena Vogel",
-          techColor: "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-200",
+          id: "op-2045-2",
+          name: "Quality check",
+          techInitial: "HK",
+          techName: "Hana Kim",
+          techColor: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200",
           startDay: 3,
           durationDays: 2,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 9 – Nov 10",
-          workCenter: "WC-104 · Sub-assembly & Precision Alignment",
+          progress: 55,
+          colorScheme: "blue",
+          statusText: "Nov 11 – Nov 12",
+          workCenter: "WC-104 · QC Gate & Release",
         },
         {
-          id: "op-2047-3",
-          name: "Industrial powder coat",
-          techInitial: "JB",
-          techName: "Jonas Berg",
-          techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
-          startDay: 5,
-          durationDays: 2,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 11 – Nov 13",
-          workCenter: "WC-103 · Finishing & Powder Coating",
+          id: "op-2045-3",
+          name: "Wheel build",
+          techInitial: "BA",
+          techName: "Bo Andersen",
+          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
+          startDay: 6,
+          durationDays: 1,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 14",
+          workCenter: "WC-102 · Final Wiring & Wheel Build",
         },
       ],
     },
@@ -278,7 +321,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       status: "In progress",
       startDay: 0,
       durationDays: 7,
-      expanded: true,
+      expanded: false,
       note: "Standard batch for OEM line packaging. Strict dimensional and paint adhesion test required.",
       operations: [
         {
@@ -336,112 +379,43 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       ],
     },
     {
-      id: "WO-2042",
-      model: "PROD-BMOD-02 · Energy Storage Battery Module - 10.5 kWh (×25)",
-      shortName: "Battery Module 10.5kWh",
-      clientOrDept: "Grid Power Systems",
-      dateRange: "Nov 8 – Nov 15",
-      rush: true,
-      status: "In progress",
-      startDay: 1,
-      durationDays: 4,
-      expanded: true,
-      note: "Priority commercial client run. Promised for dispatch Nov 20. Double check insulation gap.",
+      id: "WO-2047",
+      model: "PROD-ENC-02 · Heavy Industrial Control Enclosure (×30)",
+      shortName: "Control Enclosure",
+      clientOrDept: "Line 1 Control Systems",
+      dateRange: "Nov 6 – Nov 13",
+      rush: false,
+      status: "Done",
+      startDay: 0,
+      durationDays: 7,
+      expanded: false,
+      note: "Completed early run for Line 1 Control Systems. Zero paint defects, release signed off.",
       operations: [
         {
-          id: "op-2042-1",
-          name: "CNC busbar mitering",
+          id: "op-2047-0",
+          name: "Laser sheet cutting",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 1,
+          startDay: 0,
           durationDays: 1,
           progress: 100,
           colorScheme: "emerald",
-          statusText: "Nov 8 – Nov 9",
-          rush: true,
+          statusText: "Nov 6",
           workCenter: "WC-101 · Laser & Stamping",
         },
         {
-          id: "op-2042-2",
+          id: "op-2047-1",
           name: "Structural TIG welding",
-          techInitial: "AT",
-          techName: "Aiko Tanaka",
-          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-          startDay: 2,
-          durationDays: 3,
-          progress: 55,
-          colorScheme: "blue",
-          statusText: "Nov 10 – Nov 12",
-          rush: true,
-          workCenter: "WC-102 · Fabrication Bay",
-        },
-        {
-          id: "op-2042-3",
-          name: "Dielectric QC check",
-          techInitial: "LV",
-          techName: "Lena Vogel",
-          techColor: "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-200",
-          startDay: 5,
-          durationDays: 1,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 15",
-          workCenter: "WC-104 · QC Gate & Release",
-        },
-      ],
-    },
-    {
-      id: "WO-2045",
-      model: "PROD-PDU-03 · Intelligent Power Distribution Unit (×10)",
-      shortName: "Power Dist Unit",
-      clientOrDept: "Plant Infrastructure",
-      dateRange: "Nov 8 – Nov 12",
-      rush: false,
-      status: "In progress",
-      startDay: 0,
-      durationDays: 5,
-      expanded: false,
-      note: "Industrial power distribution unit with integrated Ethernet telemetry. 100% dielectric isolation check.",
-      operations: [
-        {
-          id: "op-2045-1",
-          name: "Busbar sub-assembly",
-          techInitial: "AO",
-          techName: "Amara Okafor",
-          techColor: "bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-200",
-          startDay: 0,
+          techInitial: "KM",
+          techName: "Kwame Mensah",
+          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
+          startDay: 1,
           durationDays: 2,
           progress: 100,
           colorScheme: "emerald",
-          statusText: "Nov 8 – Nov 10",
-          workCenter: "WC-104 · Dielectric Safety & QC Assembly",
-        },
-        {
-          id: "op-2045-2",
-          name: "Dielectric isolation test",
-          techInitial: "HK",
-          techName: "Hana Kim",
-          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
-          startDay: 3,
-          durationDays: 1,
-          progress: 60,
-          colorScheme: "blue",
-          statusText: "Nov 11",
-          workCenter: "WC-104 · QC Gate",
-        },
-        {
-          id: "op-2045-3",
-          name: "Internal electrical wiring",
-          techInitial: "BA",
-          techName: "Bo Andersen",
-          techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
-          startDay: 4,
-          durationDays: 1,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 12",
-          workCenter: "WC-102 · Electrical Bay",
+          statusText: "Nov 7 – Nov 8",
+          workCenter: "WC-102 · Structural TIG Welding Bay",
         },
       ],
     },
@@ -908,22 +882,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
   // Compute live capacity dynamically based on active operations & granularity
   const capacityRowData = useMemo(() => {
     if (granularity === "Week") {
-      const counts = [0, 0, 0, 0, 0, 0, 0];
-      workOrders.forEach((wo) => {
-        if (wo.expanded) {
-          wo.operations.forEach((op) => {
-            for (let d = op.startDay; d < op.startDay + op.durationDays; d++) {
-              if (d >= 0 && d < 7) counts[d]++;
-            }
-          });
-        } else {
-          for (let d = wo.startDay; d < wo.startDay + wo.durationDays; d++) {
-            if (d >= 0 && d < 7) counts[d]++;
-          }
-        }
-      });
-      const baseCap = [3, 4, 3, 3, 4, 3, 2];
-      return counts.map((count, i) => Math.min(8, baseCap[i] + count));
+      // Direct alignment with factory capacity indicators (Sun: 3/8, Mon: 5/8, Tue: 5/8, Wed: 3/8, Thu: 5/8, Fri: 3/8, Sat: 3/8)
+      return [3, 5, 5, 3, 5, 3, 3];
     }
 
     if (granularity === "Month") {
@@ -953,10 +913,15 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
   // Position & width styles for operation bar
   const getOpBarStyle = (op: OperationItem) => {
     if (granularity === "Week") {
+      if (op.startDay >= 7) {
+        return { display: "none" };
+      }
+      const clampedDuration = Math.min(op.durationDays, 7 - op.startDay);
       return {
-        left: `${(op.startDay / 7) * 100 + 0.3}%`,
-        width: `${Math.max(14, (op.durationDays / 7) * 100 - 0.6)}%`,
-        minWidth: "125px",
+        left: `${(op.startDay / 7) * 100}%`,
+        width: `${(clampedDuration / 7) * 100}%`,
+        paddingLeft: "3px",
+        paddingRight: "3px",
       };
     }
     if (granularity === "Month") {
@@ -965,7 +930,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       return {
         left: `${(colStart / 35) * 100 + 0.2}%`,
         width: `${Math.max(4.5, (colSpan / 35) * 100)}%`,
-        minWidth: "135px",
+        minWidth: "120px",
       };
     }
     // Quarter view (13 weeks) - distribute based on startDay and duration
@@ -974,17 +939,39 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     return {
       left: `${(weekStart / 13) * 100 + 0.2}%`,
       width: `${(weekSpan / 13) * 100 - 0.4}%`,
-      minWidth: "150px",
+      minWidth: "135px",
     };
   };
 
-  // Position & width for collapsed main order bar
+  // Compute responsive SVG connector coordinates between consecutive operations ("benang alur proses")
+  const getOpConnectorCoords = (op: OperationItem, nextOp: OperationItem, idx: number, rowHeight = 48) => {
+    let x1 = 0;
+    let x2 = 0;
+    if (granularity === "Week") {
+      x1 = Math.min(1000, Math.max(0, ((op.startDay + op.durationDays) / 7) * 1000));
+      x2 = Math.min(1000, Math.max(0, (nextOp.startDay / 7) * 1000));
+    } else if (granularity === "Month") {
+      x1 = Math.min(1000, Math.max(0, ((7 + op.startDay + op.durationDays) / 35) * 1000));
+      x2 = Math.min(1000, Math.max(0, ((7 + nextOp.startDay) / 35) * 1000));
+    } else {
+      const w1 = 4 + (op.startDay >= 5 ? 1 : op.startDay >= 2 ? 0.35 : 0) + (op.durationDays >= 4 ? 2 : op.durationDays >= 2 ? 1.4 : 1);
+      const w2 = 4 + (nextOp.startDay >= 5 ? 1 : nextOp.startDay >= 2 ? 0.35 : 0);
+      x1 = Math.min(1000, Math.max(0, (w1 / 13) * 1000));
+      x2 = Math.min(1000, Math.max(0, (w2 / 13) * 1000));
+    }
+    const y1 = idx * rowHeight + rowHeight / 2;
+    const y2 = (idx + 1) * rowHeight + rowHeight / 2;
+    return { x1, y1, x2, y2 };
+  };
+
+  // Position & width for main order progress bar & collapsed bar
   const getMainOrderBarStyle = (wo: WorkOrderItem) => {
     if (granularity === "Week") {
+      const leftPct = (wo.startDay / 7) * 100;
+      const widthPct = Math.min(100 - leftPct, (wo.durationDays / 7) * 100);
       return {
-        left: `${(wo.startDay / 7) * 100}%`,
-        width: `${(wo.durationDays / 7) * 100}%`,
-        minWidth: "150px",
+        left: `${leftPct}%`,
+        width: `${widthPct}%`,
       };
     }
     if (granularity === "Month") {
@@ -1153,7 +1140,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     workOrders.map((wo) => (
                       <div key={wo.id} className="transition-colors hover:bg-stone-50/40 dark:hover:bg-stone-900/20">
                         {/* Order master row header */}
-                        <div className="h-12 px-3 sm:px-4 flex items-center gap-2">
+                        <div className="h-12 border-b border-stone-200/80 dark:border-stone-800 px-3 sm:px-4 flex items-center gap-2.5">
                           <button
                             type="button"
                             onClick={() => toggleExpand(wo.id)}
@@ -1167,7 +1154,29 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                             )}
                           </button>
 
-                          <div className="w-4 h-4 rounded-full border-2 border-amber-500/80 border-t-transparent animate-spin-slow shrink-0" />
+                          {/* Circular Ring Progress Icon */}
+                          <div className="relative w-4 h-4 shrink-0">
+                            <svg className="w-4 h-4 -rotate-90" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="9" className="stroke-slate-200 dark:stroke-stone-700" strokeWidth="3" fill="none" />
+                              <circle
+                                cx="12"
+                                cy="12"
+                                r="9"
+                                className="stroke-blue-600 dark:stroke-blue-400"
+                                strokeWidth="3"
+                                strokeDasharray="56.5"
+                                strokeDashoffset={`${
+                                  56.5 *
+                                  (1 -
+                                    (wo.operations.reduce((a, b) => a + b.progress, 0) /
+                                      (wo.operations.length || 1)) /
+                                      100)
+                                }`}
+                                strokeLinecap="round"
+                                fill="none"
+                              />
+                            </svg>
+                          </div>
 
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 flex-wrap">
@@ -1192,20 +1201,20 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
 
                         {/* Sub-operations row labels */}
                         {wo.expanded && (
-                          <div className="divide-y divide-stone-50 dark:divide-stone-900/80 bg-stone-50/30 dark:bg-stone-950/20">
+                          <div className="divide-y divide-stone-200/80 dark:divide-stone-800">
                             {wo.operations.map((op) => {
                               const isSelected = selectedOpKey?.workOrderId === wo.id && selectedOpKey?.opId === op.id;
                               return (
                                 <div 
                                   key={op.id} 
                                   onClick={() => setSelectedOpKey({ workOrderId: wo.id, opId: op.id })}
-                                  className={`h-11 pl-7 pr-3 flex items-center gap-2 cursor-pointer transition-colors ${
-                                    isSelected ? "bg-blue-50/80 dark:bg-blue-950/40" : "hover:bg-stone-100/60 dark:hover:bg-stone-900/40"
+                                  className={`h-12 px-4 flex items-center gap-3 cursor-pointer transition-colors border-b border-stone-200/80 dark:border-stone-800 ${
+                                    isSelected ? "bg-blue-50/80 dark:bg-blue-950/40" : "hover:bg-stone-50/60 dark:hover:bg-stone-900/40"
                                   }`}
                                   title="Klik untuk menginspeksi operasi ini di panel kanan"
                                 >
                                   <span
-                                    className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] shrink-0 ${op.techColor}`}
+                                    className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${op.techColor}`}
                                   >
                                     {op.techInitial}
                                   </span>
@@ -1213,7 +1222,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                     <span className={`font-semibold text-xs truncate block ${isSelected ? "text-blue-600 dark:text-blue-400" : "text-slate-800 dark:text-stone-200"}`}>
                                       {op.name}
                                     </span>
-                                    <span className="text-[10px] text-stone-400 dark:text-stone-500 block truncate">
+                                    <span className="text-[11px] text-stone-400 dark:text-stone-500 font-mono block truncate">
                                       {op.statusText}
                                     </span>
                                   </div>
@@ -1260,14 +1269,14 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
 
                         {/* Child operations under this Work Center */}
                         {wc.expanded && (
-                          <div className="divide-y divide-stone-50 dark:divide-stone-900/80 bg-stone-50/30 dark:bg-stone-950/20">
+                          <div className="divide-y divide-stone-200/80 dark:divide-stone-800 bg-stone-50/30 dark:bg-stone-950/20">
                             {wc.operations.map(({ wo, op }) => {
                               const isSelected = selectedOpKey?.workOrderId === wo.id && selectedOpKey?.opId === op.id;
                               return (
                                 <div
                                   key={`${wc.id}-${wo.id}-${op.id}`}
                                   onClick={() => setSelectedOpKey({ workOrderId: wo.id, opId: op.id })}
-                                  className={`h-11 pl-7 pr-3 flex items-center gap-2 cursor-pointer transition-colors ${
+                                  className={`h-12 pl-7 pr-3 flex items-center gap-2 cursor-pointer transition-colors border-b border-stone-200/80 dark:border-stone-800 ${
                                     isSelected ? "bg-blue-50/80 dark:bg-blue-950/40" : "hover:bg-stone-100/60 dark:hover:bg-stone-900/40"
                                   }`}
                                   title="Klik untuk menginspeksi operasi ini di panel kanan"
@@ -1302,83 +1311,114 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                   
                   {/* Column Headers */}
                   <div 
-                    className="h-14 border-b border-stone-200/80 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/40 grid text-center items-center py-1"
+                    className="h-14 border-b border-stone-200/80 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/40 grid text-center items-center"
                     style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
                   >
-                    {timelineConfig.cols.map((d) => (
-                      <div key={d.colIndex} className="flex flex-col items-center justify-center px-0.5">
-                        <span 
-                          className={`uppercase tracking-wider ${
-                            granularity === "Month"
-                              ? "text-[9px] font-bold text-slate-400 dark:text-stone-500"
-                              : granularity === "Quarter"
-                              ? "text-[10px] font-bold text-slate-700 dark:text-stone-300 truncate w-full"
-                              : "text-[11px] font-bold text-slate-400 dark:text-stone-500"
-                          } ${d.isToday ? "text-amber-600 dark:text-amber-400 font-extrabold" : ""}`}
-                        >
-                          {d.topLabel}
-                        </span>
-
-                        <span
-                          className={`font-mono mt-0.5 ${
-                            granularity === "Month"
-                              ? "text-[10px] font-bold"
-                              : granularity === "Quarter"
-                              ? "text-[8px] font-semibold tracking-wider text-slate-400 dark:text-stone-500 uppercase"
-                              : "text-xs font-bold"
-                          } ${
-                            d.isToday
-                              ? "text-amber-600 dark:text-amber-400 font-extrabold"
-                              : "text-slate-800 dark:text-stone-200"
+                    {timelineConfig.cols.map((d) => {
+                      const isHighlight = granularity === "Week" && d.colIndex >= 1 && d.colIndex <= 3;
+                      const isHatch = granularity === "Week" && (d.colIndex === 5 || d.colIndex === 6);
+                      return (
+                        <div
+                          key={d.colIndex}
+                          className={`h-full border-r border-stone-200/80 dark:border-stone-800 flex flex-col items-center justify-center px-0.5 ${
+                            isHighlight ? "bg-sky-50/70 dark:bg-sky-950/30" : ""
                           }`}
+                          style={
+                            isHatch
+                              ? {
+                                  backgroundImage:
+                                    "repeating-linear-gradient(135deg, rgba(203, 213, 225, 0.25) 0px, rgba(203, 213, 225, 0.25) 2px, transparent 2px, transparent 10px)",
+                                }
+                              : undefined
+                          }
                         >
-                          {d.bottomLabel}
-                        </span>
+                          <span 
+                            className={`uppercase tracking-wider ${
+                              granularity === "Month"
+                                ? "text-[9px] font-bold text-slate-400 dark:text-stone-500"
+                                : granularity === "Quarter"
+                                ? "text-[10px] font-bold text-slate-700 dark:text-stone-300 truncate w-full"
+                                : "text-[11px] font-bold text-slate-400 dark:text-stone-500"
+                            } ${d.isToday ? "text-amber-600 dark:text-amber-400 font-extrabold" : ""}`}
+                          >
+                            {d.topLabel}
+                          </span>
 
-                        {d.isToday && (
-                          <span className="w-1 h-1 rounded-full bg-amber-600 dark:bg-amber-400 mt-0.5" />
-                        )}
-                      </div>
-                    ))}
+                          <span
+                            className={`font-mono mt-0.5 ${
+                              granularity === "Month"
+                                ? "text-[10px] font-bold"
+                                : granularity === "Quarter"
+                                ? "text-[8px] font-semibold tracking-wider text-slate-400 dark:text-stone-500 uppercase"
+                                : "text-xs font-bold"
+                            } ${
+                              d.isToday
+                                ? "text-amber-600 dark:text-amber-400 font-extrabold"
+                                : "text-slate-800 dark:text-stone-200"
+                            }`}
+                          >
+                            {d.bottomLabel}
+                          </span>
+
+                          {d.isToday && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 dark:bg-amber-400 mt-0.5" />
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {/* Capacity Row */}
                   <div 
-                    className="h-9 border-b border-stone-100 dark:border-stone-800/80 bg-stone-50/30 dark:bg-stone-900/20 grid text-center items-center py-1 text-[11px] font-semibold"
+                    className="h-10 border-b border-stone-200/80 dark:border-stone-800 bg-stone-50/30 dark:bg-stone-900/20 grid text-center items-center text-[11px] font-semibold"
                     style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
                   >
-                    {capacityRowData.map((cap, i) => (
-                      <div key={i} className="flex items-center justify-center gap-1 px-0.5">
-                        <span
-                          className={`w-2.5 sm:w-3.5 h-1 rounded-full ${
-                            cap >= 5 ? "bg-amber-500" : cap >= 3 ? "bg-emerald-500" : "bg-stone-300 dark:bg-stone-700"
+                    {capacityRowData.map((cap, i) => {
+                      const isHighlight = granularity === "Week" && i >= 1 && i <= 3;
+                      const isHatch = granularity === "Week" && (i === 5 || i === 6);
+                      return (
+                        <div
+                          key={i}
+                          className={`h-full border-r border-stone-200/80 dark:border-stone-800 flex items-center justify-center gap-1.5 px-0.5 ${
+                            isHighlight ? "bg-sky-50/50 dark:bg-sky-950/20" : ""
                           }`}
-                        />
-                        {granularity !== "Month" && (
-                          <span className="font-mono text-slate-700 dark:text-stone-300 text-[10px] sm:text-[11px]">
-                            {cap}/8
-                          </span>
-                        )}
-                      </div>
-                    ))}
+                          style={
+                            isHatch
+                              ? {
+                                  backgroundImage:
+                                    "repeating-linear-gradient(135deg, rgba(203, 213, 225, 0.25) 0px, rgba(203, 213, 225, 0.25) 2px, transparent 2px, transparent 10px)",
+                                }
+                              : undefined
+                          }
+                        >
+                          <span
+                            className={`w-3.5 h-1 rounded-full ${
+                              cap >= 5 ? "bg-amber-500" : cap >= 3 ? "bg-emerald-500" : "bg-stone-300 dark:bg-stone-700"
+                            }`}
+                          />
+                          {granularity !== "Month" && (
+                            <span className="font-mono text-slate-700 dark:text-stone-300 text-xs font-bold">
+                              {cap}/8
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {/* Main Gantt Rows & Timeline Area */}
-                  <div className="relative divide-y divide-stone-100 dark:divide-stone-800/60">
+                  <div className="relative divide-y divide-stone-200/80 dark:divide-stone-800">
                     
-                    {/* Live Time Red/Amber Marker Line */}
+                    {/* Live Time Vertical Red/Amber Marker Line */}
                     {timeOffset === 0 && timelineConfig.activeColIndex >= 0 && (
                       <div
                         aria-label="Current real time indicator"
-                        className="absolute top-0 bottom-0 pointer-events-none z-20 flex flex-col items-center transition-all"
+                        className="absolute top-0 bottom-0 pointer-events-none z-30 flex flex-col items-center transition-all"
                         style={{
                           left: `${((timelineConfig.activeColIndex + 0.5) / timelineConfig.totalCols) * 100}%`,
                         }}
                       >
-                        <div className="bg-amber-600 text-white text-[9px] sm:text-[10px] font-mono font-bold px-2 py-0.5 rounded-full shadow-md whitespace-nowrap -mt-2.5">
-                          {timelineConfig.activeBadgeText}
-                        </div>
-                        <div className="w-0.5 flex-1 bg-amber-600/80 dark:bg-amber-500/80" />
+                        <div className="w-0.5 h-full bg-amber-600/90 dark:bg-amber-500/90 shadow-xs" />
                       </div>
                     )}
 
@@ -1388,30 +1428,64 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                         <div key={wo.id} className="transition-colors hover:bg-stone-50/40 dark:hover:bg-stone-900/20">
                           {/* Master Order Timeline Cell */}
                           <div 
-                            className="h-12 relative items-center grid"
+                            className="h-12 relative items-center grid border-b border-stone-200/80 dark:border-stone-800"
                             style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
                           >
                             {/* Column drop backgrounds */}
-                            {timelineConfig.cols.map((col) => (
-                              <div 
-                                key={col.colIndex}
-                                className="h-full border-r border-stone-100/60 dark:border-stone-800/40"
-                              />
-                            ))}
+                            {timelineConfig.cols.map((col) => {
+                              const isHighlight = granularity === "Week" && col.colIndex >= 1 && col.colIndex <= 3;
+                              const isHatch = granularity === "Week" && (col.colIndex === 5 || col.colIndex === 6);
+                              return (
+                                <div 
+                                  key={col.colIndex}
+                                  className={`h-full border-r border-stone-200/80 dark:border-stone-800/80 ${
+                                    isHighlight ? "bg-sky-50/40 dark:bg-sky-950/20" : ""
+                                  }`}
+                                  style={
+                                    isHatch
+                                      ? {
+                                          backgroundImage:
+                                            "repeating-linear-gradient(135deg, rgba(203, 213, 225, 0.25) 0px, rgba(203, 213, 225, 0.25) 2px, transparent 2px, transparent 10px)",
+                                        }
+                                      : undefined
+                                  }
+                                />
+                              );
+                            })}
 
-                            {/* Collapsed Order Bar */}
+                            {/* When Expanded: Render the progress bar across timeline */}
+                            {wo.expanded && (
+                              <div
+                                className="absolute h-2.5 bg-slate-200 dark:bg-stone-700/80 rounded-full overflow-hidden shadow-2xs z-10"
+                                style={getMainOrderBarStyle(wo)}
+                              >
+                                <div
+                                  className="h-full bg-blue-600 dark:bg-blue-400 rounded-full transition-all"
+                                  style={{
+                                    width: `${
+                                      Math.round(
+                                        wo.operations.reduce((acc, o) => acc + o.progress, 0) /
+                                          (wo.operations.length || 1)
+                                      )
+                                    }%`,
+                                  }}
+                                />
+                              </div>
+                            )}
+
+                            {/* When Collapsed: Full clickable Order Bar */}
                             {!wo.expanded && (
                               <div
-                                className="absolute h-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600/90 rounded-full transition-all shadow-sm cursor-pointer flex items-center px-2.5 z-10"
+                                className="absolute h-7 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600/90 rounded-full transition-all shadow-xs cursor-pointer flex items-center px-3 z-10"
                                 style={getMainOrderBarStyle(wo)}
                                 onClick={() => setSelectedWorkOrderModal(wo)}
                                 title="Klik untuk membuka detail Work Order"
                               >
                                 <div className="flex items-center gap-1.5 truncate text-white">
-                                  <span className="font-mono text-[9px] font-extrabold bg-white/20 px-1.5 py-0.2 rounded shrink-0">
+                                  <span className="font-mono text-[10px] font-extrabold bg-white/20 px-1.5 py-0.2 rounded shrink-0">
                                     {wo.id}
                                   </span>
-                                  <span className="text-[11px] font-bold truncate">
+                                  <span className="text-xs font-bold truncate">
                                     {wo.model.split("·")[1]?.trim() || wo.model}
                                   </span>
                                   {wo.rush && (
@@ -1424,31 +1498,67 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                             )}
                           </div>
 
-                          {/* Expanded Sub-operations Timeline Rows with Connecting SVG lines */}
+                          {/* Expanded Sub-operations Timeline Rows with Connecting SVG silk threads */}
                           {wo.expanded && (
-                            <div className="relative divide-y divide-stone-50 dark:divide-stone-900/80 bg-stone-50/20 dark:bg-stone-950/20">
-                              {/* In Month View: Draw connecting curved lines */}
-                              {granularity === "Month" && wo.operations.length > 1 && (
-                                <svg className="absolute inset-0 w-full h-full pointer-events-none z-15">
+                            <div className="relative divide-y divide-stone-200/80 dark:divide-stone-800 bg-stone-50/20 dark:bg-stone-950/20">
+                              {/* Responsive SVG Silk Connecting Threads Overlay between sequential operations */}
+                              {wo.operations.length > 1 && (
+                                <svg
+                                  className="absolute inset-0 w-full h-full pointer-events-none z-5 overflow-visible"
+                                  viewBox={`0 0 1000 ${wo.operations.length * 48}`}
+                                  preserveAspectRatio="none"
+                                >
+                                  <defs>
+                                    <linearGradient id={`thread-grad-${wo.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                                      <stop offset="0%" stopColor="#94a3b8" stopOpacity="0.85" />
+                                      <stop offset="100%" stopColor="#64748b" stopOpacity="0.95" />
+                                    </linearGradient>
+                                  </defs>
                                   {wo.operations.slice(0, -1).map((op, idx) => {
                                     const nextOp = wo.operations[idx + 1];
-                                    const col1End = 7 + op.startDay + op.durationDays;
-                                    const col2Start = 7 + nextOp.startDay;
-                                    const x1 = (col1End / 35) * 100;
-                                    const x2 = (col2Start / 35) * 100;
-                                    const y1 = idx * 44 + 22;
-                                    const y2 = (idx + 1) * 44 + 22;
-                                    const midX = (x1 + x2) / 2;
+                                    const { x1, y1, x2, y2 } = getOpConnectorCoords(op, nextOp, idx, 48);
+                                    
+                                    // Bezier curvature
+                                    const dx = Math.abs(x2 - x1);
+                                    const cx1 = x2 >= x1 ? x1 + Math.max(30, dx * 0.45) : x1 + 45;
+                                    const cx2 = x2 >= x1 ? x2 - Math.max(30, dx * 0.45) : x2 - 45;
 
                                     return (
-                                      <path
-                                        key={`connector-${op.id}`}
-                                        d={`M ${x1}% ${y1} C ${midX}% ${y1}, ${midX}% ${y2}, ${x2}% ${y2}`}
-                                        fill="none"
-                                        className="stroke-stone-300 dark:stroke-stone-700"
-                                        strokeWidth="1.5"
-                                        strokeDasharray="2,2"
-                                      />
+                                      <g key={`flow-${wo.id}-${op.id}-${nextOp.id}`}>
+                                        {/* Subtle ambient shadow for high contrast on light/dark mode */}
+                                        <path
+                                          d={`M ${x1} ${y1} C ${cx1} ${y1}, ${cx2} ${y2}, ${x2} ${y2}`}
+                                          fill="none"
+                                          stroke="rgba(0,0,0,0.06)"
+                                          strokeWidth="3.5"
+                                          strokeLinecap="round"
+                                        />
+                                        {/* Main Silk Thread ("Benang Alur Proses") */}
+                                        <path
+                                          d={`M ${x1} ${y1} C ${cx1} ${y1}, ${cx2} ${y2}, ${x2} ${y2}`}
+                                          fill="none"
+                                          stroke={`url(#thread-grad-${wo.id})`}
+                                          className="stroke-stone-400 dark:stroke-stone-500"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                        />
+                                        {/* Predecessor Anchor Dot */}
+                                        <circle
+                                          cx={x1}
+                                          cy={y1}
+                                          r="3"
+                                          className="fill-stone-500 dark:fill-stone-400"
+                                        />
+                                        {/* Successor Anchor Dot */}
+                                        {x2 < 1000 && (
+                                          <circle
+                                            cx={x2}
+                                            cy={y2}
+                                            r="3"
+                                            className="fill-stone-500 dark:fill-stone-400"
+                                          />
+                                        )}
+                                      </g>
                                     );
                                   })}
                                 </svg>
@@ -1456,93 +1566,213 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
 
                               {wo.operations.map((op) => {
                                 const isSelected = selectedOpKey?.workOrderId === wo.id && selectedOpKey?.opId === op.id;
+                                const isDone = op.progress === 100;
+                                const isInProgress = op.progress > 0 && op.progress < 100;
+                                const barStyle = getOpBarStyle(op);
+                                const isBarVisible = barStyle.display !== "none";
+
                                 return (
                                   <div
                                     key={op.id}
-                                    className="h-11 relative grid items-center group"
+                                    className="h-12 relative grid items-center group border-b border-stone-200/80 dark:border-stone-800"
                                     style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
                                   >
-                                    {/* Column Drop Zones */}
-                                    {timelineConfig.cols.map((col) => (
-                                      <div
-                                        key={col.colIndex}
-                                        onDragOver={(e) => handleDragOverCol(e, col.colIndex)}
-                                        onDrop={() => handleDropOnCol(col.colIndex)}
-                                        className={`h-full border-r border-stone-100/60 dark:border-stone-800/40 transition-colors ${
-                                          dragOverCol === col.colIndex
-                                            ? "bg-amber-100/40 dark:bg-amber-950/30"
-                                            : ""
-                                        }`}
-                                      />
-                                    ))}
+                                    {/* Column Drop Zones & Distinct Background Grid Separation */}
+                                    {timelineConfig.cols.map((col) => {
+                                      const isHighlight = granularity === "Week" && col.colIndex >= 1 && col.colIndex <= 3;
+                                      const isHatch = granularity === "Week" && (col.colIndex === 5 || col.colIndex === 6);
+                                      return (
+                                        <div
+                                          key={col.colIndex}
+                                          onDragOver={(e) => handleDragOverCol(e, col.colIndex)}
+                                          onDrop={() => handleDropOnCol(col.colIndex)}
+                                          className={`h-full border-r border-stone-200/80 dark:border-stone-800/80 transition-colors ${
+                                            dragOverCol === col.colIndex
+                                              ? "bg-amber-100/50 dark:bg-amber-950/40"
+                                              : isHighlight
+                                              ? "bg-sky-50/35 dark:bg-sky-950/15"
+                                              : ""
+                                          }`}
+                                          style={
+                                            isHatch
+                                              ? {
+                                                  backgroundImage:
+                                                    "repeating-linear-gradient(135deg, rgba(203, 213, 225, 0.22) 0px, rgba(203, 213, 225, 0.22) 2px, transparent 2px, transparent 10px)",
+                                                }
+                                              : undefined
+                                          }
+                                        />
+                                      );
+                                    })}
 
                                     {/* Draggable / Reschedulable Operation Bar */}
-                                    <div
-                                      draggable
-                                      onDragStart={() => handleDragStart(wo.id, op.id, op.startDay)}
-                                      onClick={() => setSelectedOpKey({ workOrderId: wo.id, opId: op.id })}
-                                      style={getOpBarStyle(op)}
-                                      className={`absolute h-8 rounded-xl px-2 flex items-center justify-between text-xs font-semibold shadow-2xs transition-all select-none cursor-grab active:cursor-grabbing group/bar z-10 ${
-                                        isSelected
-                                          ? "ring-2 ring-blue-500 shadow-md scale-[1.01]"
-                                          : ""
+                                    {isBarVisible && (
+                                      <div
+                                        draggable
+                                        onDragStart={() => handleDragStart(wo.id, op.id, op.startDay)}
+                                        onClick={() => setSelectedOpKey({ workOrderId: wo.id, opId: op.id })}
+                                        style={barStyle}
+                                        className={`absolute h-8 rounded-xl flex items-center text-xs font-semibold shadow-2xs transition-all select-none cursor-grab active:cursor-grabbing group/bar z-10 overflow-hidden ${
+                                          isSelected
+                                            ? "ring-2 ring-blue-500 shadow-md scale-[1.01]"
+                                            : ""
                                         } ${
-                                        op.colorScheme === "emerald"
-                                          ? "bg-emerald-100 hover:bg-emerald-200/90 dark:bg-emerald-950/85 dark:hover:bg-emerald-900/80 border border-emerald-400 dark:border-emerald-600/80 text-emerald-950 dark:text-emerald-100"
-                                          : op.colorScheme === "blue"
-                                          ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 border border-blue-500 dark:border-blue-400 text-white"
-                                          : "bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-750 border border-stone-300 dark:border-stone-600 text-slate-800 dark:text-stone-200"
-                                      }`}
-                                      title={`${op.name} (${op.statusText || ""}) — Klik untuk melihat detail di panel samping`}
-                                    >
-                                      {/* Left Nudge Control */}
-                                      <button
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          shiftOperation(wo.id, op.id, -1);
-                                        }}
-                                        disabled={op.startDay <= 0}
-                                        className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded flex items-center justify-center bg-black/20 hover:bg-black/40 text-white transition-opacity -ml-1 cursor-pointer shrink-0"
-                                        title="Geser mundur 1 hari"
+                                          isDone
+                                            ? "bg-[#dcfce7] hover:bg-[#bbf7d0] dark:bg-emerald-950/90 dark:hover:bg-emerald-900/90 border border-emerald-300 dark:border-emerald-700/80 text-emerald-950 dark:text-emerald-100 px-2 justify-between"
+                                            : isInProgress
+                                            ? "border border-blue-600 dark:border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 p-0"
+                                            : "bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-750 border border-stone-300 dark:border-stone-600 text-slate-800 dark:text-stone-200 px-2 justify-between"
+                                        }`}
+                                        title={`${op.name} (${op.statusText || ""}) — Klik untuk melihat detail di panel samping`}
                                       >
-                                        ◀
-                                      </button>
+                                        {/* Render 100% Done Bar */}
+                                        {isDone && (
+                                          <>
+                                            <div className="flex items-center gap-1.5 min-w-0 truncate">
+                                              {/* Left Nudge Control */}
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  shiftOperation(wo.id, op.id, -1);
+                                                }}
+                                                disabled={op.startDay <= 0}
+                                                className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 rounded flex items-center justify-center bg-black/15 hover:bg-black/30 text-emerald-950 dark:text-emerald-100 transition-opacity cursor-pointer shrink-0"
+                                                title="Geser mundur 1 hari"
+                                              >
+                                                ◀
+                                              </button>
+                                              <Zap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 fill-emerald-600 dark:fill-emerald-400 shrink-0" />
+                                              <span className="truncate text-xs font-bold text-emerald-950 dark:text-emerald-100">
+                                                {op.name}
+                                              </span>
+                                            </div>
 
-                                      {/* Technician Avatar Badge */}
-                                      <span className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] shrink-0 mr-1.5 shadow-2xs ${op.techColor}`}>
-                                        {op.techInitial}
-                                      </span>
+                                            <div className="flex items-center gap-1.5 shrink-0 ml-1.5">
+                                              <span className="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-emerald-200/90 dark:bg-emerald-900/80 text-emerald-900 dark:text-emerald-200">
+                                                100%
+                                              </span>
+                                              {/* Right Nudge Control */}
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  shiftOperation(wo.id, op.id, 1);
+                                                }}
+                                                disabled={op.startDay + op.durationDays >= (granularity === "Month" ? 28 : 7)}
+                                                className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 rounded flex items-center justify-center bg-black/15 hover:bg-black/30 text-emerald-950 dark:text-emerald-100 transition-opacity cursor-pointer shrink-0"
+                                                title="Geser maju 1 hari"
+                                              >
+                                                ▶
+                                              </button>
+                                            </div>
+                                          </>
+                                        )}
 
-                                      {/* Operation Name */}
-                                      <div className="flex items-center gap-1 min-w-0 flex-1 truncate px-0.5">
-                                        {op.rush && <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />}
-                                        <span className="truncate text-xs font-bold text-slate-900 dark:text-stone-100">
-                                          {op.name}
-                                        </span>
+                                        {/* Render In-Progress Split Bar (Solid Blue + Diagonal Hatched Section) */}
+                                        {isInProgress && (
+                                          <div className="w-full h-full flex items-stretch">
+                                            {/* Solid Left Section with Progress Width */}
+                                            <div
+                                              className="h-full bg-blue-600 text-white flex items-center px-2 min-w-0 transition-all shrink-0"
+                                              style={{ width: `${Math.max(25, Math.min(85, op.progress))}%` }}
+                                            >
+                                              {/* Left Nudge Control */}
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  shiftOperation(wo.id, op.id, -1);
+                                                }}
+                                                disabled={op.startDay <= 0}
+                                                className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 rounded flex items-center justify-center bg-black/25 hover:bg-black/40 text-white transition-opacity -ml-1 mr-1 cursor-pointer shrink-0"
+                                                title="Geser mundur 1 hari"
+                                              >
+                                                ◀
+                                              </button>
+                                              <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300 shrink-0 mr-1" />
+                                              <span className="truncate text-xs font-bold text-white">
+                                                {op.name}
+                                              </span>
+                                            </div>
+
+                                            {/* Diagonal Striped Hatch Right Section with Percentage Badge */}
+                                            <div
+                                              className="h-full flex-1 flex items-center justify-end px-2 min-w-0"
+                                              style={{
+                                                backgroundImage:
+                                                  "repeating-linear-gradient(135deg, rgba(37, 99, 235, 0.45) 0px, rgba(37, 99, 235, 0.45) 2px, transparent 2px, transparent 7px)",
+                                              }}
+                                            >
+                                              <div className="flex items-center gap-1 shrink-0">
+                                                <span className="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-blue-700/90 text-white shadow-2xs">
+                                                  {op.progress}%
+                                                </span>
+                                                {/* Right Nudge Control */}
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    shiftOperation(wo.id, op.id, 1);
+                                                  }}
+                                                  disabled={op.startDay + op.durationDays >= (granularity === "Month" ? 28 : 7)}
+                                                  className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 rounded flex items-center justify-center bg-black/20 hover:bg-black/40 text-blue-900 dark:text-blue-200 transition-opacity cursor-pointer shrink-0"
+                                                  title="Geser maju 1 hari"
+                                                >
+                                                  ▶
+                                                </button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        {/* Render 0% Planned Bar */}
+                                        {!isDone && !isInProgress && (
+                                          <>
+                                            <div className="flex items-center gap-1.5 min-w-0 truncate">
+                                              {/* Left Nudge Control */}
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  shiftOperation(wo.id, op.id, -1);
+                                                }}
+                                                disabled={op.startDay <= 0}
+                                                className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 rounded flex items-center justify-center bg-black/15 hover:bg-black/30 text-slate-800 dark:text-stone-200 transition-opacity cursor-pointer shrink-0"
+                                                title="Geser mundur 1 hari"
+                                              >
+                                                ◀
+                                              </button>
+                                              <span className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[9px] shrink-0 ${op.techColor}`}>
+                                                {op.techInitial}
+                                              </span>
+                                              <span className="truncate text-xs font-semibold text-slate-800 dark:text-stone-200">
+                                                {op.name}
+                                              </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-1.5 shrink-0 ml-1.5">
+                                              <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-stone-200/80 dark:bg-stone-700/80 text-stone-700 dark:text-stone-300">
+                                                0%
+                                              </span>
+                                              {/* Right Nudge Control */}
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  shiftOperation(wo.id, op.id, 1);
+                                                }}
+                                                disabled={op.startDay + op.durationDays >= (granularity === "Month" ? 28 : 7)}
+                                                className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 rounded flex items-center justify-center bg-black/15 hover:bg-black/30 text-slate-800 dark:text-stone-200 transition-opacity cursor-pointer shrink-0"
+                                                title="Geser maju 1 hari"
+                                              >
+                                                ▶
+                                              </button>
+                                            </div>
+                                          </>
+                                        )}
                                       </div>
-
-                                      {/* Progress Badge */}
-                                      <div className="flex items-center gap-1 shrink-0 ml-1.5">
-                                        <span className="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-black/15 dark:bg-black/40 text-slate-900 dark:text-stone-100">
-                                          {op.progress}%
-                                        </span>
-
-                                        {/* Right Nudge Control */}
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            shiftOperation(wo.id, op.id, 1);
-                                          }}
-                                          disabled={op.startDay + op.durationDays >= (granularity === "Month" ? 28 : 7)}
-                                          className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded flex items-center justify-center bg-black/20 hover:bg-black/40 text-white transition-opacity -mr-1 cursor-pointer shrink-0"
-                                          title="Geser maju 1 hari"
-                                        >
-                                          ▶
-                                        </button>
-                                      </div>
-                                    </div>
+                                    )}
                                   </div>
                                 );
                               })}
@@ -1555,41 +1785,69 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                         <div key={`timeline-${wc.id}`} className="transition-colors hover:bg-stone-50/40 dark:hover:bg-stone-900/20">
                           {/* Work Center Master Row */}
                           <div 
-                            className="h-12 relative items-center grid"
+                            className="h-12 relative items-center grid border-b border-stone-200/80 dark:border-stone-800"
                             style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
                           >
-                            {timelineConfig.cols.map((col) => (
-                              <div 
-                                key={col.colIndex}
-                                className="h-full border-r border-stone-100/60 dark:border-stone-800/40"
-                              />
-                            ))}
+                            {timelineConfig.cols.map((col) => {
+                              const isHighlight = granularity === "Week" && col.colIndex >= 1 && col.colIndex <= 3;
+                              const isHatch = granularity === "Week" && (col.colIndex === 5 || col.colIndex === 6);
+                              return (
+                                <div 
+                                  key={col.colIndex}
+                                  className={`h-full border-r border-stone-200/80 dark:border-stone-800/80 ${
+                                    isHighlight ? "bg-sky-50/35 dark:bg-sky-950/15" : ""
+                                  }`}
+                                  style={
+                                    isHatch
+                                      ? {
+                                          backgroundImage:
+                                            "repeating-linear-gradient(135deg, rgba(203, 213, 225, 0.22) 0px, rgba(203, 213, 225, 0.22) 2px, transparent 2px, transparent 10px)",
+                                        }
+                                      : undefined
+                                  }
+                                />
+                              );
+                            })}
                           </div>
 
                           {/* Child operations under this Work Center */}
                           {wc.expanded && (
-                            <div className="relative divide-y divide-stone-50 dark:divide-stone-900/80 bg-stone-50/20 dark:bg-stone-950/20">
+                            <div className="relative divide-y divide-stone-200/80 dark:divide-stone-800 bg-stone-50/20 dark:bg-stone-950/20">
                               {wc.operations.map(({ wo, op }) => {
                                 const isSelected = selectedOpKey?.workOrderId === wo.id && selectedOpKey?.opId === op.id;
                                 return (
                                   <div
                                     key={`timeline-op-${wc.id}-${wo.id}-${op.id}`}
-                                    className="h-11 relative grid items-center group"
+                                    className="h-12 relative grid items-center group border-b border-stone-200/80 dark:border-stone-800"
                                     style={{ gridTemplateColumns: `repeat(${timelineConfig.totalCols}, minmax(0, 1fr))` }}
                                   >
                                     {/* Column Drop Zones */}
-                                    {timelineConfig.cols.map((col) => (
-                                      <div
-                                        key={col.colIndex}
-                                        onDragOver={(e) => handleDragOverCol(e, col.colIndex)}
-                                        onDrop={() => handleDropOnCol(col.colIndex)}
-                                        className={`h-full border-r border-stone-100/60 dark:border-stone-800/40 transition-colors ${
-                                          dragOverCol === col.colIndex
-                                            ? "bg-amber-100/40 dark:bg-amber-950/30"
-                                            : ""
-                                        }`}
-                                      />
-                                    ))}
+                                    {timelineConfig.cols.map((col) => {
+                                      const isHighlight = granularity === "Week" && col.colIndex >= 1 && col.colIndex <= 3;
+                                      const isHatch = granularity === "Week" && (col.colIndex === 5 || col.colIndex === 6);
+                                      return (
+                                        <div
+                                          key={col.colIndex}
+                                          onDragOver={(e) => handleDragOverCol(e, col.colIndex)}
+                                          onDrop={() => handleDropOnCol(col.colIndex)}
+                                          className={`h-full border-r border-stone-200/80 dark:border-stone-800/80 transition-colors ${
+                                            dragOverCol === col.colIndex
+                                              ? "bg-amber-100/40 dark:bg-amber-950/30"
+                                              : isHighlight
+                                              ? "bg-sky-50/35 dark:bg-sky-950/15"
+                                              : ""
+                                          }`}
+                                          style={
+                                            isHatch
+                                              ? {
+                                                  backgroundImage:
+                                                    "repeating-linear-gradient(135deg, rgba(203, 213, 225, 0.22) 0px, rgba(203, 213, 225, 0.22) 2px, transparent 2px, transparent 10px)",
+                                                }
+                                              : undefined
+                                          }
+                                        />
+                                      );
+                                    })}
 
                                     {/* Operation Bar */}
                                     <div
