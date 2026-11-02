@@ -19,12 +19,13 @@ export function Materials() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [originalUnit, setOriginalUnit] = useState<string>("");
-  const [formData, setFormData] = useState<{ sku: string; name: string; unit: string; min_stock_threshold: string | number; is_active: boolean }>({
+  const [formData, setFormData] = useState<{ sku: string; name: string; unit: string; min_stock_threshold: string | number; is_active: boolean; hs_code: string }>({
     sku: "",
     name: "",
     unit: "kg",
     min_stock_threshold: "",
-    is_active: true
+    is_active: true,
+    hs_code: "",
   });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState("");
@@ -48,11 +49,11 @@ export function Materials() {
     if (material) {
       setEditingId(material.id);
       setOriginalUnit(material.unit);
-      setFormData({ sku: material.sku, name: material.name, unit: material.unit, min_stock_threshold: material.min_stock_threshold, is_active: material.is_active });
+      setFormData({ sku: material.sku, name: material.name, unit: material.unit, min_stock_threshold: material.min_stock_threshold, is_active: material.is_active, hs_code: material.hs_code ?? "" });
     } else {
       setEditingId(null);
       setOriginalUnit("");
-      setFormData({ sku: "", name: "", unit: "kg", min_stock_threshold: "", is_active: true });
+      setFormData({ sku: "", name: "", unit: "kg", min_stock_threshold: "", is_active: true, hs_code: "" });
     }
     setFormError("");
     setIsFormOpen(true);
@@ -76,10 +77,15 @@ export function Materials() {
     }
 
     try {
+      const payload = {
+        ...formData,
+        min_stock_threshold: Number(formData.min_stock_threshold),
+        hs_code: formData.hs_code.trim() || null,
+      };
       if (editingId) {
-        await updateMaterial(editingId, { ...formData, min_stock_threshold: Number(formData.min_stock_threshold) });
+        await updateMaterial(editingId, payload);
       } else {
-        await createMaterial({ ...formData, min_stock_threshold: Number(formData.min_stock_threshold) });
+        await createMaterial(payload);
       }
       setIsFormOpen(false);
       setRefresh(r => r + 1);
@@ -164,6 +170,7 @@ export function Materials() {
               <Th>SKU</Th>
               <Th>Name</Th>
               <Th>Unit</Th>
+              <Th>HS Code</Th>
               <Th className="text-right">Min Stock</Th>
               <Th>Status</Th>
               <Th className="text-right">Actions</Th>
@@ -178,6 +185,13 @@ export function Materials() {
                   <Td className="font-mono text-xs font-semibold text-slate-600">{m.sku}</Td>
                   <Td className="font-medium text-slate-900">{m.name}</Td>
                   <Td className="text-slate-500">{m.unit}</Td>
+                  <Td>
+                    {m.hs_code ? (
+                      <span className="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded">{m.hs_code}</span>
+                    ) : (
+                      <span className="text-xs text-stone-400 italic">—</span>
+                    )}
+                  </Td>
                   <Td className="text-right font-medium">{m.min_stock_threshold}</Td>
                   <Td>
                     <Badge variant={m.is_active ? 'success' : 'default'}>
@@ -247,6 +261,21 @@ export function Materials() {
                     value={formData.min_stock_threshold}
                     onChange={e => setFormData({...formData, min_stock_threshold: sanitizeNumberInput(e.target.value)})}
                     className="rounded-xl"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="mat-hs-code">
+                    HS Code
+                    <span className="ml-1.5 text-[10px] font-normal text-stone-400">(optional — Harmonized System trade classification)</span>
+                  </Label>
+                  <Input
+                    id="mat-hs-code"
+                    type="text"
+                    placeholder="e.g. 7209.16"
+                    maxLength={20}
+                    value={formData.hs_code}
+                    onChange={e => setFormData({...formData, hs_code: e.target.value})}
+                    className="rounded-xl font-mono"
                   />
                 </div>
                 <div className="flex items-center pt-2">

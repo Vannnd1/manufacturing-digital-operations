@@ -1,7 +1,7 @@
 import db from "../db";
 
 export class MaterialService {
-  static async createMaterial(data: { sku: string; name: string; unit: string; min_stock_threshold: number; is_active: boolean }, userId: string) {
+  static async createMaterial(data: { sku: string; name: string; unit: string; min_stock_threshold: number; is_active: boolean; hs_code?: string | null }, userId: string) {
     return await db.transaction(async (trx) => {
       const existing = await trx("materials").where({ sku: data.sku }).first();
       if (existing) {
@@ -39,7 +39,7 @@ export class MaterialService {
     return material;
   }
 
-  static async updateMaterial(id: string, data: Partial<{ name: string; unit: string; min_stock_threshold: number; is_active: boolean }>, userId: string) {
+  static async updateMaterial(id: string, data: Partial<{ name: string; unit: string; min_stock_threshold: number; is_active: boolean; hs_code: string | null }>, userId: string) {
     const material = await db("materials").where({ id }).first();
     if (!material) throw new Error("NOT_FOUND");
 
