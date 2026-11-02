@@ -385,19 +385,19 @@ export function Procurement() {
             </thead>
             <tbody>
               {prs.length === 0 ? (
-                <tr><Td colSpan={6} className="text-center py-8 text-slate-500 italic">No Purchase Requests found.</Td></tr>
+                <tr><Td colSpan={6} className="text-center py-8 text-slate-500 dark:text-stone-400 italic">No Purchase Requests found.</Td></tr>
               ) : prs.map(pr => (
-                <tr key={pr.id} className="hover:bg-slate-50/50 transition-colors">
-                  <Td className="font-mono text-xs text-slate-500 font-medium">{pr.id.substring(0, 8)}…</Td>
-                  <Td className="text-slate-700">{new Date(pr.request_date).toLocaleDateString()}</Td>
-                  <Td className="font-medium text-slate-900">{pr.requester_name}</Td>
-                  <Td className="text-xs text-slate-600">
+                <tr key={pr.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
+                  <Td className="font-mono text-xs text-slate-500 dark:text-stone-400 font-medium">{pr.id.substring(0, 8)}…</Td>
+                  <Td className="text-slate-700 dark:text-stone-300">{new Date(pr.request_date).toLocaleDateString()}</Td>
+                  <Td className="font-medium text-slate-900 dark:text-stone-100">{pr.requester_name}</Td>
+                  <Td className="text-xs text-slate-600 dark:text-stone-400">
                     {pr.items && pr.items.length > 0 ? (
                       <ul className="list-disc pl-3 space-y-0.5 max-h-32 overflow-y-auto">
                         {pr.items.map((it: any, idx: number) => (
                           <li key={idx}>
-                            <span className="font-medium text-slate-700">{it.material_name}</span>
-                            <span className="text-slate-400 ml-1">({it.quantity} {it.unit})</span>
+                            <span className="font-medium text-slate-700 dark:text-stone-200">{it.material_name}</span>
+                            <span className="text-slate-400 dark:text-stone-500 ml-1">({it.quantity} {it.unit})</span>
                           </li>
                         ))}
                       </ul>
@@ -444,19 +444,19 @@ export function Procurement() {
             </thead>
             <tbody>
               {pos.length === 0 ? (
-                <tr><Td colSpan={6} className="text-center py-8 text-slate-500 italic">No Purchase Orders found.</Td></tr>
+                <tr><Td colSpan={6} className="text-center py-8 text-slate-500 dark:text-stone-400 italic">No Purchase Orders found.</Td></tr>
               ) : pos.map(po => (
-                <tr key={po.id} className="hover:bg-slate-50/50 transition-colors">
-                  <Td className="font-mono text-xs text-slate-500 font-medium">{po.id.substring(0, 8)}…</Td>
-                  <Td className="text-slate-700">{new Date(po.issue_date).toLocaleDateString()}</Td>
-                  <Td className="font-medium text-slate-900">{po.supplier_name}</Td>
-                  <Td className="text-xs text-slate-600">
+                <tr key={po.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
+                  <Td className="font-mono text-xs text-slate-500 dark:text-stone-400 font-medium">{po.id.substring(0, 8)}…</Td>
+                  <Td className="text-slate-700 dark:text-stone-300">{new Date(po.issue_date).toLocaleDateString()}</Td>
+                  <Td className="font-medium text-slate-900 dark:text-stone-100">{po.supplier_name}</Td>
+                  <Td className="text-xs text-slate-600 dark:text-stone-400">
                     {po.items && po.items.length > 0 ? (
                       <ul className="list-disc pl-3 space-y-0.5 max-h-32 overflow-y-auto">
                         {po.items.map((it: any, idx: number) => (
                           <li key={idx}>
-                            <span className="font-medium text-slate-700">{it.material_name}</span>
-                            <span className="text-slate-400 ml-1">({it.quantity} {it.unit} @ ${it.unit_price})</span>
+                            <span className="font-medium text-slate-700 dark:text-stone-200">{it.material_name}</span>
+                            <span className="text-slate-400 dark:text-stone-500 ml-1">({it.quantity} {it.unit} @ ${it.unit_price})</span>
                           </li>
                         ))}
                       </ul>
@@ -492,11 +492,11 @@ export function Procurement() {
             </thead>
             <tbody>
               {suppliers.length === 0 ? (
-                <tr><Td colSpan={3} className="text-center py-8 text-slate-500 italic">No suppliers found.</Td></tr>
+                <tr><Td colSpan={3} className="text-center py-8 text-slate-500 dark:text-stone-400 italic">No suppliers found.</Td></tr>
               ) : suppliers.map(sup => (
-                <tr key={sup.id} className="hover:bg-slate-50/50 transition-colors">
-                  <Td className="font-medium text-slate-900">{sup.name}</Td>
-                  <Td className="text-slate-600">{sup.contact_info}</Td>
+                <tr key={sup.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
+                  <Td className="font-medium text-slate-900 dark:text-stone-100">{sup.name}</Td>
+                  <Td className="text-slate-600 dark:text-stone-300">{sup.contact_info}</Td>
                   <Td>
                     <Badge variant={sup.is_active ? "success" : "default"}>{sup.is_active ? "Active" : "Inactive"}</Badge>
                   </Td>

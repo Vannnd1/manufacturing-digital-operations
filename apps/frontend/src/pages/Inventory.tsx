@@ -331,7 +331,7 @@ export function Inventory() {
         {/* Table Records */}
         <Table>
           <thead>
-            <tr className="border-b border-stone-200 bg-stone-50/70 text-slate-600">
+            <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/60 text-slate-600 dark:text-stone-300">
               <Th>SKU</Th>
               <Th>Material</Th>
               <Th className="min-w-[160px]">Stock Level vs Reorder</Th>
@@ -342,26 +342,26 @@ export function Inventory() {
               {canManageStock && <Th className="text-right">Actions</Th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-stone-100 dark:divide-stone-800/60">
             {filtered.length === 0 ? (
               <tr>
-                <Td colSpan={canManageStock ? 8 : 7} className="text-center py-10 text-slate-400 italic text-xs">
+                <Td colSpan={canManageStock ? 8 : 7} className="text-center py-10 text-slate-400 dark:text-stone-500 italic text-xs">
                   No inventory records found matching your filters.
                 </Td>
               </tr>
             ) : (
               filtered.map((m) => (
-                <tr key={m.material_id} className="hover:bg-stone-50/60 transition-colors">
-                  <Td className="font-mono text-xs font-semibold text-slate-600">
+                <tr key={m.material_id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
+                  <Td className="font-mono text-xs font-semibold text-slate-600 dark:text-stone-300">
                     <div>{m.sku}</div>
                     {m.hs_code && (
-                      <span className="inline-block mt-0.5 text-[10px] font-mono text-slate-500 bg-stone-100 px-1.5 py-0.2 rounded border border-stone-200">
+                      <span className="inline-block mt-0.5 text-[10px] font-mono text-slate-500 dark:text-stone-300 bg-stone-100 dark:bg-stone-800/90 px-1.5 py-0.2 rounded border border-stone-200 dark:border-stone-700/80">
                         HS {m.hs_code}
                       </span>
                     )}
                   </Td>
-                  <Td className="font-medium text-slate-900">
-                    <div className="font-semibold text-xs text-slate-900">{m.name}</div>
+                  <Td className="font-medium text-slate-900 dark:text-stone-100">
+                    <div className="font-semibold text-xs text-slate-900 dark:text-stone-100">{m.name}</div>
                   </Td>
                   <Td>
                     <StockLevelBar 
@@ -370,14 +370,14 @@ export function Inventory() {
                       unit={m.unit}
                     />
                   </Td>
-                  <Td className="text-right font-mono font-bold text-xs text-slate-900">
+                  <Td className="text-right font-mono font-bold text-xs text-slate-900 dark:text-stone-100">
                     <span>{m.available_stock}</span> 
-                    <span className="text-slate-400 ml-1 font-normal font-sans text-[11px]">{m.unit}</span>
+                    <span className="text-slate-400 dark:text-stone-500 ml-1 font-normal font-sans text-[11px]">{m.unit}</span>
                   </Td>
-                  <Td className="text-right font-mono text-xs text-slate-500">
+                  <Td className="text-right font-mono text-xs text-slate-500 dark:text-stone-400">
                     {m.reserved_stock}
                   </Td>
-                  <Td className="text-right font-mono text-xs text-slate-400">
+                  <Td className="text-right font-mono text-xs text-slate-400 dark:text-stone-500">
                     {m.min_stock_threshold}
                   </Td>
                   <Td>

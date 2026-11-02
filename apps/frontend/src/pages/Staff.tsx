@@ -486,8 +486,8 @@ export function Staff() {
                   }}
                   className={`w-full flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                     editingMember.status === "present"
-                      ? "bg-emerald-50 border-emerald-300 text-emerald-900 shadow-2xs"
-                      : "bg-white border-stone-200 hover:bg-stone-50 text-slate-700"
+                      ? "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 shadow-2xs"
+                      : "bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 text-slate-700 dark:text-stone-300"
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -495,7 +495,7 @@ export function Staff() {
                     In the building (Hadir di Pabrik)
                   </span>
                   {editingMember.status === "present" && (
-                    <Check className="w-4 h-4 text-emerald-600" />
+                    <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   )}
                 </button>
 
@@ -508,8 +508,8 @@ export function Staff() {
                   }}
                   className={`w-full flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                     editingMember.status === "remote"
-                      ? "bg-amber-50 border-amber-300 text-amber-900 shadow-2xs"
-                      : "bg-white border-stone-200 hover:bg-stone-50 text-slate-700"
+                      ? "bg-amber-50 dark:bg-amber-950/60 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 shadow-2xs"
+                      : "bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 text-slate-700 dark:text-stone-300"
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -517,7 +517,7 @@ export function Staff() {
                     Working remotely (Dinas Luar / Remote)
                   </span>
                   {editingMember.status === "remote" && (
-                    <Check className="w-4 h-4 text-amber-600" />
+                    <Check className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                   )}
                 </button>
 
@@ -530,8 +530,8 @@ export function Staff() {
                   }}
                   className={`w-full flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                     editingMember.status === "leave"
-                      ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
-                      : "bg-white border-stone-200 hover:bg-stone-50 text-slate-700"
+                      ? "bg-rose-50 dark:bg-rose-950/60 border-rose-300 dark:border-rose-700 text-rose-900 dark:text-rose-200 shadow-2xs"
+                      : "bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 text-slate-700 dark:text-stone-300"
                   }`}
                 >
                   <span className="flex items-center gap-2">

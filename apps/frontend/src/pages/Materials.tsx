@@ -143,14 +143,14 @@ export function Materials() {
         </Link>
       </div>
 
-      <Card className="rounded-2xl border border-stone-200/80 bg-white shadow-2xs overflow-hidden">
-        <div className="p-4 border-b border-stone-100 bg-stone-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <Card className="rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-2xs overflow-hidden">
+        <div className="p-4 border-b border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="relative w-full max-w-md">
             <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 transform -translate-y-1/2" />
             <input 
               type="text" 
               placeholder="Search by SKU, material name, or HS code..." 
-              className="w-full pl-9 pr-4 py-2 rounded-full border border-stone-200/80 bg-white text-xs text-slate-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+              className="w-full pl-9 pr-4 py-2 rounded-full border border-stone-200/80 dark:border-stone-700 bg-white dark:bg-stone-900/90 text-xs text-slate-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-amber-500/20"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -159,11 +159,11 @@ export function Materials() {
             <input 
               type="checkbox" 
               id="toggle-inactive" 
-              className="w-4 h-4 rounded-sm border-slate-300 text-slate-900 focus:ring-slate-900"
+              className="w-4 h-4 rounded-sm border-slate-300 dark:border-stone-700 text-slate-900 dark:text-amber-500 focus:ring-slate-900 dark:focus:ring-amber-500"
               checked={showInactive}
               onChange={e => setShowInactive(e.target.checked)}
             />
-            <label htmlFor="toggle-inactive" className="ml-2 text-xs font-medium text-slate-700 cursor-pointer">
+            <label htmlFor="toggle-inactive" className="ml-2 text-xs font-medium text-slate-700 dark:text-stone-300 cursor-pointer">
               Show Inactive
             </label>
           </div>
@@ -183,28 +183,28 @@ export function Materials() {
           </thead>
           <tbody>
             {filteredMaterials.length === 0 ? (
-              <tr><Td colSpan={6} className="text-center py-8 text-slate-500 italic">No materials found.</Td></tr>
+              <tr><Td colSpan={7} className="text-center py-8 text-slate-500 dark:text-stone-400 italic">No materials found.</Td></tr>
             ) : (
               filteredMaterials.map(m => (
-                <tr key={m.id} className="hover:bg-slate-50/50 transition-colors">
-                  <Td className="font-mono text-xs font-semibold text-slate-600">{m.sku}</Td>
-                  <Td className="font-medium text-slate-900">{m.name}</Td>
-                  <Td className="text-slate-500">{m.unit}</Td>
+                <tr key={m.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
+                  <Td className="font-mono text-xs font-semibold text-slate-600 dark:text-stone-300">{m.sku}</Td>
+                  <Td className="font-medium text-slate-900 dark:text-stone-100">{m.name}</Td>
+                  <Td className="text-slate-500 dark:text-stone-400">{m.unit}</Td>
                   <Td>
                     {m.hs_code ? (
-                      <span className="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded">{m.hs_code}</span>
+                      <span className="font-mono text-xs text-slate-700 dark:text-stone-200 bg-slate-100 dark:bg-stone-800/90 border border-slate-200 dark:border-stone-700/80 px-2 py-0.5 rounded shadow-2xs">{m.hs_code}</span>
                     ) : (
-                      <span className="text-xs text-stone-400 italic">—</span>
+                      <span className="text-xs text-stone-400 dark:text-stone-500 italic">—</span>
                     )}
                   </Td>
-                  <Td className="text-right font-medium">{m.min_stock_threshold}</Td>
+                  <Td className="text-right font-medium text-slate-800 dark:text-stone-200">{m.min_stock_threshold}</Td>
                   <Td>
                     <Badge variant={m.is_active ? 'success' : 'default'}>
                       {m.is_active ? 'Active' : 'Inactive'}
                     </Badge>
                   </Td>
                   <Td className="text-right">
-                    <button onClick={() => openForm(m)} className="text-slate-400 hover:text-amber-600 transition-colors p-1" title="Edit Material">
+                    <button onClick={() => openForm(m)} className="text-slate-400 dark:text-stone-500 hover:text-amber-600 dark:hover:text-amber-400 transition-colors p-1 cursor-pointer" title="Edit Material">
                       <Edit className="w-4 h-4" />
                     </button>
                   </Td>

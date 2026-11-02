@@ -467,7 +467,7 @@ export function Reports() {
                   </tr>
                 ) : (
                   inventoryData.stock_levels.map((item: any) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50">
+                    <tr key={item.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
                       <Td className="font-mono text-xs text-slate-500">{item.sku}</Td>
                       <Td className="font-medium text-slate-900">{item.name}</Td>
                       <Td className="text-right tabular-nums font-semibold text-slate-900">
@@ -537,7 +537,7 @@ export function Reports() {
                     </tr>
                   ) : (
                     procurementData.supplier_spend.map((sup: any, idx: number) => (
-                      <tr key={idx} className="hover:bg-slate-50/50">
+                      <tr key={idx} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
                         <Td className="font-medium text-slate-900">{sup.supplier_name}</Td>
                         <Td className="text-right tabular-nums text-slate-600">{sup.po_count}</Td>
                         <Td className="text-right tabular-nums font-bold text-slate-900">
@@ -612,7 +612,7 @@ export function Reports() {
                   </tr>
                 ) : (
                   productionData.orders.map((o: any) => (
-                    <tr key={o.prodo_id} className="hover:bg-slate-50/50">
+                    <tr key={o.prodo_id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
                       <Td className="font-mono text-xs text-slate-500">{o.product_sku}</Td>
                       <Td className="font-medium text-slate-900">{o.product_name}</Td>
                       <Td className="text-right tabular-nums text-slate-600">
@@ -680,7 +680,7 @@ export function Reports() {
                     </tr>
                   ) : (
                     qualityData.defect_breakdown.map((d: any, idx: number) => (
-                      <tr key={idx} className="hover:bg-slate-50/50">
+                      <tr key={idx} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
                         <Td className="font-medium text-slate-900">{d.reason}</Td>
                         <Td className="text-right tabular-nums font-semibold text-red-600">{d.quantity}</Td>
                         <Td className="text-right tabular-nums font-mono text-slate-600">{d.share_percent}%</Td>
@@ -712,7 +712,7 @@ export function Reports() {
                     </tr>
                   ) : (
                     qualityData.inspections.map((i: any) => (
-                      <tr key={i.id} className="hover:bg-slate-50/50">
+                      <tr key={i.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
                         <Td className="font-mono text-xs text-slate-500 whitespace-nowrap">
                           {new Date(i.inspection_date).toLocaleDateString()}
                         </Td>

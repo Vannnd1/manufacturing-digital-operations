@@ -734,19 +734,19 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                     </tr>
                   ) : (
                     pendingInspections.map(record => (
-                      <tr key={record.id} className="hover:bg-slate-50/50 transition-colors">
-                        <Td className="font-mono text-xs text-slate-500">{record.id.slice(0, 8)}...</Td>
+                      <tr key={record.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
+                        <Td className="font-mono text-xs text-slate-500 dark:text-stone-400">{record.id.slice(0, 8)}...</Td>
                         <Td>
-                          <div className="font-medium text-slate-900">{record.product_name}</div>
-                          <div className="font-mono text-xs text-slate-500 mt-0.5">{record.product_sku}</div>
+                          <div className="font-medium text-slate-900 dark:text-stone-100">{record.product_name}</div>
+                          <div className="font-mono text-xs text-slate-500 dark:text-stone-400 mt-0.5">{record.product_sku}</div>
                         </Td>
-                        <Td className="text-slate-700">{new Date(record.completion_date).toLocaleDateString()}</Td>
-                        <Td className="text-right font-mono font-bold text-slate-900">{record.actual_quantity_produced}</Td>
+                        <Td className="text-slate-700 dark:text-stone-300">{new Date(record.completion_date).toLocaleDateString()}</Td>
+                        <Td className="text-right font-mono font-bold text-slate-900 dark:text-stone-100">{record.actual_quantity_produced}</Td>
                         <Td className="text-right">
                           <button 
                             type="button"
                             onClick={() => openInspect(record)} 
-                            className="py-1.5 px-4 text-xs font-semibold rounded-full bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+                            className="py-1.5 px-4 text-xs font-semibold rounded-full bg-slate-900 dark:bg-amber-600 text-white hover:bg-slate-800 dark:hover:bg-amber-500 transition-colors shadow-2xs cursor-pointer"
                           >
                             Inspect
                           </button>
@@ -783,13 +783,13 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                     </tr>
                   ) : (
                     inspections.map(i => (
-                      <tr key={i.id} className="hover:bg-slate-50/50 transition-colors">
-                        <Td className="font-mono text-xs text-slate-500 font-medium">{i.id.slice(0, 8)}...</Td>
-                        <Td className="font-mono text-xs text-slate-500">{i.prodo_id.slice(0, 8)}...</Td>
-                        <Td className="text-slate-700">{new Date(i.inspection_date).toLocaleDateString()}</Td>
-                        <Td className="font-medium text-slate-900">{i.inspector_name}</Td>
-                        <Td className="text-right font-mono font-bold text-emerald-600">{i.pass_quantity}</Td>
-                        <Td className="text-right font-mono font-bold text-red-600">{i.fail_quantity}</Td>
+                      <tr key={i.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
+                        <Td className="font-mono text-xs text-slate-500 dark:text-stone-400 font-medium">{i.id.slice(0, 8)}...</Td>
+                        <Td className="font-mono text-xs text-slate-500 dark:text-stone-400">{i.prodo_id.slice(0, 8)}...</Td>
+                        <Td className="text-slate-700 dark:text-stone-300">{new Date(i.inspection_date).toLocaleDateString()}</Td>
+                        <Td className="font-medium text-slate-900 dark:text-stone-100">{i.inspector_name}</Td>
+                        <Td className="text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{i.pass_quantity}</Td>
+                        <Td className="text-right font-mono font-bold text-red-600 dark:text-red-400">{i.fail_quantity}</Td>
                         <Td className="text-right">
                           <button 
                             type="button"
