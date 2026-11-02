@@ -130,13 +130,26 @@ html.dark body {
   color: #71717A !important;
 }
 
+/* Table row hover in dark mode — subtle, elegant dark charcoal sheen */
+.dark table tbody tr:hover,
 .dark .hover\:bg-stone-50:hover,
 .dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-stone-50\/40:hover,
+.dark .hover\:bg-stone-50\/50:hover,
 .dark .hover\:bg-stone-50\/60:hover,
+.dark .hover\:bg-stone-50\/70:hover,
+.dark .hover\:bg-stone-50\/80:hover,
+.dark .hover\:bg-slate-50\/40:hover,
+.dark .hover\:bg-slate-50\/50:hover,
 .dark .hover\:bg-slate-50\/60:hover,
+.dark .hover\:bg-slate-50\/70:hover,
+.dark .hover\:bg-slate-50\/80:hover,
 .dark .hover\:bg-stone-100:hover,
 .dark .hover\:bg-slate-100:hover,
-.dark .hover\:bg-stone-100\/70:hover {
+.dark .hover\:bg-stone-100\/60:hover,
+.dark .hover\:bg-stone-100\/70:hover,
+.dark .hover\:bg-stone-100\/80:hover,
+.dark .hover\:bg-stone-100\/90:hover {
   background-color: #26272E !important;
 }
 

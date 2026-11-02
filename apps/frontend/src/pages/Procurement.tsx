@@ -692,7 +692,7 @@ export function Procurement() {
                       {poItems.map((item, idx) => {
                         const subtotal = (Number(item.quantity) || 0) * (Number(item.unit_price) || 0);
                         return (
-                          <tr key={item.material_id || idx} className="hover:bg-slate-50/50 dark:hover:bg-stone-800/40 transition-colors">
+                          <tr key={item.material_id || idx} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
                             <td className="py-2.5 px-3 font-medium text-slate-900 dark:text-stone-100">
                               {item.material_name}
                             </td>
@@ -792,7 +792,7 @@ export function Procurement() {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-stone-800">
                     {grItems.map((item, idx) => (
-                      <tr key={item.po_item_id || idx} className="hover:bg-slate-50/50 dark:hover:bg-stone-800/40 transition-colors">
+                      <tr key={item.po_item_id || idx} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
                         <td className="py-2.5 px-3 font-medium text-slate-900 dark:text-stone-100">
                           {item.material_name}
                         </td>
