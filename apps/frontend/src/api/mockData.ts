@@ -198,7 +198,7 @@ const SEED_STOCK_MAP: Record<string, { avail: number; res: number }> = {
 };
 
 export class MockDataStore {
-  private static STORAGE_KEY = "mfg_mock_store_v2";
+  private static STORAGE_KEY = "mfg_panasonic_primary_v3";
 
   private state: {
     materials: MockMaterial[];
@@ -221,7 +221,14 @@ export class MockDataStore {
     try {
       const raw = localStorage.getItem(MockDataStore.STORAGE_KEY);
       if (raw) {
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        if (
+          Array.isArray(parsed.materials) &&
+          parsed.materials.length >= 20 &&
+          parsed.materials.some((m: any) => m.sku === "MAT-COP-001")
+        ) {
+          return parsed;
+        }
       }
     } catch {
       // ignore
