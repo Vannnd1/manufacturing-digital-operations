@@ -83,7 +83,8 @@ export function Inventory() {
   const filtered = inventory.filter((m) => {
     const matchesSearch = 
       m.name.toLowerCase().includes(search.toLowerCase()) || 
-      m.sku.toLowerCase().includes(search.toLowerCase());
+      m.sku.toLowerCase().includes(search.toLowerCase()) ||
+      (m.hs_code && m.hs_code.toLowerCase().includes(search.toLowerCase()));
     
     if (!matchesSearch) return false;
     if (filterMode === "low") {
@@ -281,7 +282,7 @@ export function Inventory() {
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 transform -translate-y-1/2" />
             <Input 
               type="text" 
-              placeholder="Search by SKU or material name..." 
+              placeholder="Search by SKU, material name, or HS code..." 
               className="pl-9.5 rounded-full text-xs bg-white border-stone-200"
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -352,7 +353,12 @@ export function Inventory() {
               filtered.map((m) => (
                 <tr key={m.material_id} className="hover:bg-stone-50/60 transition-colors">
                   <Td className="font-mono text-xs font-semibold text-slate-600">
-                    {m.sku}
+                    <div>{m.sku}</div>
+                    {m.hs_code && (
+                      <span className="inline-block mt-0.5 text-[10px] font-mono text-slate-500 bg-stone-100 px-1.5 py-0.2 rounded border border-stone-200">
+                        HS {m.hs_code}
+                      </span>
+                    )}
                   </Td>
                   <Td className="font-medium text-slate-900">
                     <div className="font-semibold text-xs text-slate-900">{m.name}</div>

@@ -10,6 +10,7 @@ export class InventoryService {
         "materials.sku",
         "materials.name",
         "materials.unit",
+        "materials.hs_code",
         "materials.min_stock_threshold",
         "inventory.available_stock",
         "inventory.reserved_stock"

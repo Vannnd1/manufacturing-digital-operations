@@ -96,7 +96,12 @@ export function Materials() {
     }
   };
 
-  const filteredMaterials = materials.filter(m => m.name.toLowerCase().includes(search.toLowerCase()) || m.sku.toLowerCase().includes(search.toLowerCase()));
+  const filteredMaterials = materials.filter(
+    (m) =>
+      m.name.toLowerCase().includes(search.toLowerCase()) ||
+      m.sku.toLowerCase().includes(search.toLowerCase()) ||
+      (m.hs_code && m.hs_code.toLowerCase().includes(search.toLowerCase()))
+  );
 
   if (loading) return <div className="p-8 text-slate-500 animate-pulse">Loading material master data...</div>;
   if (error) return <div className="p-4 bg-red-50 text-red-700 text-sm border-l-4 border-red-500">{error}</div>;
@@ -144,7 +149,7 @@ export function Materials() {
             <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 transform -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="Search by SKU or material name..." 
+              placeholder="Search by SKU, material name, or HS code..." 
               className="w-full pl-9 pr-4 py-2 rounded-full border border-stone-200/80 bg-white text-xs text-slate-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
               value={search}
               onChange={e => setSearch(e.target.value)}
