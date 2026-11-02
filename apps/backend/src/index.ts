@@ -3,7 +3,7 @@ dotenv.config();
 
 import { validateStartupConfig, getSafeConfigSummary } from "./config/env";
 import { logger } from "./utils/logger";
-import { closeDatabaseConnection } from "./db";
+import db, { closeDatabaseConnection } from "./db";
 import app from "./app";
 
 // 1. Validate environment configuration before booting
@@ -16,15 +16,29 @@ try {
 }
 
 const PORT = Number(process.env.PORT) || 3001;
+let server: any = null;
 
-// 2. Start HTTP server
-const server = app.listen(PORT, () => {
-  logger.info("server_started", {
-    port: PORT,
-    url: `http://localhost:${PORT}`,
-    nodeEnv: process.env.NODE_ENV || "development",
+// 2. Bootstrap database migrations and start HTTP server
+async function bootstrap() {
+  try {
+    const [batchNo, log] = await db.migrate.latest();
+    if (log && log.length > 0) {
+      logger.info("database_migrations_applied", { batchNo, migrations: log });
+    }
+  } catch (err: any) {
+    logger.error("database_migration_failed", { errorMessage: err.message });
+  }
+
+  server = app.listen(PORT, () => {
+    logger.info("server_started", {
+      port: PORT,
+      url: `http://localhost:${PORT}`,
+      nodeEnv: process.env.NODE_ENV || "development",
+    });
   });
-});
+}
+
+bootstrap();
 
 // 3. Graceful shutdown orchestration
 let isShuttingDown = false;
@@ -48,13 +62,15 @@ export async function gracefulShutdown(signal: string): Promise<void> {
 
   try {
     // Stop accepting new HTTP requests
-    await new Promise<void>((resolve, reject) => {
-      server.close((err) => {
-        if (err) return reject(err);
-        resolve();
+    if (server) {
+      await new Promise<void>((resolve, reject) => {
+        server.close((err: any) => {
+          if (err) return reject(err);
+          resolve();
+        });
       });
-    });
-    logger.info("http_server_closed");
+      logger.info("http_server_closed");
+    }
 
     // Close database connection pool
     await closeDatabaseConnection();

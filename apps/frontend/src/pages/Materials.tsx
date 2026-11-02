@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMaterials, createMaterial, updateMaterial } from "../api/inventory";
-import { Plus, Search, Edit, X, AlertTriangle, Layers, PackagePlus } from "lucide-react";
+import { apiClient } from "../api/client";
+import { Plus, Search, Edit, X, AlertTriangle, Layers, PackagePlus, RefreshCw } from "lucide-react";
 import { PageHeader, Card, Table, Th, Td, Input, Label, Badge, Button } from "../components/ui";
 import { sanitizeNumberInput } from "../utils/number";
 import { UnitSelect } from "../components/UnitSelect";
@@ -14,6 +15,24 @@ export function Materials() {
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [refresh, setRefresh] = useState(0);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncCatalog = async () => {
+    try {
+      setSyncing(true);
+      await apiClient.post("/health/sync-catalog");
+      setRefresh((r) => r + 1);
+    } catch {
+      try {
+        await apiClient.get("/health/sync-catalog");
+        setRefresh((r) => r + 1);
+      } catch {
+        setError("Failed to synchronize catalog with server");
+      }
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -113,14 +132,25 @@ export function Materials() {
         title="Material Master" 
         description="Manage raw materials, components, and tracking thresholds." 
         action={
-          <Button 
-            variant="primary"
-            onClick={() => openForm()} 
-            className="gap-1.5 text-xs font-semibold"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Material</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleSyncCatalog}
+              disabled={syncing}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-200 bg-white text-xs font-semibold text-slate-700 hover:bg-stone-50 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
+              title="Synchronize database with Panasonic 28 Master Catalog & HS Codes"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin text-amber-500" : "text-slate-500"}`} />
+              <span>{syncing ? "Syncing..." : "Sync Panasonic Catalog"}</span>
+            </button>
+            <Button 
+              variant="primary"
+              onClick={() => openForm()} 
+              className="gap-1.5 text-xs font-semibold"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Material</span>
+            </Button>
+          </div>
         }
       />
 

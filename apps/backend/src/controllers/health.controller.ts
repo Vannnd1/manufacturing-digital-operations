@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { checkDatabaseConnection, getDatabasePoolStatus } from "../db";
+import db, { checkDatabaseConnection, getDatabasePoolStatus } from "../db";
 
 /**
  * Liveness Probe: Verifies the Node.js event loop and HTTP server are responsive.
@@ -66,4 +66,28 @@ export function getDiagnostics(_req: Request, res: Response): void {
     },
     databasePool: getDatabasePoolStatus(),
   });
+}
+
+/**
+ * Migration & Master Catalog Synchronization Endpoint.
+ * Executes pending Knex migrations to ensure schema and master catalogs (e.g. Panasonic 28 materials with HS Codes)
+ * are synchronized in cloud environments like Render/Neon.
+ */
+export async function syncCatalog(_req: Request, res: Response): Promise<void> {
+  try {
+    const [batchNo, log] = await db.migrate.latest();
+    res.status(200).json({
+      status: "ok",
+      message: "Database schema and Panasonic master catalog successfully synchronized",
+      batchNo,
+      migrations: log,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      status: "error",
+      message: err.message || "Failed to synchronize migrations",
+      timestamp: new Date().toISOString(),
+    });
+  }
 }

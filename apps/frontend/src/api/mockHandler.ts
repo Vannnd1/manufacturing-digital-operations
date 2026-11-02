@@ -102,6 +102,9 @@ export function handleMockRequest(url: string, method: string = "get", data?: an
   }
 
   // 8. Dashboard & Reports
+  if (pathname === "/health/sync-catalog") {
+    return { status: "ok", message: "Catalog synchronized" };
+  }
   if (pathname === "/dashboard/summary" && normMethod === "get") {
     return mockStore.getDashboardSummary();
   }
