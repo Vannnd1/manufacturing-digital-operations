@@ -63,6 +63,24 @@ apiClient.interceptors.response.use(
       }
     }
 
+    if (url.includes("/products") && Array.isArray(response.data)) {
+      const hasLegacyDummy = response.data.some(
+        (p: any) => (p.name || "").toLowerCase().includes("sepeda") || (p.name || "").toLowerCase().includes("skuter")
+      );
+      if (hasLegacyDummy || response.data.length < 5) {
+        response.data = handleMockRequest("/products", "get");
+      }
+    }
+
+    if (url.includes("/production-orders") && Array.isArray(response.data)) {
+      const hasLegacyDummy = response.data.some(
+        (o: any) => (o.product_name || "").toLowerCase().includes("sepeda") || (o.product_name || "").toLowerCase().includes("skuter")
+      );
+      if (hasLegacyDummy) {
+        response.data = handleMockRequest("/production-orders", "get");
+      }
+    }
+
     return response;
   },
   async (error) => {

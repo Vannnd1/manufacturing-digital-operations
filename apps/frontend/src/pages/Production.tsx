@@ -58,57 +58,33 @@ interface ProductionProps {
 }
 
 const DEFAULT_PANASONIC_PRODUCTS: Product[] = [
-  { id: "p-enc-01", sku: "PROD-ENC-01", name: "Modular PLC Automation Control Cabinet", unit: "unit" },
-  { id: "p-bmod-02", sku: "PROD-BMOD-02", name: "Energy Storage Battery Module (10.5 kWh)", unit: "module" },
-  { id: "p-pdu-03", sku: "PROD-PDU-03", name: "Factory Floor Intelligent Power Distribution Unit", unit: "unit" },
-  { id: "p-srv-01", sku: "PROD-SRV-01", name: "Industrial AC Servo Motor & Driver (MINAS A6)", unit: "unit" },
-  { id: "p-hp-01", sku: "PROD-HP-01", name: "Air-to-Water Industrial Heat Pump & Inverter", unit: "unit" },
-  { id: "p-sen-02", sku: "PROD-SEN-02", name: "High-Precision CMOS Laser Sensor Unit", unit: "unit" },
+  { id: "p-ac-s10", sku: "PROD-AC-S10", name: "AC Split Standard 1PK (CS-PN10WKJ)", unit: "unit" },
+  { id: "p-ac-i10", sku: "PROD-AC-I10", name: "AC Split Inverter 1PK (CS-XU10WKPJ)", unit: "unit" },
+  { id: "p-ac-i15", sku: "PROD-AC-I15", name: "AC Split Inverter 1.5PK (CS-XU13WKPJ)", unit: "unit" },
+  { id: "p-rf-2dr", sku: "PROD-RF-2DR", name: "Refrigerator 2-Door 268L (NR-BP303VS)", unit: "unit" },
+  { id: "p-rf-1dr", sku: "PROD-RF-1DR", name: "Refrigerator 1-Door 100L (NR-AP188VS)", unit: "unit" },
+  { id: "p-wm-tt7", sku: "PROD-WM-TT7", name: "Washing Machine Top Load 7kg (NA-F70A9)", unit: "unit" },
+  { id: "p-wm-fl8", sku: "PROD-WM-FL8", name: "Washing Machine Front Load 8kg (NA-V80FG3)", unit: "unit" },
+  { id: "p-tv-32h", sku: "PROD-TV-32H", name: "LED TV 32-inch HD Ready (TH-32LS600G)", unit: "unit" },
+  { id: "p-tv-43f", sku: "PROD-TV-43F", name: "LED TV 43-inch Full HD (TH-43LX800G)", unit: "unit" },
 ];
 
 function formatOrderProduct(order: any, idx: number) {
   const rawName = String(order.product_name || order.product_id || "");
-  const lower = rawName.toLowerCase();
 
   const schedules = [
-    { schedule: "Nov 7 – Nov 17", workCenter: "WC-101 · Laser & Stamping" },
-    { schedule: "Nov 8 – Nov 15", workCenter: "WC-104 · Battery & Dielectric Bay" },
-    { schedule: "Nov 10 – Nov 17", workCenter: "WC-102 · Servo Coil Winding" },
-    { schedule: "Nov 12 – Nov 18", workCenter: "WC-101 · Heat Pump Assembly" },
-    { schedule: "Nov 9 – Nov 13", workCenter: "WC-104 · PLC Control Enclosure" },
-    { schedule: "Nov 6 – Nov 13", workCenter: "WC-103 · Power Dist Testing" },
-    { schedule: "Nov 14 – Nov 18", workCenter: "WC-104 · Laser Sensor Calibration" },
+    { schedule: "Nov 7 – Nov 17", workCenter: "WC-AC-01 · AC Tube Bending & Heat Exchanger" },
+    { schedule: "Nov 8 – Nov 15", workCenter: "WC-AC-02 · Inverter & Refrigerant Vacuum Bay" },
+    { schedule: "Nov 10 – Nov 17", workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming" },
+    { schedule: "Nov 12 – Nov 18", workCenter: "WC-WM-01 · Washing Machine Drum & Motor Integration" },
+    { schedule: "Nov 9 – Nov 13", workCenter: "WC-TV-01 · SMT & Display Panel Lamination" },
+    { schedule: "Nov 6 – Nov 13", workCenter: "WC-QC-01 · High-Voltage Dielectric Gate" },
   ];
   const assigned = schedules[idx % schedules.length];
 
-  if (lower.includes("sepeda")) {
-    return {
-      sku: "PROD-BMOD-02",
-      name: "Energy Storage Battery Module (10.5 kWh)",
-      schedule: "Nov 8 – Nov 15",
-      workCenter: "WC-104 · Battery & Dielectric Bay",
-    };
-  }
-  if (lower.includes("skuter")) {
-    return {
-      sku: "PROD-SRV-01",
-      name: "Industrial AC Servo Motor & Driver (MINAS A6)",
-      schedule: "Nov 10 – Nov 17",
-      workCenter: "WC-102 · Servo Coil Winding",
-    };
-  }
-  if (lower.includes("industrial motor")) {
-    return {
-      sku: "PROD-HP-01",
-      name: "Air-to-Water Industrial Heat Pump & Inverter",
-      schedule: "Nov 12 – Nov 18",
-      workCenter: "WC-101 · Heat Pump Assembly",
-    };
-  }
-
   return {
-    sku: order.product_sku || "PROD-ENC-01",
-    name: rawName || "Modular PLC Automation Control Cabinet",
+    sku: order.product_sku || "PROD-AC-S10",
+    name: rawName || "AC Split Standard 1PK (CS-PN10WKJ)",
     schedule: assigned.schedule,
     workCenter: assigned.workCenter,
   };
@@ -183,25 +159,10 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
           setProducts(DEFAULT_PANASONIC_PRODUCTS);
           return;
         }
-        // Sanitize any legacy product names
-        const sanitized = d.map((p) => {
-          const lower = (p.name || "").toLowerCase();
-          if (lower.includes("sepeda")) {
-            return { ...p, sku: "PROD-BMOD-02", name: "Energy Storage Battery Module (10.5 kWh)", unit: "module" };
-          }
-          if (lower.includes("skuter")) {
-            return { ...p, sku: "PROD-SRV-01", name: "Industrial AC Servo Motor & Driver (MINAS A6)", unit: "unit" };
-          }
-          if (lower.includes("industrial motor")) {
-            return { ...p, sku: "PROD-HP-01", name: "Air-to-Water Industrial Heat Pump & Inverter", unit: "unit" };
-          }
-          return p;
-        });
-
-        // Ensure all core Panasonic discrete products are represented
-        const existingSkus = new Set(sanitized.map((p) => p.sku));
+        // Ensure all core Panasonic appliance products are represented
+        const existingSkus = new Set(d.map((p) => p.sku));
         const missing = DEFAULT_PANASONIC_PRODUCTS.filter((def) => !existingSkus.has(def.sku));
-        setProducts([...sanitized, ...missing]);
+        setProducts([...d, ...missing]);
       })
       .catch(() => setProducts(DEFAULT_PANASONIC_PRODUCTS));
     getMaterials().then((d: Material[]) => setMaterials(d)).catch(() => {});

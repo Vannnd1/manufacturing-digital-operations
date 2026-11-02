@@ -193,7 +193,7 @@ export function Support() {
 
   // Support / Incident Form state
   const [formSubject, setFormSubject] = useState("");
-  const [formWorkCenter, setFormWorkCenter] = useState("WC-101 · Laser Cutting & CNC Bending");
+  const [formWorkCenter, setFormWorkCenter] = useState("WC-AC-01 · AC Tube Bending & Heat Exchanger");
   const [formWorkOrder, setFormWorkOrder] = useState("");
   const [formCategory, setFormCategory] = useState<Ticket["category"]>("Machine & Tooling");
   const [formPriority, setFormPriority] = useState<Ticket["priority"]>("Normal (P3)");
@@ -1078,11 +1078,13 @@ export function Support() {
                     onChange={(e) => setFormWorkCenter(e.target.value)}
                     className="w-full px-2.5 py-2 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none"
                   >
-                    <option value="WC-101 · Laser Cutting & CNC Bending">WC-101 Laser & CNC</option>
-                    <option value="WC-102 · Structural TIG Welding Bay">WC-102 TIG Welding</option>
-                    <option value="WC-103 · Industrial Powder Coating & Oven">WC-103 Powder Coating</option>
-                    <option value="WC-104 · Sub-assembly & QC Gate">WC-104 Assembly & QC</option>
-                    <option value="Warehouse Bay 3 · Material Storage">Warehouse Bay 3</option>
+                    <option value="WC-AC-01 · AC Tube Bending & Heat Exchanger">WC-AC-01 AC Heat Exchanger</option>
+                    <option value="WC-AC-02 · Inverter & Refrigerant Vacuum Bay">WC-AC-02 AC Vacuum & Charging</option>
+                    <option value="WC-RF-01 · Refrigerator Cabinet & PU Foaming">WC-RF-01 Refrigerator Foaming</option>
+                    <option value="WC-WM-01 · Washing Machine Drum & Motor Integration">WC-WM-01 Washer Drum & Motor</option>
+                    <option value="WC-TV-01 · SMT & Display Panel Lamination">WC-TV-01 SMT & Display Panel</option>
+                    <option value="WC-QC-01 · High-Voltage Dielectric Gate">WC-QC-01 Dielectric & QC Gate</option>
+                    <option value="Warehouse Bay 3 · Material Storage">Warehouse Bay 3 · Material Storage</option>
                   </select>
                 </div>
 

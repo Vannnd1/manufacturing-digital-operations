@@ -37,7 +37,7 @@ export interface OperationItem {
 
 export interface WorkOrderItem {
   id: string; // e.g. "WO-2041"
-  model: string; // e.g. "PROD-ENC-01 · Modular Industrial Automation Enclosure (×50)"
+  model: string; // e.g. "PROD-AC-S10 · AC Split Standard 1PK (CS-PN10WKJ) (×300)"
   shortName?: string;
   rush?: boolean;
   status?: "In progress" | "On hold" | "Completed" | "Done";
@@ -236,171 +236,63 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     };
   }, [granularity, timeOffset, formattedShort]);
 
-  // Initial Work Orders & Sub-operations tailored to real project products and roster
+  // Initial Work Orders & Sub-operations tailored to Panasonic Manufacturing Indonesia lines
   const [workOrders, setWorkOrders] = useState<WorkOrderItem[]>([
     {
-      id: "WO-2042",
-      model: "PROD-BMOD-02 · Energy Storage Battery Module - 10.5 kWh (×25)",
-      shortName: "Battery Module 10.5kWh",
-      clientOrDept: "Line 1 Energy Systems",
-      dateRange: "Nov 9 – Nov 15",
-      rush: false,
-      status: "In progress",
-      startDay: 1,
-      durationDays: 6,
-      expanded: true,
-      note: "Standard discrete run for Line 1 battery modules. Ensure TIG bead consistency and dimensional tolerances.",
-      operations: [
-        {
-          id: "op-2042-1",
-          name: "Mitering",
-          techInitial: "FW",
-          techName: "Felix Wagner",
-          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 1,
-          durationDays: 2,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 9 – Nov 10",
-          workCenter: "WC-101 · Laser & Stamping",
-        },
-        {
-          id: "op-2042-2",
-          name: "TIG welding",
-          techInitial: "AT",
-          techName: "Aiko Tanaka",
-          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-          startDay: 3,
-          durationDays: 2,
-          progress: 55,
-          colorScheme: "blue",
-          statusText: "Nov 11 – Nov 12",
-          workCenter: "WC-102 · Fabrication Bay",
-        },
-        {
-          id: "op-2042-3",
-          name: "Frame alignment",
-          techInitial: "LV",
-          techName: "Lena Vogel",
-          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
-          startDay: 7,
-          durationDays: 1,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 15",
-          workCenter: "WC-104 · Precision Alignment",
-        },
-      ],
-    },
-    {
-      id: "WO-2045",
-      model: "PROD-PDU-03 · Factory Floor Intelligent Power Distribution Unit (×10)",
-      shortName: "Power Distribution Unit PDU-03",
-      clientOrDept: "Line 1 Power Systems",
-      dateRange: "Nov 9 – Nov 15",
-      rush: false,
-      status: "In progress",
-      startDay: 1,
-      durationDays: 6,
-      expanded: true,
-      note: "Factory floor intelligent power distribution unit with integrated Ethernet telemetry. 100% dielectric isolation check.",
-      operations: [
-        {
-          id: "op-2045-1",
-          name: "Assembly",
-          techInitial: "AO",
-          techName: "Amara Okafor",
-          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
-          startDay: 1,
-          durationDays: 2,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 9 – Nov 10",
-          workCenter: "WC-104 · Assembly Bay",
-        },
-        {
-          id: "op-2045-2",
-          name: "Quality check",
-          techInitial: "HK",
-          techName: "Hana Kim",
-          techColor: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200",
-          startDay: 3,
-          durationDays: 2,
-          progress: 55,
-          colorScheme: "blue",
-          statusText: "Nov 11 – Nov 12",
-          workCenter: "WC-104 · QC Gate & Release",
-        },
-        {
-          id: "op-2045-3",
-          name: "Wheel build",
-          techInitial: "BA",
-          techName: "Bo Andersen",
-          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-          startDay: 6,
-          durationDays: 1,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 14",
-          workCenter: "WC-102 · Final Wiring & Wheel Build",
-        },
-      ],
-    },
-    {
       id: "WO-2041",
-      model: "PROD-ENC-01 · Modular PLC Automation Control Cabinet (×50)",
-      shortName: "PLC Control Cabinet",
-      clientOrDept: "Factory Automation Line",
+      model: "PROD-AC-S10 · AC Split Standard 1PK (CS-PN10WKJ) (×300)",
+      shortName: "AC Split Standard 1PK",
+      clientOrDept: "AC Production Line 1",
       dateRange: "Nov 7 – Nov 17",
       rush: false,
       status: "In progress",
       startDay: 0,
       durationDays: 7,
       expanded: false,
-      note: "Standard batch for OEM line packaging. Strict dimensional and paint adhesion test required.",
+      note: "High-volume assembly run for Standard Split AC CS-PN10WKJ. Ensure tube brazing seal integrity and run test compliance.",
       operations: [
         {
           id: "op-2041-1",
-          name: "Sheet metal cutting",
+          name: "Copper tube bending & flaring",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
           startDay: 0,
-          durationDays: 1,
+          durationDays: 2,
           progress: 100,
-          colorScheme: "stone",
-          statusText: "Nov 7",
-          workCenter: "WC-101 · Laser & Stamping",
+          colorScheme: "emerald",
+          statusText: "Nov 7 – Nov 8",
+          workCenter: "WC-AC-01 · AC Tube Bending & Heat Exchanger",
         },
         {
           id: "op-2041-2",
-          name: "Structural TIG welding",
+          name: "Aluminum fin matrix expansion",
           techInitial: "AT",
           techName: "Aiko Tanaka",
           techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-          startDay: 1,
-          durationDays: 3,
+          startDay: 2,
+          durationDays: 2,
           progress: 100,
           colorScheme: "emerald",
-          statusText: "Nov 9 – Nov 11",
-          workCenter: "WC-102 · Fabrication Bay",
+          statusText: "Nov 9 – Nov 10",
+          workCenter: "WC-AC-01 · AC Tube Bending & Heat Exchanger",
         },
         {
           id: "op-2041-3",
-          name: "Powder coat & bake",
+          name: "R32 evacuation & charging",
           techInitial: "JB",
           techName: "Jonas Berg",
           techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
-          startDay: 5,
+          startDay: 4,
           durationDays: 2,
-          progress: 45,
+          progress: 60,
           colorScheme: "blue",
-          statusText: "Nov 13 – Nov 14",
-          workCenter: "WC-103 · Finishing & Powder Coating",
+          statusText: "Nov 11 – Nov 12",
+          workCenter: "WC-AC-02 · Inverter & Refrigerant Vacuum Bay",
         },
         {
           id: "op-2041-4",
-          name: "Mechanical assembly",
+          name: "Acoustic noise & cooling run test",
           techInitial: "DA",
           techName: "Diego Alvarez",
           techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
@@ -408,68 +300,136 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           durationDays: 1,
           progress: 0,
           colorScheme: "stone",
-          statusText: "Nov 15 – Nov 17",
-          workCenter: "WC-104 · Sub-assembly & Seal",
+          statusText: "Nov 13 – Nov 14",
+          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
         },
       ],
     },
     {
-      id: "WO-2047",
-      model: "PROD-ENC-02 · Heavy Industrial Control Enclosure (×30)",
-      shortName: "Control Enclosure",
-      clientOrDept: "Line 1 Control Systems",
-      dateRange: "Nov 6 – Nov 13",
+      id: "WO-2042",
+      model: "PROD-AC-I10 · AC Split Inverter 1PK (CS-XU10WKPJ) (×200)",
+      shortName: "AC Split Inverter 1PK",
+      clientOrDept: "AC Inverter Line 2",
+      dateRange: "Nov 9 – Nov 15",
       rush: false,
-      status: "Done",
-      startDay: 0,
-      durationDays: 7,
-      expanded: false,
-      note: "Completed early run for Line 1 Control Systems. Zero paint defects, release signed off.",
+      status: "In progress",
+      startDay: 1,
+      durationDays: 6,
+      expanded: true,
+      note: "Premium Inverter Split AC with nanoe™ X generator. 100% helium mass-spectrometer leak detection required.",
       operations: [
         {
-          id: "op-2047-0",
-          name: "Laser sheet cutting",
+          id: "op-2042-1",
+          name: "Inverter PCB wiring & heat sink",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 0,
-          durationDays: 1,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 6",
-          workCenter: "WC-101 · Laser & Stamping",
-        },
-        {
-          id: "op-2047-1",
-          name: "Structural TIG welding",
-          techInitial: "KM",
-          techName: "Kwame Mensah",
-          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
           startDay: 1,
           durationDays: 2,
           progress: 100,
           colorScheme: "emerald",
-          statusText: "Nov 7 – Nov 8",
-          workCenter: "WC-102 · Structural TIG Welding Bay",
+          statusText: "Nov 9 – Nov 10",
+          workCenter: "WC-AC-02 · Inverter & Refrigerant Vacuum Bay",
+        },
+        {
+          id: "op-2042-2",
+          name: "Rotary compressor hermetic brazing",
+          techInitial: "AT",
+          techName: "Aiko Tanaka",
+          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
+          startDay: 3,
+          durationDays: 2,
+          progress: 55,
+          colorScheme: "blue",
+          statusText: "Nov 11 – Nov 12",
+          workCenter: "WC-AC-01 · AC Tube Bending & Heat Exchanger",
+        },
+        {
+          id: "op-2042-3",
+          name: "Ultrasonic helium leak testing",
+          techInitial: "LV",
+          techName: "Lena Vogel",
+          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
+          startDay: 5,
+          durationDays: 1,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 13 – Nov 14",
+          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
+        },
+      ],
+    },
+    {
+      id: "WO-2043",
+      model: "PROD-RF-2DR · Refrigerator 2-Door 268L (NR-BP303VS) (×150)",
+      shortName: "Refrigerator 2-Door 268L",
+      clientOrDept: "Refrigerator Line 1",
+      dateRange: "Nov 10 – Nov 17",
+      rush: true,
+      status: "In progress",
+      startDay: 2,
+      durationDays: 4,
+      expanded: true,
+      note: "Prime Fresh 2-door refrigerator with ECONAVI sensors. Uniform polyurethane insulation density mandatory.",
+      operations: [
+        {
+          id: "op-2043-1",
+          name: "Outer steel cabinet roll forming",
+          techInitial: "FW",
+          techName: "Felix Wagner",
+          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
+          startDay: 2,
+          durationDays: 2,
+          progress: 70,
+          colorScheme: "blue",
+          statusText: "Nov 10 – Nov 11",
+          rush: true,
+          workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming",
+        },
+        {
+          id: "op-2043-2",
+          name: "HIPS inner liner vacuum forming",
+          techInitial: "FW",
+          techName: "Felix Wagner",
+          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
+          startDay: 4,
+          durationDays: 1,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 12",
+          workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming",
+        },
+        {
+          id: "op-2043-3",
+          name: "Rigid PU foam high-pressure injection",
+          techInitial: "AT",
+          techName: "Aiko Tanaka",
+          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
+          startDay: 5,
+          durationDays: 2,
+          progress: 0,
+          colorScheme: "stone",
+          statusText: "Nov 13 – Nov 14",
+          workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming",
         },
       ],
     },
     {
       id: "WO-2044",
-      model: "PROD-ENC-01 · High-Voltage Switchgear Cabinet (×15)",
-      shortName: "Switchgear Cabinet",
-      clientOrDept: "Substation Tech",
+      model: "PROD-WM-TT7 · Washing Machine Top Load 7kg (NA-F70A9) (×120)",
+      shortName: "Washing Machine Top Load 7kg",
+      clientOrDept: "Washing Machine Assembly",
       dateRange: "Nov 9 – Nov 13",
       rush: true,
       status: "In progress",
       startDay: 1,
       durationDays: 3,
       expanded: true,
-      note: "Rush replacement chassis for Tier 1 assembly line. Powder bake must cure 45 min at 200°C.",
+      note: "StainMaster top-load model. Dynamic spin balancing must pass strict vibration thresholds at 800 RPM.",
       operations: [
         {
           id: "op-2044-1",
-          name: "Industrial powder coat",
+          name: "PP outer tub injection molding",
           techInitial: "JB",
           techName: "Jonas Berg",
           techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
@@ -479,11 +439,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           colorScheme: "emerald",
           statusText: "Nov 9 – Nov 10",
           rush: true,
-          workCenter: "WC-103 · Industrial Powder Coating & Oven",
+          workCenter: "WC-WM-01 · Washing Machine Drum & Motor Integration",
         },
         {
           id: "op-2044-2",
-          name: "Terminal block wiring",
+          name: "Stainless steel wash drum seaming",
           techInitial: "BA",
           techName: "Bo Andersen",
           techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
@@ -492,11 +452,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           progress: 50,
           colorScheme: "blue",
           statusText: "Nov 11 – Nov 12",
-          workCenter: "WC-101 · Electrical Wiring Bay",
+          workCenter: "WC-WM-01 · Washing Machine Drum & Motor Integration",
         },
         {
           id: "op-2044-3",
-          name: "Enclosure assembly",
+          name: "Centrifugal spin balance & water test",
           techInitial: "DA",
           techName: "Diego Alvarez",
           techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
@@ -505,81 +465,80 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           progress: 0,
           colorScheme: "stone",
           statusText: "Nov 12 – Nov 13",
-          workCenter: "WC-104 · Final Assembly",
+          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
         },
       ],
     },
     {
-      id: "WO-2043",
-      model: "PROD-SRV-01 · Industrial AC Servo Motor & Driver - MINAS A6 (×40)",
-      shortName: "AC Servo Motor & Driver",
-      clientOrDept: "Factory Robotics Division",
-      dateRange: "Nov 10 – Nov 17",
-      rush: true,
+      id: "WO-2045",
+      model: "PROD-TV-32H · LED TV 32-inch HD Ready (TH-32LS600G) (×500)",
+      shortName: "LED TV 32-inch HD Ready",
+      clientOrDept: "Display Electronics Line",
+      dateRange: "Nov 9 – Nov 15",
+      rush: false,
       status: "In progress",
-      startDay: 2,
-      durationDays: 4,
+      startDay: 1,
+      durationDays: 6,
       expanded: true,
-      note: "Precision MINAS A6 series servo motor. Dynamometer torque testing and encoder calibration required.",
+      note: "Android TV smart platform series. 100% automatic optical inspection (AOI) on mainboard solder joints.",
       operations: [
         {
-          id: "op-2043-1",
-          name: "Laser sheet cutting",
-          techInitial: "FW",
-          techName: "Felix Wagner",
-          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 2,
+          id: "op-2045-1",
+          name: "SMT mainboard pick & place",
+          techInitial: "AO",
+          techName: "Amara Okafor",
+          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
+          startDay: 1,
           durationDays: 2,
-          progress: 30,
-          colorScheme: "stone",
-          statusText: "Nov 10 – Nov 11",
-          rush: true,
-          workCenter: "WC-101 · Laser Cutting & CNC Bending",
+          progress: 100,
+          colorScheme: "emerald",
+          statusText: "Nov 9 – Nov 10",
+          workCenter: "WC-TV-01 · SMT & Display Panel Lamination",
         },
         {
-          id: "op-2043-2",
-          name: "CNC press brake bending",
-          techInitial: "FW",
-          techName: "Felix Wagner",
-          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 4,
+          id: "op-2045-2",
+          name: "Backlight matrix cleanroom bonding",
+          techInitial: "HK",
+          techName: "Hana Kim",
+          techColor: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200",
+          startDay: 3,
           durationDays: 2,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 13 – Nov 14",
-          workCenter: "WC-101 · CNC Bending Bay",
+          progress: 55,
+          colorScheme: "blue",
+          statusText: "Nov 11 – Nov 12",
+          workCenter: "WC-TV-01 · SMT & Display Panel Lamination",
         },
         {
-          id: "op-2043-3",
-          name: "Structural TIG welding",
-          techInitial: "AT",
-          techName: "Aiko Tanaka",
+          id: "op-2045-3",
+          name: "Continuous 4-hour video burn-in test",
+          techInitial: "BA",
+          techName: "Bo Andersen",
           techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-          startDay: 5,
-          durationDays: 2,
+          startDay: 6,
+          durationDays: 1,
           progress: 0,
           colorScheme: "stone",
-          statusText: "Nov 15 – Nov 17",
-          workCenter: "WC-102 · Structural TIG Welding Bay",
+          statusText: "Nov 14",
+          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
         },
       ],
     },
     {
       id: "WO-2046",
-      model: "PROD-HP-01 · Air-to-Water Industrial Heat Pump & Inverter (×20)",
-      shortName: "Heat Pump Inverter",
-      clientOrDept: "Eco Systems Commercial",
+      model: "PROD-RF-1DR · Refrigerator 1-Door 100L (NR-AP188VS) (×180)",
+      shortName: "Refrigerator 1-Door 100L",
+      clientOrDept: "Refrigerator Line 2",
       dateRange: "Nov 12 – Nov 18",
       rush: false,
       status: "In progress",
       startDay: 3,
       durationDays: 5,
       expanded: true,
-      note: "Commercial Aquarea eco-inverter series. Helium leak detection on hermetic compressor lines required.",
+      note: "Single-door compact refrigerator with direct-cooling evaporator. Pull-down temp must reach 3°C within 45 min.",
       operations: [
         {
           id: "op-2046-1",
-          name: "Chassis laser cutting",
+          name: "Cabinet sheet punching & bending",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
@@ -588,11 +547,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           progress: 100,
           colorScheme: "emerald",
           statusText: "Nov 12",
-          workCenter: "WC-101 · Cutting",
+          workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming",
         },
         {
           id: "op-2046-2",
-          name: "Structural TIG welding",
+          name: "Roll-bond evaporator loop brazing",
           techInitial: "KM",
           techName: "Kwame Mensah",
           techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
@@ -601,11 +560,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           progress: 0,
           colorScheme: "stone",
           statusText: "Nov 14 – Nov 16",
-          workCenter: "WC-102 · Welding",
+          workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming",
         },
         {
           id: "op-2046-3",
-          name: "Anti-corrosion powder coat",
+          name: "Thermodynamic cooling pull-down QA",
           techInitial: "JB",
           techName: "Jonas Berg",
           techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
@@ -614,26 +573,67 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           progress: 0,
           colorScheme: "stone",
           statusText: "Nov 17 – Nov 18",
-          workCenter: "WC-103 · Coating",
+          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
+        },
+      ],
+    },
+    {
+      id: "WO-2047",
+      model: "PROD-WM-FL8 · Washing Machine Front Load 8kg (NA-V80FG3) (×80)",
+      shortName: "Washing Machine Front Load 8kg",
+      clientOrDept: "Washing Machine Premium Line",
+      dateRange: "Nov 6 – Nov 13",
+      rush: false,
+      status: "Done",
+      startDay: 0,
+      durationDays: 7,
+      expanded: false,
+      note: "HydroActive inverter front-load washer. Complete batch passed waterproof and dynamic vibration release.",
+      operations: [
+        {
+          id: "op-2047-0",
+          name: "Tub suspension damper installation",
+          techInitial: "FW",
+          techName: "Felix Wagner",
+          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
+          startDay: 0,
+          durationDays: 1,
+          progress: 100,
+          colorScheme: "emerald",
+          statusText: "Nov 6",
+          workCenter: "WC-WM-01 · Washing Machine Drum & Motor Integration",
+        },
+        {
+          id: "op-2047-1",
+          name: "Inverter BLDC motor torque & seal QA",
+          techInitial: "KM",
+          techName: "Kwame Mensah",
+          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
+          startDay: 1,
+          durationDays: 2,
+          progress: 100,
+          colorScheme: "emerald",
+          statusText: "Nov 7 – Nov 8",
+          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
         },
       ],
     },
     {
       id: "WO-2048",
-      model: "PROD-SEN-02 · High-Precision CMOS Laser Sensor Unit (×100)",
-      shortName: "CMOS Laser Sensor",
-      clientOrDept: "Sensors & Measurement Lab",
+      model: "PROD-TV-43F · LED TV 43-inch Full HD (TH-43LX800G) (×250)",
+      shortName: "LED TV 43-inch Full HD",
+      clientOrDept: "Display Electronics Line 2",
       dateRange: "Nov 14 – Nov 18",
       rush: false,
       status: "On hold",
       startDay: 4,
       durationDays: 4,
       expanded: false,
-      note: "Sub-micron displacement sensing head. Optical alignment and thermal drift test required.",
+      note: "Vivid Digital Pro processor panel assembly. On hold pending final optical filter batch release.",
       operations: [
         {
           id: "op-2048-1",
-          name: "Aluminum profile mitering",
+          name: "Bezel stamping & cosmetic inspection",
           techInitial: "FW",
           techName: "Felix Wagner",
           techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
@@ -642,11 +642,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           progress: 0,
           colorScheme: "stone",
           statusText: "Nov 14 – Nov 15",
-          workCenter: "WC-101 · Mitering",
+          workCenter: "WC-TV-01 · SMT & Display Panel Lamination",
         },
         {
           id: "op-2048-2",
-          name: "Structural TIG welding",
+          name: "Internal wire harness & speaker mount",
           techInitial: "AT",
           techName: "Aiko Tanaka",
           techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
@@ -655,11 +655,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           progress: 0,
           colorScheme: "stone",
           statusText: "Nov 16 – Nov 17",
-          workCenter: "WC-102 · Welding",
+          workCenter: "WC-TV-01 · SMT & Display Panel Lamination",
         },
         {
           id: "op-2048-3",
-          name: "Chassis alignment",
+          name: "High-voltage dielectric insulation test",
           techInitial: "LV",
           techName: "Lena Vogel",
           techColor: "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-200",
@@ -668,9 +668,10 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           progress: 0,
           colorScheme: "stone",
           statusText: "Nov 18",
-          workCenter: "WC-104 · Alignment",
+          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
         },
-      ],    },
+      ],
+    },
   ]);
 
   // Synchronize real backend production orders if provided
@@ -683,31 +684,14 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         if (!matchingDbOrder) return wo;
 
         const rawName = String(matchingDbOrder.product_name || "");
-        const lower = rawName.toLowerCase();
-        let name = rawName;
-        let sku = matchingDbOrder.product_sku || "PROD-ENC-01";
-        let shortName = wo.shortName;
-
-        if (lower.includes("sepeda")) {
-          sku = "PROD-BMOD-02";
-          name = "Energy Storage Battery Module (10.5 kWh)";
-          shortName = "Battery Module 10.5kWh";
-        } else if (lower.includes("skuter")) {
-          sku = "PROD-SRV-01";
-          name = "Industrial AC Servo Motor & Driver (MINAS A6)";
-          shortName = "AC Servo Motor & Driver";
-        } else if (lower.includes("industrial motor")) {
-          sku = "PROD-HP-01";
-          name = "Air-to-Water Industrial Heat Pump & Inverter";
-          shortName = "Heat Pump Inverter";
-        }
-
-        const qty = matchingDbOrder.planned_quantity || 25;
+        const sku = matchingDbOrder.product_sku || wo.model.split(" · ")[0];
+        const name = rawName || wo.shortName;
+        const qty = matchingDbOrder.planned_quantity || 100;
 
         return {
           ...wo,
           model: `${sku} · ${name} (×${qty})`,
-          shortName: shortName || wo.shortName,
+          shortName: name || wo.shortName,
         };
       });
     });
@@ -731,10 +715,12 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
 
   // Work Centers state & grouping (for Work centers mode)
   const [expandedWorkCenters, setExpandedWorkCenters] = useState<Record<string, boolean>>({
-    "WC-101": true,
-    "WC-102": true,
-    "WC-103": true,
-    "WC-104": true,
+    "WC-AC-01": true,
+    "WC-AC-02": true,
+    "WC-RF-01": true,
+    "WC-WM-01": true,
+    "WC-TV-01": true,
+    "WC-QC-01": true,
   });
 
   const toggleWorkCenterExpand = (wcId: string) => {
@@ -759,10 +745,12 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
 
   const workCenterGroups = useMemo(() => {
     const centers = [
-      { id: "WC-101", code: "WC-101", name: "Laser Cutting & CNC Bending", desc: "Laser Stamping & Sheet Prep" },
-      { id: "WC-102", code: "WC-102", name: "Structural TIG Welding Bay", desc: "Robotic & Precision TIG Bay" },
-      { id: "WC-103", code: "WC-103", name: "Industrial Powder Coating & Oven", desc: "Coating, Powder Bake & Curing" },
-      { id: "WC-104", code: "WC-104", name: "Dielectric Safety & QC Assembly", desc: "Sub-assembly, QA Testing & Seal" },
+      { id: "WC-AC-01", code: "WC-AC-01", name: "AC Tube Bending & Heat Exchanger", desc: "CNC copper tube forming, fin matrix expansion & brazing" },
+      { id: "WC-AC-02", code: "WC-AC-02", name: "Inverter & Refrigerant Vacuum Bay", desc: "Compressor staging, R32 charge & vacuum leak check" },
+      { id: "WC-RF-01", code: "WC-RF-01", name: "Refrigerator Cabinet & PU Foaming", desc: "Cabinet roll forming, HIPS liner & rigid PU injection" },
+      { id: "WC-WM-01", code: "WC-WM-01", name: "Washing Machine Drum & Motor Integration", desc: "PP tub injection, stainless spin drum & BLDC motor" },
+      { id: "WC-TV-01", code: "WC-TV-01", name: "SMT & Display Panel Lamination", desc: "Mainboard SMT pick & place, backlight matrix & open-cell" },
+      { id: "WC-QC-01", code: "WC-QC-01", name: "High-Voltage Dielectric Gate", desc: "Dielectric hi-pot safety, acoustic noise & run tests" },
     ];
 
     return centers.map((wc) => {
@@ -2279,12 +2267,12 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                           <span className="w-5 h-5 rounded bg-slate-200 dark:bg-stone-800 text-[10px] font-bold flex items-center justify-center text-slate-700 dark:text-stone-300">
                             FW
                           </span>
-                          <span className="font-bold text-slate-900 dark:text-stone-100">Laser sheet cutting</span>
+                          <span className="font-bold text-slate-900 dark:text-stone-100">Copper tube bending</span>
                         </div>
                         <span className="font-mono text-slate-500 dark:text-stone-400 text-[11px]">WO-2041</span>
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
-                        <span>PROD-ENC-01 · Enclosure ×50</span>
+                        <span>PROD-AC-S10 · AC Split 1PK ×300</span>
                         <span className="font-semibold text-emerald-600 dark:text-emerald-400">100% · done</span>
                       </div>
                       <div className="w-full h-1.5 bg-stone-200 dark:bg-stone-800 rounded-full overflow-hidden">
@@ -2301,12 +2289,12 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                           <span className="w-5 h-5 rounded bg-amber-100 dark:bg-amber-950 text-[10px] font-bold flex items-center justify-center text-amber-900 dark:text-amber-300">
                             AT
                           </span>
-                          <span className="font-bold text-slate-900 dark:text-stone-100">Busbar TIG welding</span>
+                          <span className="font-bold text-slate-900 dark:text-stone-100">Rotary compressor brazing</span>
                         </div>
                         <span className="font-mono text-slate-500 dark:text-stone-400 text-[11px]">WO-2042</span>
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
-                        <span>PROD-BMOD-02 · Battery Pack ×25</span>
+                        <span>PROD-AC-I10 · Inverter Split AC ×200</span>
                         <span className="font-mono font-semibold text-slate-700 dark:text-stone-300">55%</span>
                       </div>
                       <div className="w-full h-1.5 bg-stone-200 dark:bg-stone-800 rounded-full overflow-hidden">
@@ -2315,24 +2303,24 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     </div>
 
                     <div 
-                      onClick={() => setSelectedOpKey({ workOrderId: "WO-2045", opId: "op-2045-1" })}
+                      onClick={() => setSelectedOpKey({ workOrderId: "WO-2045", opId: "op-2045-2" })}
                       className="p-2.5 rounded-2xl bg-stone-50/70 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800 space-y-1.5 cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-colors"
                     >
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-1.5">
-                          <span className="w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-950 text-[10px] font-bold flex items-center justify-center text-emerald-900 dark:text-emerald-300">
+                          <span className="w-5 h-5 rounded bg-sky-100 dark:bg-sky-950 text-[10px] font-bold flex items-center justify-center text-sky-900 dark:text-sky-300">
                             HK
                           </span>
-                          <span className="font-bold text-slate-900 dark:text-stone-100">Dielectric test & QA</span>
+                          <span className="font-bold text-slate-900 dark:text-stone-100">Backlight matrix bonding</span>
                         </div>
                         <span className="font-mono text-slate-500 dark:text-stone-400 text-[11px]">WO-2045</span>
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
-                        <span>PROD-PDU-03 · Intelligent PDU ×10</span>
-                        <span className="font-mono font-semibold text-slate-700 dark:text-stone-300">60%</span>
+                        <span>PROD-TV-32H · LED TV 32" ×500</span>
+                        <span className="font-mono font-semibold text-slate-700 dark:text-stone-300">55%</span>
                       </div>
                       <div className="w-full h-1.5 bg-stone-200 dark:bg-stone-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: "60%" }} />
+                        <div className="h-full bg-blue-500 rounded-full" style={{ width: "55%" }} />
                       </div>
                     </div>
 
@@ -2345,12 +2333,12 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                           <span className="w-5 h-5 rounded bg-blue-100 dark:bg-blue-950 text-[10px] font-bold flex items-center justify-center text-blue-900 dark:text-blue-300">
                             JB
                           </span>
-                          <span className="font-bold text-slate-900 dark:text-stone-100">Industrial Powder Coating</span>
+                          <span className="font-bold text-slate-900 dark:text-stone-100">PP tub injection molding</span>
                         </div>
                         <span className="font-mono text-slate-500 dark:text-stone-400 text-[11px]">WO-2044</span>
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
-                        <span>PROD-ENC-01 · Cabinet Chassis ×15</span>
+                        <span>PROD-WM-TT7 · Top Load Washer ×120</span>
                         <span className="font-mono font-semibold text-slate-700 dark:text-stone-300">100%</span>
                       </div>
                       <div className="w-full h-1.5 bg-stone-200 dark:bg-stone-800 rounded-full overflow-hidden">
@@ -2371,8 +2359,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       <div className="flex items-start gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
                         <div>
-                          <p className="font-semibold text-slate-800 dark:text-stone-200">CNC Sheet Bending</p>
-                          <p className="text-[10px] text-stone-400">WO-2043 · PROD-ENC-01 Enclosure</p>
+                          <p className="font-semibold text-slate-800 dark:text-stone-200">Rigid PU Foam Injection</p>
+                          <p className="text-[10px] text-stone-400">WO-2043 · PROD-RF-2DR Refrigerator</p>
                         </div>
                       </div>
                       <span className="text-[11px] font-medium text-slate-500 dark:text-stone-400 whitespace-nowrap">
@@ -2384,8 +2372,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       <div className="flex items-start gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
                         <div>
-                          <p className="font-semibold text-slate-800 dark:text-stone-200">Cell Module Stacking</p>
-                          <p className="text-[10px] text-stone-400">WO-2044 · PROD-BMOD-02 Battery</p>
+                          <p className="font-semibold text-slate-800 dark:text-stone-200">Drum Spin Seaming</p>
+                          <p className="text-[10px] text-stone-400">WO-2044 · PROD-WM-TT7 Washer</p>
                         </div>
                       </div>
                       <span className="text-[11px] font-medium text-slate-500 dark:text-stone-400 whitespace-nowrap">
@@ -2397,8 +2385,8 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       <div className="flex items-start gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                         <div>
-                          <p className="font-semibold text-slate-800 dark:text-stone-200">PDU Circuit Breaker Test</p>
-                          <p className="text-[10px] text-stone-400">WO-2045 · PROD-PDU-03 Unit</p>
+                          <p className="font-semibold text-slate-800 dark:text-stone-200">Continuous 4-Hour Burn-in</p>
+                          <p className="text-[10px] text-stone-400">WO-2045 · PROD-TV-32H Smart TV</p>
                         </div>
                       </div>
                       <span className="text-[11px] font-medium text-slate-500 dark:text-stone-400 whitespace-nowrap">
@@ -2600,7 +2588,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                           AT
                         </span>
                         <span className="font-bold text-slate-900 dark:text-stone-100 text-xs">
-                          TIG welding
+                          Rotary compressor brazing
                         </span>
                       </div>
                       <span className="font-mono text-[11px] text-stone-500 dark:text-stone-400">
@@ -2608,7 +2596,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
-                      <span>Battery Module ×8</span>
+                      <span>AC Inverter 1PK ×200</span>
                       <span className="font-semibold text-slate-700 dark:text-stone-300">55%</span>
                     </div>
                     <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
@@ -2620,11 +2608,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200 font-bold text-[10px] flex items-center justify-center shrink-0">
+                        <span className="w-6 h-6 rounded-full bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200 font-bold text-[10px] flex items-center justify-center shrink-0">
                           HK
                         </span>
                         <span className="font-bold text-slate-900 dark:text-stone-100 text-xs">
-                          Quality check
+                          Backlight matrix bonding
                         </span>
                       </div>
                       <span className="font-mono text-[11px] text-stone-500 dark:text-stone-400">
@@ -2632,11 +2620,11 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
-                      <span>Power Dist Unit ×10</span>
-                      <span className="font-semibold text-slate-700 dark:text-stone-300">60%</span>
+                      <span>LED TV 32" ×500</span>
+                      <span className="font-semibold text-slate-700 dark:text-stone-300">55%</span>
                     </div>
                     <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-blue-600 rounded-full" style={{ width: "60%" }} />
+                      <div className="h-full bg-blue-600 rounded-full" style={{ width: "55%" }} />
                     </div>
                   </div>
 
@@ -2648,7 +2636,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                           BA
                         </span>
                         <span className="font-bold text-slate-900 dark:text-stone-100 text-xs">
-                          Terminal wiring
+                          Drum spin seaming
                         </span>
                       </div>
                       <span className="font-mono text-[11px] text-stone-500 dark:text-stone-400">
@@ -2656,7 +2644,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
-                      <span>Switchgear Cabinet ×6</span>
+                      <span>Top Load Washer ×120</span>
                       <span className="font-semibold text-slate-700 dark:text-stone-300">50%</span>
                     </div>
                     <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
@@ -2677,7 +2665,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
                       <span className="text-slate-800 dark:text-stone-200 truncate text-[11px]">
-                        <strong>Assembly</strong> · WO-2044 · Switchgear Cabinet
+                        <strong>PU foam injection</strong> · WO-2043 · Refrigerator 2-Door
                       </span>
                     </div>
                     <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 shrink-0">
@@ -2689,7 +2677,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
                       <span className="text-slate-800 dark:text-stone-200 truncate text-[11px]">
-                        <strong>Busbar wiring</strong> · WO-2045 · Power Dist Unit
+                        <strong>Water flow test</strong> · WO-2044 · Top Load Washer
                       </span>
                     </div>
                     <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 shrink-0">
@@ -2701,7 +2689,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                       <span className="text-slate-800 dark:text-stone-200 truncate text-[11px]">
-                        <strong>Chassis cutting</strong> · WO-2046 · Solar Inverter
+                        <strong>Video burn-in QA</strong> · WO-2045 · LED TV 32-inch
                       </span>
                     </div>
                     <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 shrink-0">
@@ -2713,7 +2701,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="w-2 h-2 rounded-full bg-stone-400 shrink-0" />
                       <span className="text-slate-800 dark:text-stone-200 truncate text-[11px]">
-                        <strong>Powder coat</strong> · WO-2041 · Automation Enclosure
+                        <strong>Noise & run test</strong> · WO-2041 · AC Split Standard
                       </span>
                     </div>
                     <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 shrink-0">
