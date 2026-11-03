@@ -28,7 +28,7 @@ import {
   Download,
   CheckCircle
 } from "lucide-react";
-import { PageHeader, Card, Table, Th, Td, Button, Input, Label, RoutePipeline } from "../components/ui";
+import { PageHeader, Card, Button, Input, Label } from "../components/ui";
 import { sanitizeNumberInput } from "../utils/number";
 import { InteractiveGanttSchedule } from "../components/InteractiveGanttSchedule";
 
@@ -69,24 +69,65 @@ const DEFAULT_PANASONIC_PRODUCTS: Product[] = [
   { id: "p-tv-43f", sku: "PROD-TV-43F", name: "LED TV 43-inch Full HD (TH-43LX800G)", unit: "unit" },
 ];
 
-function formatOrderProduct(order: any, idx: number) {
+function getOrderScheduleInfo(order: any, idx: number) {
+  const now = new Date();
   const rawName = String(order.product_name || order.product_id || "");
 
-  const schedules = [
-    { schedule: "Nov 7 – Nov 17", workCenter: "WC-AC-01 · AC Tube Bending & Heat Exchanger" },
-    { schedule: "Nov 8 – Nov 15", workCenter: "WC-AC-02 · Inverter & Refrigerant Vacuum Bay" },
-    { schedule: "Nov 10 – Nov 17", workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming" },
-    { schedule: "Nov 12 – Nov 18", workCenter: "WC-WM-01 · Washing Machine Drum & Motor Integration" },
-    { schedule: "Nov 9 – Nov 13", workCenter: "WC-TV-01 · SMT & Display Panel Lamination" },
-    { schedule: "Nov 6 – Nov 13", workCenter: "WC-QC-01 · High-Voltage Dielectric Gate" },
+  const workCenters = [
+    { code: "WC-AC-01", name: "AC Tube Bending & Heat Exchanger", bay: "Plant 1 · Bay 1" },
+    { code: "WC-AC-02", name: "Inverter & Refrigerant Vacuum Bay", bay: "Plant 1 · Bay 2" },
+    { code: "WC-RF-01", name: "Refrigerator Cabinet & PU Foaming", bay: "Plant 2 · Line A" },
+    { code: "WC-WM-01", name: "Washer Drum & Motor Integration", bay: "Plant 2 · Bay 3" },
+    { code: "WC-TV-01", name: "SMT & Display Panel Lamination", bay: "Plant 3 · Cleanroom" },
+    { code: "WC-QC-01", name: "High-Voltage Dielectric Gate", bay: "QC Test Lab" },
   ];
-  const assigned = schedules[idx % schedules.length];
+  const station = workCenters[idx % workCenters.length];
+
+  const fmtMonthDay = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  let startDate: Date;
+  let endDate: Date;
+  let scheduleTag: string;
+  let progress: number;
+
+  if (order.status === "Completed") {
+    // Finished earlier this week
+    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 4 - (idx % 2));
+    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (idx % 2));
+    scheduleTag = "Completed " + fmtMonthDay(endDate);
+    progress = 100;
+  } else if (order.status === "In_Progress") {
+    // Currently on shop floor today
+    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 5);
+    scheduleTag = "Active on floor today";
+    progress = 65;
+  } else if (order.status === "Ready") {
+    // Materials reserved, staged for assembly today
+    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 6);
+    scheduleTag = "Starts today";
+    progress = 20;
+  } else {
+    // Planned - queued up for upcoming days
+    const dayOffset = 1 + (idx % 3);
+    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset);
+    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset + 6);
+    scheduleTag = "Starts " + fmtMonthDay(startDate);
+    progress = 0;
+  }
+
+  const dateRange = `${fmtMonthDay(startDate)} – ${fmtMonthDay(endDate)}, ${endDate.getFullYear()}`;
 
   return {
     sku: order.product_sku || "PROD-AC-S10",
     name: rawName || "AC Split Standard 1PK (CS-PN10WKJ)",
-    schedule: assigned.schedule,
-    workCenter: assigned.workCenter,
+    workCenterCode: station.code,
+    workCenterName: station.name,
+    bay: station.bay,
+    dateRange,
+    scheduleTag,
+    progress,
   };
 }
 
@@ -445,7 +486,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
       />
 
       {/* ── Sub-Navigation Capsule Bar ── */}
-      <div className="flex items-center p-1 bg-[#EBEAE5] dark:bg-stone-900 rounded-full border border-stone-300/80 dark:border-stone-800 shadow-2xs w-fit">
+      <div className="flex items-center p-1 bg-stone-100 dark:bg-stone-900 rounded-full border border-stone-200/80 dark:border-stone-800 shadow-2xs w-fit">
         <button
           type="button"
           onClick={() => setActiveSubPage("scheduling")}
@@ -468,7 +509,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
         >
           <span>Work orders</span>
           <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${
-            activeSubPage === "orders" ? "bg-amber-600 text-white" : "bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-200"
+            activeSubPage === "orders" ? "bg-amber-600 text-white" : "bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-200"
           }`}>
             {orders.length}
           </span>
@@ -484,7 +525,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
         >
           <span>Quality control</span>
           <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${
-            activeSubPage === "quality" ? "bg-emerald-600 text-white" : "bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-200"
+            activeSubPage === "quality" ? "bg-emerald-600 text-white" : "bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-200"
           }`}>
             Gate
           </span>
@@ -503,63 +544,74 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
       {activeSubPage === "orders" && (
         <div className="space-y-6 animate-in fade-in duration-150">
           
-          {/* 4 Hero Metric Cards */}
+          {/* 4 Hero Metric Cards (Unified Industrial Design) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#E0EDFD] rounded-2xl p-5 border border-blue-200/60 shadow-xs flex flex-col justify-between h-32 text-slate-900">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-900">In Production</span>
-                <Target className="w-4 h-4 text-blue-700" />
+            <Card className="p-5 flex flex-col justify-between h-32 border-l-4 border-l-blue-600 bg-white dark:bg-[#18181B] border border-stone-200/80 dark:border-stone-800 shadow-2xs">
+              <div className="flex items-center justify-between text-xs font-semibold text-blue-700 dark:text-blue-400">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                  Active In Production
+                </span>
+                <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-blue-950">
+                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-slate-900 dark:text-stone-100">
                   {inProductionCount}
                 </div>
-                <p className="text-[11px] text-blue-800 mt-0.5 font-medium">Shop floor machining active</p>
+                <p className="text-[11px] text-slate-500 dark:text-stone-400 mt-1 font-medium">
+                  Shop floor machining active
+                </p>
               </div>
-            </div>
+            </Card>
 
-            <div className="bg-[#FEF5E7] rounded-2xl p-5 border border-amber-200/70 shadow-xs flex flex-col justify-between h-32 text-slate-900">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-900">Awaiting Allocation</span>
-                <Clock className="w-4 h-4 text-amber-700" />
+            <Card className="p-5 flex flex-col justify-between h-32 border-l-4 border-l-amber-500 bg-white dark:bg-[#18181B] border border-stone-200/80 dark:border-stone-800 shadow-2xs">
+              <div className="flex items-center justify-between text-xs font-semibold text-amber-700 dark:text-amber-400">
+                <span>Awaiting Allocation</span>
+                <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-amber-950">
+                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-slate-900 dark:text-stone-100">
                   {plannedCount}
                 </div>
-                <p className="text-[11px] text-amber-800 mt-0.5 font-medium">BOM check & reserve required</p>
+                <p className="text-[11px] text-slate-500 dark:text-stone-400 mt-1 font-medium">
+                  BOM check & reserve required
+                </p>
               </div>
-            </div>
+            </Card>
 
-            <div className="bg-[#E6F7EC] rounded-2xl p-5 border border-emerald-200/60 shadow-xs flex flex-col justify-between h-32 text-slate-900">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-900">Completed Orders</span>
-                <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+            <Card className="p-5 flex flex-col justify-between h-32 border-l-4 border-l-emerald-500 bg-white dark:bg-[#18181B] border border-stone-200/80 dark:border-stone-800 shadow-2xs">
+              <div className="flex items-center justify-between text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                <span>Completed Orders</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-emerald-950">
+                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-slate-900 dark:text-stone-100">
                   {completedCount}
                 </div>
-                <p className="text-[11px] text-emerald-800 mt-0.5 font-medium">Passed through QC verification</p>
+                <p className="text-[11px] text-slate-500 dark:text-stone-400 mt-1 font-medium">
+                  Passed through QC verification
+                </p>
               </div>
-            </div>
+            </Card>
 
-            <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-xs flex flex-col justify-between h-32">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Lines</span>
-                <Layers className="w-4 h-4 text-slate-400" />
+            <Card className="p-5 flex flex-col justify-between h-32 border-l-4 border-l-slate-800 dark:border-l-stone-400 bg-white dark:bg-[#18181B] border border-stone-200/80 dark:border-stone-800 shadow-2xs">
+              <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-stone-400">
+                <span>Active Work Centers</span>
+                <Layers className="w-4 h-4 text-slate-400 dark:text-stone-500" />
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-slate-900">
-                  4 Work Centers
+                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-slate-900 dark:text-stone-100">
+                  6 Work Centers
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Operating at 88.4% capacity</p>
+                <p className="text-[11px] text-slate-500 dark:text-stone-400 mt-1 font-medium">
+                  Operating at 88.4% capacity today
+                </p>
               </div>
-            </div>
+            </Card>
           </div>
 
           {/* Filter Pills */}
-          <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-full border border-stone-200 w-fit">
+          <div className="flex items-center gap-1.5 p-1 bg-stone-100 dark:bg-stone-900 rounded-full border border-stone-200/80 dark:border-stone-800 w-fit">
             {(["all", "in_production", "planned", "completed"] as const).map(statusKey => (
               <button
                 key={statusKey}
@@ -567,8 +619,8 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                 onClick={() => setFilterStatus(statusKey)}
                 className={`px-3.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer capitalize ${
                   filterStatus === statusKey
-                    ? "bg-slate-900 text-white shadow-2xs font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-stone-200/60"
+                    ? "bg-slate-900 dark:bg-stone-800 text-white shadow-2xs font-bold"
+                    : "text-slate-600 dark:text-stone-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 {statusKey.replace("_", " ")}
@@ -576,109 +628,205 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
             ))}
           </div>
 
-          {/* Orders Table */}
+          {/* Orders Table Container */}
           {error && <div className="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-xs">{error}</div>}
           {loading && <div className="p-8 text-slate-500 animate-pulse text-xs">Loading production orders...</div>}
-          <Card>
-            <Table>
-              <thead>
-                <tr>
-                  <Th>Order ID</Th>
-                  <Th>Product</Th>
-                  <Th className="text-right">Planned Qty</Th>
-                  <Th className="text-right">Actual Qty</Th>
-                  <Th>Status</Th>
-                  <Th>Production Route</Th>
-                  <Th className="text-right">Actions</Th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredOrders.length === 0 ? (
-                  <tr>
-                    <Td colSpan={7} className="text-center py-8 text-slate-500 italic">
-                      No production orders found matching the filter.
-                    </Td>
+          <Card className="rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-2xs overflow-hidden">
+            <div className="w-full overflow-x-auto">
+              <table className="w-full text-sm text-left whitespace-nowrap text-slate-800 dark:text-stone-200">
+                <thead>
+                  <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/60 text-slate-600 dark:text-stone-400 text-xs font-semibold uppercase tracking-wider">
+                    <th className="py-3 px-4">Order ID</th>
+                    <th className="py-3 px-4">Target Assembly / Product</th>
+                    <th className="py-3 px-4">Work Center & Line</th>
+                    <th className="py-3 px-4">Schedule (Real-Time)</th>
+                    <th className="py-3 px-4 text-right">Planned Qty</th>
+                    <th className="py-3 px-4 text-right">Actual Output</th>
+                    <th className="py-3 px-4">Progress</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
-                ) : (
-                  filteredOrders.map((order, idx) => {
-                    const prodInfo = formatOrderProduct(order, idx);
-                    return (
-                      <tr key={order.id} className="hover:bg-slate-50/60 dark:hover:bg-stone-800/60 transition-colors">
-                        <Td className="font-mono text-xs text-slate-500 dark:text-stone-400 font-medium">
-                          {order.id.slice(0, 8)}...
-                        </Td>
-                        <Td>
-                          <div className="flex flex-col gap-0.5">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="font-mono text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-50 dark:bg-amber-950/70 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800 shrink-0">
-                                {prodInfo.sku}
-                              </span>
-                              <span className="font-semibold text-xs text-slate-900 dark:text-stone-100">
+                </thead>
+                <tbody className="divide-y divide-stone-100 dark:divide-stone-800/60 text-xs">
+                  {filteredOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="text-center py-12 text-slate-400 dark:text-stone-500 italic">
+                        No production orders found matching the filter.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredOrders.map((order, idx) => {
+                      const prodInfo = getOrderScheduleInfo(order, idx);
+                      const displayId = order.id.startsWith("mo-") ? order.id.toUpperCase() : order.id.slice(0, 8).toUpperCase();
+                      return (
+                        <tr key={order.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
+                          {/* Order ID */}
+                          <td className="py-3.5 px-4 font-mono font-bold text-slate-700 dark:text-stone-300">
+                            <span className="px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+                              {displayId}
+                            </span>
+                          </td>
+
+                          {/* Product */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-xs text-slate-900 dark:text-stone-100">
                                 {prodInfo.name}
                               </span>
+                              <span className="font-mono text-[10px] text-slate-500 dark:text-stone-400 mt-0.5">
+                                {prodInfo.sku}
+                              </span>
                             </div>
-                            <span className="text-[11px] text-stone-500 dark:text-stone-400">
-                              Schedule: <span className="font-medium text-slate-700 dark:text-stone-300">{prodInfo.schedule}</span> · {prodInfo.workCenter}
+                          </td>
+
+                          {/* Station / Line */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-xs text-slate-800 dark:text-stone-200">
+                                {prodInfo.workCenterCode}
+                              </span>
+                              <span className="text-[11px] text-slate-500 dark:text-stone-400">
+                                {prodInfo.workCenterName}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Schedule (Real-Time) */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-stone-200">
+                                <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-stone-500" />
+                                <span>{prodInfo.dateRange}</span>
+                              </div>
+                              <span className="text-[10px] font-medium text-slate-500 dark:text-stone-400 mt-0.5">
+                                {prodInfo.scheduleTag}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Planned Qty */}
+                          <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-stone-100">
+                            {Number(order.planned_quantity).toLocaleString()}{" "}
+                            <span className="text-[10px] font-normal text-slate-400">units</span>
+                          </td>
+
+                          {/* Actual Qty */}
+                          <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-stone-100">
+                            {order.actual_quantity !== null && order.actual_quantity !== undefined ? (
+                              <span>
+                                {Number(order.actual_quantity).toLocaleString()}{" "}
+                                <span className="text-[10px] font-normal text-slate-400">units</span>
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 font-normal">—</span>
+                            )}
+                          </td>
+
+                          {/* Progress */}
+                          <td className="py-3.5 px-4 min-w-[130px]">
+                            <div className="flex items-center justify-between text-[11px] font-mono font-bold mb-1 text-slate-700 dark:text-stone-300">
+                              <span>{prodInfo.progress}%</span>
+                              <span className="text-[10px] font-sans font-medium text-slate-400">
+                                {order.status === "Completed"
+                                  ? "Verified"
+                                  : order.status === "In_Progress"
+                                  ? "Assembly"
+                                  : order.status === "Ready"
+                                  ? "Staged"
+                                  : "Planned"}
+                              </span>
+                            </div>
+                            <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full transition-all duration-300 ${
+                                  order.status === "Completed"
+                                    ? "bg-emerald-500"
+                                    : order.status === "In_Progress"
+                                    ? "bg-blue-600"
+                                    : order.status === "Ready"
+                                    ? "bg-amber-500"
+                                    : "bg-stone-300 dark:bg-stone-600"
+                                }`}
+                                style={{ width: `${prodInfo.progress}%` }}
+                              />
+                            </div>
+                          </td>
+
+                          {/* Status */}
+                          <td className="py-3.5 px-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                order.status === "Completed"
+                                  ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80"
+                                  : order.status === "In_Progress"
+                                  ? "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/80"
+                                  : order.status === "Ready"
+                                  ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80"
+                                  : "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700"
+                              }`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  order.status === "Completed"
+                                    ? "bg-emerald-500"
+                                    : order.status === "In_Progress"
+                                    ? "bg-blue-500 animate-pulse"
+                                    : order.status === "Ready"
+                                    ? "bg-amber-500"
+                                    : "bg-stone-400"
+                                }`}
+                              />
+                              <span>{order.status === "In_Progress" ? "In Progress" : order.status}</span>
                             </span>
-                          </div>
-                        </Td>
-                      <Td className="text-right font-mono font-medium">{order.planned_quantity}</Td>
-                      <Td className="text-right font-mono font-medium">
-                        {order.actual_quantity !== null && order.actual_quantity !== undefined ? order.actual_quantity : "—"}
-                      </Td>
-                      <Td>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${
-                          order.status === "Completed" ? "bg-emerald-100 text-emerald-800" :
-                          order.status === "In_Progress" ? "bg-amber-100 text-amber-800" :
-                          order.status === "Ready" ? "bg-blue-100 text-blue-800" :
-                          "bg-stone-100 text-stone-700"
-                        }`}>
-                          {order.status}
-                        </span>
-                      </Td>
-                      <Td>
-                        <RoutePipeline 
-                          steps={[
-                            { name: "BOM Check", status: order.status === "Planned" ? "current" : "completed" },
-                            { name: "Reserve", status: order.status === "Planned" ? "pending" : "completed" },
-                            { name: "Assembly", status: order.status === "In_Progress" ? "current" : order.status === "Completed" ? "completed" : "pending" },
-                            { name: "QC Gate", status: order.status === "Completed" ? "completed" : "pending" },
-                          ]} 
-                        />
-                      </Td>
-                      <Td className="text-right space-x-1.5 whitespace-nowrap">
-                        {order.status === "Planned" && canCreate && (
-                          <Button onClick={() => openCheck(order)} variant="secondary" className="py-1 px-2.5 text-xs">
-                            Check BOM
-                          </Button>
-                        )}
-                        {order.status === "Ready" && canCreate && (
-                          <Button onClick={() => openRecord(order)} variant="primary" className="py-1 px-2.5 text-xs">
-                            Record Output
-                          </Button>
-                        )}
-                        {order.status === "In_Progress" && canCreate && (
-                          <Button onClick={() => openRecord(order)} variant="primary" className="py-1 px-2.5 text-xs">
-                            Complete Order
-                          </Button>
-                        )}
-                        {(order.status === "Planned" || order.status === "Ready") && canCreate && (
-                          <button
-                            type="button"
-                            onClick={() => handleCancelOrder(order.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors"
-                            title="Cancel Order"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </Td>
-                    </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </Table>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+                            {order.status === "Planned" && canCreate && (
+                              <Button
+                                onClick={() => openCheck(order)}
+                                variant="secondary"
+                                className="py-1 px-3 text-xs font-semibold"
+                              >
+                                Check BOM
+                              </Button>
+                            )}
+                            {order.status === "Ready" && canCreate && (
+                              <Button
+                                onClick={() => openRecord(order)}
+                                variant="primary"
+                                className="py-1 px-3 text-xs font-semibold"
+                              >
+                                Record Output
+                              </Button>
+                            )}
+                            {order.status === "In_Progress" && canCreate && (
+                              <Button
+                                onClick={() => openRecord(order)}
+                                variant="primary"
+                                className="py-1 px-3 text-xs font-semibold"
+                              >
+                                Complete Order
+                              </Button>
+                            )}
+                            {(order.status === "Planned" || order.status === "Ready") && canCreate && (
+                              <button
+                                type="button"
+                                onClick={() => handleCancelOrder(order.id)}
+                                className="p-1.5 text-stone-400 hover:text-red-600 rounded hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors inline-flex items-center cursor-pointer"
+                                title="Cancel Order"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </Card>
         </div>
       )}
@@ -688,12 +836,12 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
         <div className="space-y-6 animate-in fade-in duration-150">
           
           {/* Quality Sub-Tabs (Pending vs Inspection Records) */}
-          <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-full border border-stone-200/80 w-fit shadow-2xs">
+          <div className="flex items-center gap-1.5 p-1 bg-stone-100 dark:bg-stone-900 rounded-full border border-stone-200/80 dark:border-stone-800 w-fit shadow-2xs">
             <button 
               type="button"
               onClick={() => setQualityTab("Pending")} 
               className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
-                qualityTab === "Pending" ? "bg-white text-slate-900 shadow-xs font-bold" : "text-slate-500 hover:text-slate-900"
+                qualityTab === "Pending" ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold" : "text-slate-500 dark:text-stone-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Pending Inspections
@@ -702,7 +850,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
               type="button"
               onClick={() => setQualityTab("Inspections")} 
               className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
-                qualityTab === "Inspections" ? "bg-white text-slate-900 shadow-xs font-bold" : "text-slate-500 hover:text-slate-900"
+                qualityTab === "Inspections" ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs font-bold" : "text-slate-500 dark:text-stone-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Inspection Records
@@ -714,96 +862,154 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
 
           {/* Pending Inspections View */}
           {!qualityLoading && !qualityError && qualityTab === "Pending" && (
-            <Card>
-              <Table>
-                <thead>
-                  <tr>
-                    <Th>Record ID</Th>
-                    <Th>Product</Th>
-                    <Th>Date</Th>
-                    <Th className="text-right">Produced Qty</Th>
-                    <Th className="text-right">Actions</Th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {pendingInspections.length === 0 ? (
-                    <tr>
-                      <Td colSpan={5} className="text-center py-8 text-slate-500 italic">
-                        No pending inspections. All shop floor production lots have been released.
-                      </Td>
+            <Card className="rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-2xs overflow-hidden">
+              <div className="w-full overflow-x-auto">
+                <table className="w-full text-sm text-left whitespace-nowrap text-slate-800 dark:text-stone-200">
+                  <thead>
+                    <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/60 text-slate-600 dark:text-stone-400 text-xs font-semibold uppercase tracking-wider">
+                      <th className="py-3 px-4">Record ID</th>
+                      <th className="py-3 px-4">Product / Assembly</th>
+                      <th className="py-3 px-4">Production Date</th>
+                      <th className="py-3 px-4 text-right">Produced Qty</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
-                  ) : (
-                    pendingInspections.map(record => (
-                      <tr key={record.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
-                        <Td className="font-mono text-xs text-slate-500 dark:text-stone-400">{record.id.slice(0, 8)}...</Td>
-                        <Td>
-                          <div className="font-medium text-slate-900 dark:text-stone-100">{record.product_name}</div>
-                          <div className="font-mono text-xs text-slate-500 dark:text-stone-400 mt-0.5">{record.product_sku}</div>
-                        </Td>
-                        <Td className="text-slate-700 dark:text-stone-300">{new Date(record.completion_date).toLocaleDateString()}</Td>
-                        <Td className="text-right font-mono font-bold text-slate-900 dark:text-stone-100">{record.actual_quantity_produced}</Td>
-                        <Td className="text-right">
-                          <button 
-                            type="button"
-                            onClick={() => openInspect(record)} 
-                            className="py-1.5 px-4 text-xs font-semibold rounded-full bg-slate-900 dark:bg-amber-600 text-white hover:bg-slate-800 dark:hover:bg-amber-500 transition-colors shadow-2xs cursor-pointer"
-                          >
-                            Inspect
-                          </button>
-                        </Td>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800/60 text-xs">
+                    {pendingInspections.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-12 text-slate-400 dark:text-stone-500 italic">
+                          No pending inspections. All shop floor production lots have been released.
+                        </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </Table>
+                    ) : (
+                      pendingInspections.map((record) => {
+                        const recDate = record.completion_date ? new Date(record.completion_date) : new Date();
+                        const displayRecId = record.id.startsWith("rec-") ? record.id.toUpperCase() : record.id.slice(0, 8).toUpperCase();
+                        return (
+                          <tr key={record.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
+                            <td className="py-3.5 px-4 font-mono font-bold text-slate-700 dark:text-stone-300">
+                              <span className="px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+                                {displayRecId}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <div className="font-bold text-xs text-slate-900 dark:text-stone-100">{record.product_name}</div>
+                              <div className="font-mono text-[10px] text-slate-500 dark:text-stone-400 mt-0.5">{record.product_sku}</div>
+                            </td>
+                            <td className="py-3.5 px-4 text-slate-700 dark:text-stone-300">
+                              <div className="flex items-center gap-1.5 text-xs font-medium">
+                                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                <span>{recDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-stone-100">
+                              {Number(record.actual_quantity_produced).toLocaleString()} <span className="text-[10px] font-normal text-slate-400">units</span>
+                            </td>
+                            <td className="py-3.5 px-4 text-right">
+                              <button 
+                                type="button"
+                                onClick={() => openInspect(record)} 
+                                className="py-1.5 px-3.5 text-xs font-semibold rounded-full bg-slate-900 dark:bg-amber-600 text-white hover:bg-slate-800 dark:hover:bg-amber-500 transition-colors shadow-2xs cursor-pointer"
+                              >
+                                Inspect Lot
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </Card>
           )}
 
           {/* Completed Inspections View */}
           {!qualityLoading && !qualityError && qualityTab === "Inspections" && (
-            <Card>
-              <Table>
-                <thead>
-                  <tr>
-                    <Th>Inspection ID</Th>
-                    <Th>Prodo ID</Th>
-                    <Th>Date</Th>
-                    <Th>Inspector</Th>
-                    <Th className="text-right">Pass Qty</Th>
-                    <Th className="text-right">Fail Qty</Th>
-                    <Th className="text-right">Actions</Th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {inspections.length === 0 ? (
-                    <tr>
-                      <Td colSpan={7} className="text-center py-8 text-slate-500 italic">
-                        No inspection records found.
-                      </Td>
+            <Card className="rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-2xs overflow-hidden">
+              <div className="w-full overflow-x-auto">
+                <table className="w-full text-sm text-left whitespace-nowrap text-slate-800 dark:text-stone-200">
+                  <thead>
+                    <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/60 text-slate-600 dark:text-stone-400 text-xs font-semibold uppercase tracking-wider">
+                      <th className="py-3 px-4">Inspection ID</th>
+                      <th className="py-3 px-4">Production Record</th>
+                      <th className="py-3 px-4">Inspection Date</th>
+                      <th className="py-3 px-4">Inspector</th>
+                      <th className="py-3 px-4 text-right">Pass Qty</th>
+                      <th className="py-3 px-4 text-right">Defect Qty</th>
+                      <th className="py-3 px-4 text-center">Yield Rate</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
-                  ) : (
-                    inspections.map(i => (
-                      <tr key={i.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
-                        <Td className="font-mono text-xs text-slate-500 dark:text-stone-400 font-medium">{i.id.slice(0, 8)}...</Td>
-                        <Td className="font-mono text-xs text-slate-500 dark:text-stone-400">{i.prodo_id.slice(0, 8)}...</Td>
-                        <Td className="text-slate-700 dark:text-stone-300">{new Date(i.inspection_date).toLocaleDateString()}</Td>
-                        <Td className="font-medium text-slate-900 dark:text-stone-100">{i.inspector_name}</Td>
-                        <Td className="text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{i.pass_quantity}</Td>
-                        <Td className="text-right font-mono font-bold text-red-600 dark:text-red-400">{i.fail_quantity}</Td>
-                        <Td className="text-right">
-                          <button 
-                            type="button"
-                            onClick={() => openDetails(i)} 
-                            className="py-1 px-3 text-xs font-semibold rounded-full bg-stone-100 hover:bg-stone-200 text-slate-700 transition-colors cursor-pointer"
-                          >
-                            View
-                          </button>
-                        </Td>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800/60 text-xs">
+                    {inspections.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="text-center py-12 text-slate-400 dark:text-stone-500 italic">
+                          No inspection records found.
+                        </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </Table>
+                    ) : (
+                      inspections.map((i) => {
+                        const total = (Number(i.pass_quantity) || 0) + (Number(i.fail_quantity) || 0);
+                        const yieldPercent = total > 0 ? ((Number(i.pass_quantity) / total) * 100).toFixed(1) : "100.0";
+                        const inspDate = i.inspection_date ? new Date(i.inspection_date) : new Date();
+                        const displayInspId = i.id.startsWith("qc-") ? i.id.toUpperCase() : i.id.slice(0, 8).toUpperCase();
+                        const displayProdoId = (i.prodo_id || "").startsWith("mo-") ? i.prodo_id.toUpperCase() : (i.prodo_id || "").slice(0, 8).toUpperCase();
+
+                        return (
+                          <tr key={i.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
+                            <td className="py-3.5 px-4 font-mono font-bold text-slate-700 dark:text-stone-300">
+                              <span className="px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+                                {displayInspId}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 font-mono text-xs text-slate-500 dark:text-stone-400">
+                              {displayProdoId || "BATCH-REL"}
+                            </td>
+                            <td className="py-3.5 px-4 text-slate-700 dark:text-stone-300">
+                              <div className="flex items-center gap-1.5 text-xs font-medium">
+                                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                <span>{inspDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-4 font-medium text-slate-900 dark:text-stone-100">
+                              {i.inspector_name}
+                            </td>
+                            <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                              {Number(i.pass_quantity).toLocaleString()}{" "}
+                              <span className="text-[10px] font-normal text-emerald-600/70">passed</span>
+                            </td>
+                            <td className="py-3.5 px-4 text-right font-mono font-bold text-red-600 dark:text-red-400">
+                              {Number(i.fail_quantity).toLocaleString()}{" "}
+                              <span className="text-[10px] font-normal text-red-500/70">defects</span>
+                            </td>
+                            <td className="py-3.5 px-4 text-center">
+                              <span
+                                className={`inline-block px-2 py-0.5 rounded-full font-mono text-[11px] font-bold ${
+                                  Number(yieldPercent) >= 98
+                                    ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80"
+                                    : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80"
+                                }`}
+                              >
+                                {yieldPercent}%
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 text-right">
+                              <button 
+                                type="button"
+                                onClick={() => openDetails(i)} 
+                                className="py-1 px-3 text-xs font-semibold rounded-full bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-slate-700 dark:text-stone-200 transition-colors cursor-pointer"
+                              >
+                                Details
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </Card>
           )}
         </div>
@@ -814,10 +1020,10 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
       {/* 1. Create Work Order Modal */}
       {showCreateOrder && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-stone-200 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-              <h3 className="font-bold text-base text-slate-900">New Production Work Order</h3>
-              <button onClick={closeCreateOrder} className="p-1 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-900">
+          <div className="bg-white dark:bg-[#18181B] rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-stone-200 dark:border-stone-800 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
+              <h3 className="font-bold text-base text-slate-900 dark:text-stone-100">New Production Work Order</h3>
+              <button onClick={closeCreateOrder} className="p-1 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -833,7 +1039,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                 <Label htmlFor="order-product">Target Assembly / Product</Label>
                 <select
                   id="order-product"
-                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-stone-300 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 text-xs text-slate-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 cursor-pointer"
                   value={orderProductId}
                   onChange={(e) => setOrderProductId(e.target.value)}
                 >
@@ -863,7 +1069,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                   <button
                     type="button"
                     onClick={addBomItem}
-                    className="text-xs font-semibold text-amber-700 hover:text-amber-800 flex items-center gap-1"
+                    className="text-xs font-semibold text-amber-700 hover:text-amber-800 flex items-center gap-1 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add Item</span>
@@ -874,7 +1080,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                   {bomItems.map((item, idx) => (
                     <div key={idx} className="flex items-center gap-2">
                       <select
-                        className="flex-1 px-3 py-2 rounded-xl border border-stone-300 bg-white text-xs text-slate-900"
+                        className="flex-1 px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 text-xs text-slate-900 dark:text-stone-100 cursor-pointer"
                         value={item.material_id}
                         onChange={(e) => updateBomItem(idx, "material_id", e.target.value)}
                       >
@@ -898,7 +1104,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                         <button
                           type="button"
                           onClick={() => removeBomItem(idx)}
-                          className="p-2 text-stone-400 hover:text-red-600 rounded-lg"
+                          className="p-2 text-stone-400 hover:text-red-600 rounded-lg cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -908,7 +1114,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2.5 pt-3 border-t border-stone-100">
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-stone-100 dark:border-stone-800">
                 <Button type="button" onClick={closeCreateOrder} variant="ghost" className="rounded-full text-xs">
                   Cancel
                 </Button>
@@ -923,11 +1129,11 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
 
       {/* 2. BOM Check & Allocation Modal */}
       {activeModal === "check" && selectedOrder && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-stone-200 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-              <h3 className="font-bold text-base text-slate-900">BOM Material Allocation Check</h3>
-              <button onClick={() => setActiveModal(null)} className="p-1 rounded-full hover:bg-stone-100 text-stone-400">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#18181B] rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-stone-200 dark:border-stone-800 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
+              <h3 className="font-bold text-base text-slate-900 dark:text-stone-100">BOM Material Allocation Check</h3>
+              <button onClick={() => setActiveModal(null)} className="p-1 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-400 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -939,12 +1145,12 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
             {availabilityCheck && (
               <div className="space-y-4 text-xs">
                 <div className={`p-3.5 rounded-2xl flex items-center gap-2.5 ${
-                  availabilityCheck.all_available ? "bg-emerald-50 text-emerald-900 border border-emerald-200" : "bg-amber-50 text-amber-900 border border-amber-200"
+                  availabilityCheck.all_available ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800" : "bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800"
                 }`}>
                   {availabilityCheck.all_available ? (
-                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   ) : (
-                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                   )}
                   <span className="font-medium">
                     {availabilityCheck.all_available
@@ -953,11 +1159,11 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                   </span>
                 </div>
 
-                <div className="border border-stone-200 rounded-2xl overflow-hidden divide-y divide-stone-100 max-h-48 overflow-y-auto">
+                <div className="border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden divide-y divide-stone-100 dark:divide-stone-800 max-h-48 overflow-y-auto">
                   {availabilityCheck.items?.map((it: any) => (
                     <div key={it.material_id} className="p-2.5 flex items-center justify-between">
                       <div>
-                        <div className="font-semibold text-slate-800">{it.material_name}</div>
+                        <div className="font-semibold text-slate-800 dark:text-stone-200">{it.material_name}</div>
                         <div className="text-[11px] text-stone-400">Req: {it.required_quantity} · Avail: {it.available_quantity}</div>
                       </div>
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
@@ -969,7 +1175,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                   ))}
                 </div>
 
-                <div className="flex justify-end gap-2.5 pt-2">
+                <div className="flex justify-end gap-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
                   <Button onClick={() => setActiveModal(null)} variant="ghost" className="rounded-full text-xs">
                     Cancel
                   </Button>
@@ -990,11 +1196,11 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
 
       {/* 3. Record Output Modal */}
       {activeModal === "record" && selectedOrder && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-stone-200 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-              <h3 className="font-bold text-base text-slate-900">Record Production Output</h3>
-              <button onClick={() => setActiveModal(null)} className="p-1 rounded-full hover:bg-stone-100 text-stone-400">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#18181B] rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-stone-200 dark:border-stone-800 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
+              <h3 className="font-bold text-base text-slate-900 dark:text-stone-100">Record Production Output</h3>
+              <button onClick={() => setActiveModal(null)} className="p-1 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-400 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1016,7 +1222,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                 <p className="text-[11px] text-stone-400 mt-1">Planned: {selectedOrder.planned_quantity} units</p>
               </div>
 
-              <div className="flex justify-end gap-2.5 pt-2">
+              <div className="flex justify-end gap-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
                 <Button type="button" onClick={() => setActiveModal(null)} variant="ghost" className="rounded-full text-xs">
                   Cancel
                 </Button>
@@ -1031,18 +1237,18 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
 
       {/* 4. Quality Inspection Modal */}
       {activeQualityModal === "inspect" && selectedInspectionRecord && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-stone-200 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-              <h3 className="font-bold text-base text-slate-900">QC Gate Inspection</h3>
-              <button onClick={() => setActiveQualityModal(null)} className="p-1 rounded-full hover:bg-stone-100 text-stone-400">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#18181B] rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-stone-200 dark:border-stone-800 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
+              <h3 className="font-bold text-base text-slate-900 dark:text-stone-100">QC Gate Inspection</h3>
+              <button onClick={() => setActiveQualityModal(null)} className="p-1 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-400 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="text-xs p-3 bg-stone-50 rounded-2xl border border-stone-200">
-              <p className="text-stone-500">Product: <strong className="text-slate-900">{selectedInspectionRecord.product_name}</strong></p>
-              <p className="text-stone-500 mt-0.5">Total Produced: <strong className="text-slate-900">{selectedInspectionRecord.actual_quantity_produced} units</strong></p>
+            <div className="text-xs p-3 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800">
+              <p className="text-stone-500 dark:text-stone-400">Product: <strong className="text-slate-900 dark:text-stone-100">{selectedInspectionRecord.product_name}</strong></p>
+              <p className="text-stone-500 dark:text-stone-400 mt-0.5">Total Produced: <strong className="text-slate-900 dark:text-stone-100">{selectedInspectionRecord.actual_quantity_produced} units</strong></p>
             </div>
 
             <form onSubmit={handleInspectSubmit} className="space-y-4 text-xs">
@@ -1097,7 +1303,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                     required
                     value={defectReason}
                     onChange={(e) => setDefectReason(e.target.value)}
-                    className="w-full mt-1 px-3 py-2 border border-stone-300 rounded-xl bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full mt-1 px-3 py-2 border border-stone-300 dark:border-stone-700 rounded-xl bg-white dark:bg-stone-900 text-xs text-slate-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
                   >
                     <option value="">Select defect classification...</option>
                     <option value="Scratch/Cosmetic">Scratch / Cosmetic Defect</option>
@@ -1109,7 +1315,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                 </div>
               )}
 
-              <div className="flex justify-end gap-2.5 pt-2">
+              <div className="flex justify-end gap-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
                 <Button type="button" onClick={() => setActiveQualityModal(null)} variant="ghost" className="rounded-full text-xs">
                   Cancel
                 </Button>
@@ -1124,11 +1330,11 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
 
       {/* 5. Quality Details Modal */}
       {activeQualityModal === "details" && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 border border-stone-200 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-              <h3 className="font-bold text-base text-slate-900">Inspection Digital Genealogy</h3>
-              <button onClick={() => setActiveQualityModal(null)} className="p-1 rounded-full hover:bg-stone-100 text-stone-400">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#18181B] rounded-2xl shadow-2xl max-w-md w-full p-6 border border-stone-200 dark:border-stone-800 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
+              <h3 className="font-bold text-base text-slate-900 dark:text-stone-100">Inspection Digital Genealogy</h3>
+              <button onClick={() => setActiveQualityModal(null)} className="p-1 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-400 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1137,17 +1343,17 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
             
             {inspectionDetails ? (
               <div className="space-y-3 text-xs">
-                <div className="p-3 bg-stone-50 rounded-2xl space-y-1">
-                  <p><strong className="text-slate-900">Product:</strong> {inspectionDetails.product_name}</p>
-                  <p><strong className="text-slate-900">Inspector:</strong> {inspectionDetails.inspector_name}</p>
-                  <p><strong className="text-slate-900">Date:</strong> {new Date(inspectionDetails.inspection_date).toLocaleString()}</p>
-                  <p><strong className="text-slate-900">Digital Seal:</strong> <span className="font-mono text-[10px] text-emerald-700">SHA256-AUTHENTICATED</span></p>
+                <div className="p-3 bg-stone-50 dark:bg-stone-900 rounded-xl space-y-1 border border-stone-200/80 dark:border-stone-800">
+                  <p><strong className="text-slate-900 dark:text-stone-100">Product:</strong> {inspectionDetails.product_name}</p>
+                  <p><strong className="text-slate-900 dark:text-stone-100">Inspector:</strong> {inspectionDetails.inspector_name}</p>
+                  <p><strong className="text-slate-900 dark:text-stone-100">Date:</strong> {new Date(inspectionDetails.inspection_date).toLocaleString()}</p>
+                  <p><strong className="text-slate-900 dark:text-stone-100">Digital Seal:</strong> <span className="font-mono text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">SHA256-AUTHENTICATED</span></p>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-center">
-                  <div className="p-2.5 bg-emerald-50 text-emerald-800 rounded-xl font-bold font-mono">
+                  <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 rounded-xl font-bold font-mono border border-emerald-200 dark:border-emerald-800/80">
                     {inspectionDetails.pass_quantity} Passed
                   </div>
-                  <div className="p-2.5 bg-red-50 text-red-800 rounded-xl font-bold font-mono">
+                  <div className="p-2.5 bg-red-50 dark:bg-red-950/60 text-red-800 dark:text-red-200 rounded-xl font-bold font-mono border border-red-200 dark:border-red-800/80">
                     {inspectionDetails.fail_quantity} Defective
                   </div>
                 </div>
@@ -1156,7 +1362,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
               <div className="p-6 text-center text-xs text-slate-500 animate-pulse">Loading genealogy stamp...</div>
             )}
 
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-2 border-t border-stone-100 dark:border-stone-800">
               <Button onClick={() => setActiveQualityModal(null)} variant="secondary" className="rounded-full text-xs">
                 Close
               </Button>

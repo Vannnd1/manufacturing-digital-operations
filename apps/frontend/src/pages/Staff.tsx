@@ -196,12 +196,12 @@ export function Staff() {
           </div>
         </Card>
 
-        {/* Card 2: On Floor Today / Hadir di Pabrik */}
+        {/* Card 2: On Floor Today */}
         <Card className="p-5 flex flex-col justify-between h-32 border-l-4 border-l-emerald-500">
           <div className="flex items-center justify-between text-xs font-semibold text-emerald-700 dark:text-emerald-400">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              On Floor Today (Hadir)
+              On Floor Today
             </span>
             <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
@@ -287,7 +287,7 @@ export function Staff() {
                   : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              Shift 1 Pagi ({shift1Count})
+              Shift 1 Morning ({shift1Count})
             </button>
             <button
               type="button"
@@ -298,7 +298,7 @@ export function Staff() {
                   : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              Shift 2 Siang ({shift2Count})
+              Shift 2 Afternoon ({shift2Count})
             </button>
             <button
               type="button"
@@ -319,7 +319,7 @@ export function Staff() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-stone-500" />
               <Input
                 type="text"
-                placeholder="Search name, NIP, work center, skills..."
+                placeholder="Search name, Employee ID, work center, skills..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 pr-4 py-1.5 rounded-full text-xs"
@@ -336,7 +336,7 @@ export function Staff() {
                     ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs"
                     : "text-slate-500 dark:text-stone-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
-                title="Table View (Daftar Rinci)"
+                title="Table View (Detailed)"
               >
                 <List className="w-4 h-4" />
               </button>
@@ -348,7 +348,7 @@ export function Staff() {
                     ? "bg-white dark:bg-stone-800 text-slate-900 dark:text-white shadow-xs"
                     : "text-slate-500 dark:text-stone-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
-                title="Grid View (Kartu Personil)"
+                title="Grid View (Personnel Cards)"
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
@@ -398,7 +398,7 @@ export function Staff() {
             <table className="w-full text-sm text-left whitespace-nowrap text-slate-800 dark:text-stone-200">
               <thead>
                 <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/60 text-slate-600 dark:text-stone-400 text-xs font-semibold uppercase tracking-wider">
-                  <th className="py-3 px-4">NIP / ID</th>
+                  <th className="py-3 px-4">Employee ID</th>
                   <th className="py-3 px-4">Staff Member</th>
                   <th className="py-3 px-4">Department & Line</th>
                   <th className="py-3 px-4">Assigned Work Center</th>
@@ -421,7 +421,7 @@ export function Staff() {
                       key={member.id}
                       className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors"
                     >
-                      {/* NIP / ID */}
+                      {/* Employee ID */}
                       <td className="py-3 px-4 font-mono font-bold text-slate-600 dark:text-stone-400">
                         {member.employeeId}
                       </td>
@@ -495,7 +495,7 @@ export function Staff() {
                           />
                           <div>
                             <span className="font-semibold text-slate-800 dark:text-stone-200 text-xs block">
-                              {member.status === "present" ? "Hadir di Lantai" : member.status === "remote" ? "Dinas Luar / Remote" : "Cuti / Off Floor"}
+                              {member.status === "present" ? "On Floor" : member.status === "remote" ? "Remote / Field Duty" : "On Leave / Off Floor"}
                             </span>
                             <span className="text-[10px] text-slate-400 dark:text-stone-500">
                               {member.statusText}
@@ -540,7 +540,7 @@ export function Staff() {
                             onClick={() => setViewingProfile(member)}
                             className="px-2.5 py-1 text-[11px] font-medium rounded-full text-slate-600 dark:text-stone-400 hover:text-slate-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
                           >
-                            Detail
+                            Details
                           </button>
                           <button
                             type="button"
@@ -569,7 +569,7 @@ export function Staff() {
               className="p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-stone-600 transition-all hover:shadow-xs group relative"
             >
               <div>
-                {/* Header: Avatar, Name, NIP, Status */}
+                {/* Header: Avatar, Name, Employee ID, Status */}
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
                     <div className="relative">
@@ -683,7 +683,7 @@ export function Staff() {
                     onClick={() => setViewingProfile(member)}
                     className="px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-stone-400 hover:text-slate-900 dark:hover:text-stone-100 transition-colors cursor-pointer"
                   >
-                    Detail
+                    Details
                   </button>
                   <button
                     type="button"
@@ -791,7 +791,7 @@ export function Staff() {
                   type="button"
                   onClick={() => {
                     updateStatus(editingMember.id, "present");
-                    showToast(`${editingMember.name} status updated to: Hadir di Lantai Pabrik.`);
+                    showToast(`${editingMember.name} status updated to: On Plant Floor.`);
                     setEditingMember(null);
                   }}
                   className={`w-full flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
@@ -803,7 +803,7 @@ export function Staff() {
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                     <div className="text-left">
-                      <span className="block font-bold">In the Building (Hadir di Lantai Pabrik)</span>
+                      <span className="block font-bold">In the Building (On Plant Floor)</span>
                       <span className="text-[10px] font-normal text-slate-500 dark:text-stone-400">Stationed at {editingMember.workCenter}</span>
                     </div>
                   </div>
@@ -816,7 +816,7 @@ export function Staff() {
                   type="button"
                   onClick={() => {
                     updateStatus(editingMember.id, "remote");
-                    showToast(`${editingMember.name} status updated to: Dinas Luar / Remote.`);
+                    showToast(`${editingMember.name} status updated to: Remote / Field Duty.`);
                     setEditingMember(null);
                   }}
                   className={`w-full flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
@@ -828,7 +828,7 @@ export function Staff() {
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                     <div className="text-left">
-                      <span className="block font-bold">Working Remotely / Field Duty (Dinas Luar)</span>
+                      <span className="block font-bold">Working Remotely / Field Duty</span>
                       <span className="text-[10px] font-normal text-slate-500 dark:text-stone-400">Supplier audit, logistics transit, or remote task</span>
                     </div>
                   </div>
@@ -841,7 +841,7 @@ export function Staff() {
                   type="button"
                   onClick={() => {
                     updateStatus(editingMember.id, "leave");
-                    showToast(`${editingMember.name} status updated to: Cuti / Off Floor.`);
+                    showToast(`${editingMember.name} status updated to: On Leave / Off Floor.`);
                     setEditingMember(null);
                   }}
                   className={`w-full flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
@@ -853,7 +853,7 @@ export function Staff() {
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
                     <div className="text-left">
-                      <span className="block font-bold">On Leave / Off Floor (Cuti / Izin / Sakit)</span>
+                      <span className="block font-bold">On Leave / Off Floor (Excused Absence)</span>
                       <span className="text-[10px] font-normal text-slate-500 dark:text-stone-400">Excused shift absence with backup reassigned</span>
                     </div>
                   </div>

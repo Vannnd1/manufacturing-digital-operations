@@ -138,37 +138,54 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
 
   // Timeline configuration depending on granularity
   const timelineConfig = useMemo(() => {
+    const now = new Date();
+
     if (granularity === "Week") {
-      const baseAnchor = new Date(2026, 10, 8); // Sun Nov 8, 2026
+      // Start of current week (Sunday) adjusted by timeOffset (in weeks)
+      const currentSunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+      currentSunday.setDate(currentSunday.getDate() + timeOffset * 7);
+
       const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
       const cols = [];
 
-      // 21 continuous columns: Nov 8 through Nov 28 (3 weeks continuous)
+      // 21 continuous columns: 3 weeks continuous starting from current Sunday
       for (let i = 0; i < 21; i++) {
-        const d = new Date(baseAnchor);
-        d.setDate(baseAnchor.getDate() + i);
+        const d = new Date(currentSunday);
+        d.setDate(currentSunday.getDate() + i);
         cols.push({
           colIndex: i,
           topLabel: dayNames[i % 7],
           bottomLabel: d.getDate().toString(),
-          isToday: i === 3, // Wed Nov 11 is index 3
+          isToday: d.toDateString() === now.toDateString(),
           dateObj: d,
         });
       }
 
+      const first = cols[0].dateObj;
+      const last = cols[6].dateObj;
+      const fMonth = first.toLocaleDateString("en-US", { month: "short" });
+      const lMonth = last.toLocaleDateString("en-US", { month: "short" });
+      const label = fMonth === lMonth
+        ? `${fMonth} ${first.getDate()} – ${last.getDate()}, ${last.getFullYear()}`
+        : `${fMonth} ${first.getDate()} – ${lMonth} ${last.getDate()}, ${last.getFullYear()}`;
+
+      const activeColIndex = cols.findIndex((c) => c.isToday);
+
       return {
         totalCols: 21,
         cols,
-        label: "Nov 8 – Nov 14, 2026",
-        activeColIndex: 3,
+        label,
+        activeColIndex: activeColIndex !== -1 ? activeColIndex : (timeOffset === 0 ? now.getDay() : -1),
         activeBadgeText: formattedShort || "Today",
         gridMinWidth: "min-w-[2310px]",
       };
     }
 
     if (granularity === "Month") {
-      const baseAnchor = new Date(2026, 10, 1); // Sun Nov 1, 2026
-      baseAnchor.setDate(baseAnchor.getDate() + timeOffset * 35);
+      // 5 weeks view starting from start of month adjusted to Sunday
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const baseAnchor = new Date(monthStart);
+      baseAnchor.setDate(baseAnchor.getDate() - baseAnchor.getDay() + timeOffset * 35);
 
       const dayInitials = ["S", "M", "T", "W", "T", "F", "S"];
       const cols = [];
@@ -180,7 +197,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
           colIndex: i,
           topLabel: dayInitials[i % 7],
           bottomLabel: d.getDate().toString(),
-          isToday: i === 10 && timeOffset === 0, // Wed Nov 11 is column 10
+          isToday: d.toDateString() === now.toDateString(),
           dateObj: d,
         });
       }
@@ -190,31 +207,34 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
       const fMonth = first.toLocaleDateString("en-US", { month: "short" });
       const lMonth = last.toLocaleDateString("en-US", { month: "short" });
       const label = `${fMonth} ${first.getDate()} – ${lMonth} ${last.getDate()}, ${last.getFullYear()}`;
+      const activeColIndex = cols.findIndex((c) => c.isToday);
 
       return {
         totalCols: 35,
         cols,
         label,
-        activeColIndex: timeOffset === 0 ? 10 : -1,
+        activeColIndex,
         activeBadgeText: "Today",
         gridMinWidth: "min-w-[1300px]",
       };
     }
 
     // Quarter view
-    const baseAnchor = new Date(2026, 9, 11); // Sun Oct 11, 2026
-    baseAnchor.setDate(baseAnchor.getDate() + timeOffset * 91);
+    const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
+    const baseAnchor = new Date(now.getFullYear(), quarterStartMonth, 1);
+    baseAnchor.setDate(baseAnchor.getDate() - baseAnchor.getDay() + timeOffset * 91);
 
     const cols = [];
     for (let i = 0; i < 13; i++) {
       const d = new Date(baseAnchor);
       d.setDate(baseAnchor.getDate() + i * 7);
       const mShort = d.toLocaleDateString("en-US", { month: "short" });
+      const isCurrentWeek = d.getTime() <= now.getTime() && now.getTime() < d.getTime() + 7 * 86400000;
       cols.push({
         colIndex: i,
         topLabel: `${mShort} ${d.getDate()}`,
         bottomLabel: "WEEK OF",
-        isToday: i === 4 && timeOffset === 0, // Week of Nov 8 is column 4
+        isToday: isCurrentWeek,
         dateObj: d,
       });
     }
@@ -225,12 +245,13 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     const fMonth = first.toLocaleDateString("en-US", { month: "short" });
     const lMonth = lastEndDate.toLocaleDateString("en-US", { month: "short" });
     const label = `${fMonth} ${first.getDate()} – ${lMonth} ${lastEndDate.getDate()}, ${lastEndDate.getFullYear()}`;
+    const activeColIndex = cols.findIndex((c) => c.isToday);
 
     return {
       totalCols: 13,
       cols,
       label,
-      activeColIndex: timeOffset === 0 ? 4 : -1,
+      activeColIndex,
       activeBadgeText: "Today",
       gridMinWidth: "min-w-[1100px]",
     };
@@ -829,7 +850,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
         };
       })
     );
-    showToast(`${opId}: Penugasan diperbarui ke ${staff.name}`);
+    showToast(`${opId}: Assignment updated to ${staff.name}`);
   };
 
   // Shift operation start day forward or backward (+1 or -1)
@@ -844,16 +865,16 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
             const maxDays = granularity === "Month" ? 28 : granularity === "Quarter" ? 7 : 7;
             const newStart = Math.max(0, Math.min(maxDays - op.durationDays, op.startDay + delta));
             
-            let label = `digeser ${delta > 0 ? "maju" : "mundur"}`;
+            let label = delta > 0 ? "shifted forward" : "shifted back";
             if (granularity === "Week") {
               const dayFrom = timelineConfig.cols[newStart]?.topLabel || "Day";
               const dayTo = timelineConfig.cols[Math.min(6, newStart + op.durationDays - 1)]?.topLabel || "Day";
-              label = `digeser ke ${dayFrom} – ${dayTo}`;
+              label = `rescheduled to ${dayFrom} – ${dayTo}`;
             } else if (granularity === "Month") {
-              const dayFrom = timelineConfig.cols[7 + newStart]?.bottomLabel || "Nov";
-              label = `digeser ke Nov ${dayFrom}`;
+              const dayFrom = timelineConfig.cols[7 + newStart]?.bottomLabel || "Day";
+              label = `rescheduled to Day ${dayFrom}`;
             } else {
-              label = `dijadwalkan ulang`;
+              label = `rescheduled`;
             }
 
             showToast(`${wo.id}: ${op.name} ${label}`);
@@ -901,7 +922,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
             }
 
             const dayFrom = timelineConfig.cols[targetCol]?.topLabel || "Target";
-            showToast(`${wo.id}: ${op.name} berhasil dijadwalkan ulang ke ${dayFrom}`);
+            showToast(`${wo.id}: ${op.name} rescheduled to ${dayFrom}`);
             return {
               ...op,
               startDay: clampedStart,
@@ -1045,12 +1066,18 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
 
   const displayLabel = useMemo(() => {
     if (granularity === "Week") {
-      if (activeScrollWeek === 0) return "Nov 8 – Nov 14, 2026";
-      if (activeScrollWeek === 1) return "Nov 15 – Nov 21, 2026";
-      return "Nov 22 – Nov 28, 2026";
+      const startW = timelineConfig.cols[activeScrollWeek * 7]?.dateObj || timelineConfig.cols[0]?.dateObj;
+      const endW = timelineConfig.cols[activeScrollWeek * 7 + 6]?.dateObj || timelineConfig.cols[6]?.dateObj;
+      if (startW && endW) {
+        const sm = startW.toLocaleDateString("en-US", { month: "short" });
+        const em = endW.toLocaleDateString("en-US", { month: "short" });
+        return sm === em 
+          ? `${sm} ${startW.getDate()} – ${endW.getDate()}, ${endW.getFullYear()}`
+          : `${sm} ${startW.getDate()} – ${em} ${endW.getDate()}, ${endW.getFullYear()}`;
+      }
     }
     return timelineConfig.label;
-  }, [granularity, activeScrollWeek, timelineConfig.label]);
+  }, [granularity, activeScrollWeek, timelineConfig]);
 
   return (
     <div className="space-y-4 animate-in fade-in duration-150">
@@ -1073,7 +1100,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
             onClick={handlePrevInterval}
             className="w-8 h-8 rounded-full border border-stone-200 dark:border-stone-700 flex items-center justify-center text-slate-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
             aria-label="Previous interval"
-            title="Geser mundur 1 minggu"
+            title="Shift back 1 week"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -1087,7 +1114,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
             onClick={handleNextInterval}
             className="w-8 h-8 rounded-full border border-stone-200 dark:border-stone-700 flex items-center justify-center text-slate-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
             aria-label="Next interval"
-            title="Geser maju 1 minggu"
+            title="Shift forward 1 week"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -1680,7 +1707,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                             ? "border border-blue-600 dark:border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 p-0"
                                             : "bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-750 border border-stone-300 dark:border-stone-600 text-slate-800 dark:text-stone-200 px-2 justify-between"
                                         }`}
-                                        title={`${op.name} (${op.statusText || ""}) — Klik untuk melihat detail di panel samping`}
+                                        title={`${op.name} (${op.statusText || ""}) — Click to view details in inspector panel`}
                                       >
                                         {/* Render 100% Done Bar */}
                                         {isDone && (
@@ -1695,9 +1722,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                                 }}
                                                 disabled={op.startDay <= 0}
                                                 className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 rounded flex items-center justify-center bg-black/15 hover:bg-black/30 text-emerald-950 dark:text-emerald-100 transition-opacity cursor-pointer shrink-0"
-                                                title="Geser mundur 1 hari"
+                                                title="Shift back 1 day"
                                               >
-                                                ◀
+                                                <ChevronLeft className="w-2.5 h-2.5" />
                                               </button>
                                               <Zap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 fill-emerald-600 dark:fill-emerald-400 shrink-0" />
                                               <span className="truncate text-xs font-bold text-emerald-950 dark:text-emerald-100">
@@ -1718,9 +1745,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                                 }}
                                                 disabled={op.startDay + op.durationDays >= (granularity === "Month" ? 28 : 7)}
                                                 className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 rounded flex items-center justify-center bg-black/15 hover:bg-black/30 text-emerald-950 dark:text-emerald-100 transition-opacity cursor-pointer shrink-0"
-                                                title="Geser maju 1 hari"
+                                                title="Shift forward 1 day"
                                               >
-                                                ▶
+                                                <ChevronRight className="w-2.5 h-2.5" />
                                               </button>
                                             </div>
                                           </>
@@ -1743,9 +1770,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                                 }}
                                                 disabled={op.startDay <= 0}
                                                 className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 rounded flex items-center justify-center bg-black/25 hover:bg-black/40 text-white transition-opacity -ml-1 mr-1 cursor-pointer shrink-0"
-                                                title="Geser mundur 1 hari"
+                                                title="Shift back 1 day"
                                               >
-                                                ◀
+                                                <ChevronLeft className="w-2.5 h-2.5" />
                                               </button>
                                               <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300 shrink-0 mr-1" />
                                               <span className="truncate text-xs font-bold text-white">
@@ -1774,9 +1801,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                                   }}
                                                   disabled={op.startDay + op.durationDays >= (granularity === "Month" ? 28 : 7)}
                                                   className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 rounded flex items-center justify-center bg-black/20 hover:bg-black/40 text-blue-900 dark:text-blue-200 transition-opacity cursor-pointer shrink-0"
-                                                  title="Geser maju 1 hari"
+                                                  title="Shift forward 1 day"
                                                 >
-                                                  ▶
+                                                  <ChevronRight className="w-2.5 h-2.5" />
                                                 </button>
                                               </div>
                                             </div>
@@ -1796,9 +1823,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                                 }}
                                                 disabled={op.startDay <= 0}
                                                 className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 rounded flex items-center justify-center bg-black/15 hover:bg-black/30 text-slate-800 dark:text-stone-200 transition-opacity cursor-pointer shrink-0"
-                                                title="Geser mundur 1 hari"
+                                                title="Shift back 1 day"
                                               >
-                                                ◀
+                                                <ChevronLeft className="w-2.5 h-2.5" />
                                               </button>
                                               <span className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[9px] shrink-0 ${op.techColor}`}>
                                                 {op.techInitial}
@@ -1821,9 +1848,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                                 }}
                                                 disabled={op.startDay + op.durationDays >= (granularity === "Month" ? 28 : 7)}
                                                 className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 rounded flex items-center justify-center bg-black/15 hover:bg-black/30 text-slate-800 dark:text-stone-200 transition-opacity cursor-pointer shrink-0"
-                                                title="Geser maju 1 hari"
+                                                title="Shift forward 1 day"
                                               >
-                                                ▶
+                                                <ChevronRight className="w-2.5 h-2.5" />
                                               </button>
                                             </div>
                                           </>
@@ -1923,7 +1950,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                           ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 border border-blue-500 dark:border-blue-400 text-white"
                                           : "bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-750 border border-stone-300 dark:border-stone-600 text-slate-800 dark:text-stone-200"
                                       }`}
-                                      title={`${wo.id} · ${op.name} (${op.statusText || ""}) — Klik untuk melihat detail di panel samping`}
+                                      title={`${wo.id} · ${op.name} (${op.statusText || ""}) — Click to view details in inspector panel`}
                                     >
                                       {/* Left Nudge Control */}
                                       <button
@@ -1934,9 +1961,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                         }}
                                         disabled={op.startDay <= 0}
                                         className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded flex items-center justify-center bg-black/20 hover:bg-black/40 text-white transition-opacity -ml-1 cursor-pointer shrink-0"
-                                        title="Geser mundur 1 hari"
+                                        title="Shift back 1 day"
                                       >
-                                        ◀
+                                        <ChevronLeft className="w-2.5 h-2.5" />
                                       </button>
 
                                       {/* Technician Avatar Badge */}
@@ -1967,9 +1994,9 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                                           }}
                                           disabled={op.startDay + op.durationDays >= (granularity === "Month" ? 28 : 7)}
                                           className="opacity-0 group-hover/bar:opacity-100 disabled:opacity-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded flex items-center justify-center bg-black/20 hover:bg-black/40 text-white transition-opacity -mr-1 cursor-pointer shrink-0"
-                                          title="Geser maju 1 hari"
+                                          title="Shift forward 1 day"
                                         >
-                                          ▶
+                                          <ChevronRight className="w-2.5 h-2.5" />
                                         </button>
                                       </div>
                                     </div>
@@ -1990,7 +2017,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
             <div className="p-3 border-t border-stone-100 dark:border-stone-800/80 bg-stone-50/40 dark:bg-stone-900/30 flex flex-wrap items-center justify-between gap-2 text-[11px] text-stone-500 dark:text-stone-400">
               <span className="flex items-center gap-1">
                 <GripHorizontal className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-                Geser horizontal timeline untuk melihat jadwal minggu lainnya · Klik bar untuk detail operasi
+                Scroll horizontally to view other weeks · Click operation bars for step details
               </span>
               <span className="font-mono font-medium text-stone-400">
                 Live Capacity Auto-Recalculate Active
@@ -2012,7 +2039,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       type="button"
                       onClick={() => setSelectedOpKey(null)}
                       className="w-7 h-7 rounded-full border border-stone-200 dark:border-stone-700 flex items-center justify-center text-stone-500 hover:text-slate-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-                      title="Kembali ke ringkasan lantai produksi"
+                      title="Back to production floor overview"
                     >
                       <ArrowLeft className="w-4 h-4" />
                     </button>
@@ -2090,7 +2117,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       onClick={() => {
                         const nextProg = Math.min(100, inspectedData.op.progress + 10);
                         updateOperationProgress(inspectedData.wo.id, inspectedData.op.id, nextProg);
-                        showToast(`${inspectedData.op.name}: progres naik ke ${nextProg}%`);
+                        showToast(`${inspectedData.op.name}: Progress increased to ${nextProg}%`);
                       }}
                       className="w-full py-1.5 px-3 rounded-xl bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold text-xs border border-blue-200 dark:border-blue-800 transition-colors flex items-center justify-center gap-1 cursor-pointer"
                     >
@@ -2101,7 +2128,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       type="button"
                       onClick={() => {
                         updateOperationProgress(inspectedData.wo.id, inspectedData.op.id, 100);
-                        showToast(`${inspectedData.op.name} ditandai selesai!`);
+                        showToast(`${inspectedData.op.name} marked as completed!`);
                       }}
                       className="w-full py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-2xs flex items-center justify-center gap-1 cursor-pointer"
                     >
@@ -2398,7 +2425,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
 
                 <div className="pt-2 text-center border-t border-stone-100 dark:border-stone-800">
                   <span className="text-[11px] italic text-stone-400 dark:text-stone-500">
-                    Klik operasi untuk menginspeksi rincian
+                    Click an operation to inspect details
                   </span>
                 </div>
               </div>
@@ -2752,7 +2779,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       }}
                       className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer inline-flex items-center gap-1 mt-0.5"
                     >
-                      <span>Buka di daftar pesanan</span>
+                      <span>Open in Work Orders</span>
                       <ExternalLink className="w-3 h-3" />
                     </button>
                   )}
@@ -2894,7 +2921,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                         : w
                     )
                   );
-                  showToast(`${selectedWorkOrderModal.id}: Status diperbarui`);
+                  showToast(`${selectedWorkOrderModal.id}: Status updated`);
                   setSelectedWorkOrderModal(null);
                 }}
                 className="flex-1 py-2.5 px-3 rounded-xl border border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 text-slate-800 dark:text-stone-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
@@ -2916,7 +2943,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                       };
                     })
                   );
-                  showToast(`${selectedWorkOrderModal.id}: Berhasil diselesaikan (100%)`);
+                  showToast(`${selectedWorkOrderModal.id}: Completed successfully (100%)`);
                   setSelectedWorkOrderModal(null);
                 }}
                 className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
@@ -2928,7 +2955,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
               <button
                 type="button"
                 onClick={() => {
-                  showToast(`${selectedWorkOrderModal.id}: Jadwal terverifikasi di timeline`);
+                  showToast(`${selectedWorkOrderModal.id}: Schedule verified on timeline`);
                   setSelectedWorkOrderModal(null);
                 }}
                 className="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-black dark:bg-stone-100 dark:hover:bg-white text-white dark:text-slate-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
