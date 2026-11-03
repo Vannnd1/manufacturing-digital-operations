@@ -92,27 +92,27 @@ function getOrderScheduleInfo(order: any, idx: number) {
 
   if (order.status === "Completed") {
     // Finished earlier this week
-    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 4 - (idx % 2));
-    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (idx % 2));
+    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3 - (idx % 2));
+    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1 - (idx % 2));
     scheduleTag = "Completed " + fmtMonthDay(endDate);
     progress = 100;
   } else if (order.status === "In_Progress") {
     // Currently on shop floor today
     startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 5);
+    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 4);
     scheduleTag = "Active on floor today";
     progress = 65;
   } else if (order.status === "Ready") {
     // Materials reserved, staged for assembly today
     startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 6);
+    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 5);
     scheduleTag = "Starts today";
     progress = 20;
   } else {
     // Planned - queued up for upcoming days
-    const dayOffset = 1 + (idx % 3);
+    const dayOffset = 1 + (idx % 4);
     startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset);
-    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset + 6);
+    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset + 4);
     scheduleTag = "Starts " + fmtMonthDay(startDate);
     progress = 0;
   }

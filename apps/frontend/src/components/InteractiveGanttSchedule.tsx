@@ -66,8 +66,249 @@ const STAFF_ROSTER = [
   { id: "st-8", name: "Diego Alvarez", role: "Sub-assembly Tech", initial: "DA", color: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200" },
 ];
 
+const DEFAULT_DEMO_ORDERS = [
+  { id: "MO-301", product_sku: "PROD-AC-S10", product_name: "AC Split Standard 1PK (CS-PN10WKJ)", planned_quantity: 300, status: "In_Progress" },
+  { id: "MO-302", product_sku: "PROD-AC-I10", product_name: "AC Split Inverter 1PK (CS-XU10WKPJ)", planned_quantity: 200, status: "Ready" },
+  { id: "MO-303", product_sku: "PROD-RF-2DR", product_name: "Refrigerator 2-Door 268L (NR-BP303VS)", planned_quantity: 150, status: "Planned" },
+  { id: "MO-304", product_sku: "PROD-WM-TT7", product_name: "Washing Machine Top Load 7kg (NA-F70A9)", planned_quantity: 120, status: "Planned" },
+  { id: "MO-305", product_sku: "PROD-TV-32H", product_name: "LED TV 32-inch HD Ready (TH-32LS600G)", planned_quantity: 500, status: "Completed" },
+  { id: "MO-306", product_sku: "PROD-AC-S10", product_name: "AC Split Standard 1PK (CS-PN10WKJ)", planned_quantity: 250, status: "Completed" },
+];
+
+function getProductOperationsTemplate(sku: string, name: string) {
+  const upper = (sku + " " + name).toUpperCase();
+  if (upper.includes("AC") || upper.includes("AIR CONDITIONER")) {
+    return [
+      { name: "Copper tube bending & flaring", techInitial: "FW", techName: "Felix Wagner", techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200", workCenter: "WC-AC-01 · AC Tube Bending & Heat Exchanger" },
+      { name: "Aluminum fin matrix expansion", techInitial: "AT", techName: "Aiko Tanaka", techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200", workCenter: "WC-AC-01 · AC Tube Bending & Heat Exchanger" },
+      { name: "R32 evacuation & charging", techInitial: "BA", techName: "Bo Andersen", techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200", workCenter: "WC-AC-02 · Inverter & Refrigerant Vacuum Bay" },
+      { name: "Dielectric & cooling run test", techInitial: "HK", techName: "Hana Kim", techColor: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200", workCenter: "WC-QC-01 · High-Voltage Dielectric Gate" },
+    ];
+  }
+  if (upper.includes("RF") || upper.includes("REFRIGERATOR")) {
+    return [
+      { name: "Cabinet stamping & bending", techInitial: "FW", techName: "Felix Wagner", techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200", workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming" },
+      { name: "PU foaming insulation injection", techInitial: "DA", techName: "Diego Alvarez", techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200", workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming" },
+      { name: "Compressor loop brazing", techInitial: "AT", techName: "Aiko Tanaka", techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200", workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming" },
+      { name: "Temperature pull-down & seal test", techInitial: "HK", techName: "Hana Kim", techColor: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200", workCenter: "WC-QC-01 · High-Voltage Dielectric Gate" },
+    ];
+  }
+  if (upper.includes("WM") || upper.includes("WASHING")) {
+    return [
+      { name: "Drum stamping & spin balancing", techInitial: "LV", techName: "Lena Vogel", techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200", workCenter: "WC-WM-01 · Washer Drum & Motor Integration" },
+      { name: "Direct-drive motor integration", techInitial: "AO", techName: "Amara Okafor", techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200", workCenter: "WC-WM-01 · Washer Drum & Motor Integration" },
+      { name: "Electronic control harness", techInitial: "BA", techName: "Bo Andersen", techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200", workCenter: "WC-WM-01 · Washer Drum & Motor Integration" },
+      { name: "Water leak & high-RPM test gate", techInitial: "HK", techName: "Hana Kim", techColor: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200", workCenter: "WC-QC-01 · High-Voltage Dielectric Gate" },
+    ];
+  }
+  if (upper.includes("TV") || upper.includes("LED")) {
+    return [
+      { name: "SMT motherboard surface mount", techInitial: "BA", techName: "Bo Andersen", techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200", workCenter: "WC-TV-01 · SMT & Display Panel Lamination" },
+      { name: "LED backlight panel lamination", techInitial: "LV", techName: "Lena Vogel", techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200", workCenter: "WC-TV-01 · SMT & Display Panel Lamination" },
+      { name: "Chassis integration & power supply", techInitial: "AO", techName: "Amara Okafor", techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200", workCenter: "WC-TV-01 · SMT & Display Panel Lamination" },
+      { name: "High-voltage dielectric test", techInitial: "HK", techName: "Hana Kim", techColor: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200", workCenter: "WC-QC-01 · High-Voltage Dielectric Gate" },
+    ];
+  }
+  return [
+    { name: "Raw material staging & cutting", techInitial: "FW", techName: "Felix Wagner", techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200", workCenter: "WC-AC-01 · Shop Floor Prep" },
+    { name: "Mechanical assembly & fastening", techInitial: "AO", techName: "Amara Okafor", techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200", workCenter: "WC-AC-02 · Sub-assembly Bay" },
+    { name: "Electrical wiring & harness setup", techInitial: "BA", techName: "Bo Andersen", techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200", workCenter: "WC-WM-01 · Electrical Station" },
+    { name: "Quality assurance & final gate", techInitial: "HK", techName: "Hana Kim", techColor: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200", workCenter: "WC-QC-01 · High-Voltage Dielectric Gate" },
+  ];
+}
+
+function buildWorkOrderItem(
+  order: any,
+  idx: number,
+  currentSunday: Date,
+  todayDayOfWeek: number,
+  displayId: string
+): WorkOrderItem {
+  const fmtDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  const sku = order.product_sku || (order.id && order.id.startsWith("p-") ? order.id.toUpperCase() : "PROD-AC-S10");
+  const name = String(order.product_name || order.product_id || "Manufacturing Order Item");
+  const qty = Number(order.planned_quantity) || 100;
+  const shortName = name.split("(")[0].trim();
+  const model = `${sku} · ${name} (×${qty})`;
+
+  let startDay: number;
+  let durationDays: number;
+  let status: "In progress" | "On hold" | "Completed" | "Done";
+  let overallProgress: number;
+
+  if (order.status === "Completed") {
+    status = "Completed";
+    overallProgress = 100;
+    startDay = Math.max(0, todayDayOfWeek - 3 - (idx % 2));
+    durationDays = 3;
+  } else if (order.status === "In_Progress") {
+    status = "In progress";
+    overallProgress = 65;
+    startDay = Math.max(0, todayDayOfWeek - 1);
+    durationDays = 6;
+  } else if (order.status === "Ready") {
+    status = "In progress";
+    overallProgress = 20;
+    startDay = todayDayOfWeek;
+    durationDays = 6;
+  } else {
+    // Planned or newly added job
+    status = "On hold";
+    overallProgress = 0;
+    const offset = 1 + (idx % 4);
+    startDay = todayDayOfWeek + offset;
+    durationDays = 5;
+  }
+
+  const startDate = new Date(currentSunday.getTime() + startDay * 86400000);
+  const endDate = new Date(currentSunday.getTime() + (startDay + durationDays - 1) * 86400000);
+  const dateRange = `${fmtDate(startDate)} – ${fmtDate(endDate)}`;
+
+  let clientOrDept = "Manufacturing Assembly Line";
+  const upper = sku.toUpperCase();
+  if (upper.includes("AC")) clientOrDept = "AC Production Line 1";
+  else if (upper.includes("RF")) clientOrDept = "Refrigerator Line A";
+  else if (upper.includes("WM")) clientOrDept = "Washer Bay 3";
+  else if (upper.includes("TV")) clientOrDept = "Display Assembly Cleanroom";
+
+  const opTemplates = getProductOperationsTemplate(sku, name);
+  const d1 = Math.max(1, Math.floor(durationDays * 0.3));
+  const d2 = Math.max(1, Math.floor(durationDays * 0.3));
+  const d3 = Math.max(1, Math.floor(durationDays * 0.25));
+  const d4 = Math.max(1, durationDays - (d1 + d2 + d3));
+  const opDurations = [d1, d2, d3, d4];
+
+  let currentOpStart = startDay;
+  const operations: OperationItem[] = opTemplates.map((tmpl, opIdx) => {
+    const dur = opDurations[opIdx] || 1;
+    const opStart = currentOpStart;
+    currentOpStart += dur;
+
+    const opStartD = new Date(currentSunday.getTime() + opStart * 86400000);
+    const opEndD = new Date(currentSunday.getTime() + (opStart + dur - 1) * 86400000);
+    const statusText = `${fmtDate(opStartD)} – ${fmtDate(opEndD)}`;
+
+    let progress = 0;
+    let colorScheme: "emerald" | "blue" | "amber" | "stone" = "stone";
+
+    if (overallProgress === 100) {
+      progress = 100;
+      colorScheme = "emerald";
+    } else if (overallProgress === 65) {
+      if (opIdx === 0 || opIdx === 1) {
+        progress = 100;
+        colorScheme = "emerald";
+      } else if (opIdx === 2) {
+        progress = 60;
+        colorScheme = "blue";
+      } else {
+        progress = 0;
+        colorScheme = "stone";
+      }
+    } else if (overallProgress === 20) {
+      if (opIdx === 0) {
+        progress = 60;
+        colorScheme = "blue";
+      } else if (opIdx === 1) {
+        progress = 20;
+        colorScheme = "amber";
+      } else {
+        progress = 0;
+        colorScheme = "stone";
+      }
+    } else {
+      progress = 0;
+      colorScheme = "stone";
+    }
+
+    return {
+      id: `${displayId}-OP-${opIdx + 1}`,
+      name: tmpl.name,
+      techInitial: tmpl.techInitial,
+      techName: tmpl.techName,
+      techColor: tmpl.techColor,
+      startDay: opStart,
+      durationDays: dur,
+      progress,
+      colorScheme,
+      statusText,
+      workCenter: tmpl.workCenter,
+    };
+  });
+
+  return {
+    id: displayId,
+    model,
+    shortName,
+    clientOrDept,
+    dateRange,
+    rush: false,
+    status,
+    startDay,
+    durationDays,
+    expanded: idx === 0 || idx === 1,
+    operations,
+    note: `Production run for ${shortName}. Ensure quality test compliance and line synchronization.`,
+  };
+}
+
+function generateScheduleOrders(ordersList?: any[]): WorkOrderItem[] {
+  const effective = ordersList && ordersList.length > 0 ? ordersList : DEFAULT_DEMO_ORDERS;
+  const now = new Date();
+  const currentSunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+  const todayDayOfWeek = now.getDay();
+
+  return effective.map((order, idx) => {
+    const rawId = String(order.id || `order-${idx}`);
+    const displayId = rawId.startsWith("mo-") || rawId.startsWith("wo-")
+      ? rawId.toUpperCase()
+      : rawId.slice(0, 8).toUpperCase();
+    return buildWorkOrderItem(order, idx, currentSunday, todayDayOfWeek, displayId);
+  });
+}
+
+function syncOrdersWithSchedule(ordersList: any[], prev: WorkOrderItem[]): WorkOrderItem[] {
+  const now = new Date();
+  const currentSunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+  const todayDayOfWeek = now.getDay();
+
+  return ordersList.map((order, idx) => {
+    const rawId = String(order.id || `order-${idx}`);
+    const displayId = rawId.startsWith("mo-") || rawId.startsWith("wo-")
+      ? rawId.toUpperCase()
+      : rawId.slice(0, 8).toUpperCase();
+
+    const existing = prev.find((w) => w.id === displayId || w.id === rawId || (order.id && w.id.includes(rawId.slice(0, 6))));
+    if (existing) {
+      const sku = order.product_sku || existing.model.split(" · ")[0];
+      const name = String(order.product_name || existing.shortName);
+      const qty = order.planned_quantity || 100;
+      return {
+        ...existing,
+        id: displayId,
+        model: `${sku} · ${name} (×${qty})`,
+        shortName: name.split("(")[0].trim(),
+      };
+    }
+
+    return buildWorkOrderItem(order, idx, currentSunday, todayDayOfWeek, displayId);
+  });
+}
+
 export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: InteractiveGanttScheduleProps) {
   const { formattedShort } = useLiveTime();
+
+  const baseCurrentSunday = useMemo(() => {
+    const n = new Date();
+    return new Date(n.getFullYear(), n.getMonth(), n.getDate() - n.getDay());
+  }, []);
+
+  const formatGanttDate = (dayOffset: number, includeYear = false) => {
+    const d = new Date(baseCurrentSunday.getTime() + dayOffset * 86400000);
+    const m = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return includeYear ? `${m}, ${d.getFullYear()}` : m;
+  };
   const [granularity, setGranularity] = useState<"Week" | "Month" | "Quarter">("Week");
   const [timeOffset, setTimeOffset] = useState(0);
   const [mode, setMode] = useState<"Orders" | "Work centers">("Orders");
@@ -257,465 +498,13 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     };
   }, [granularity, timeOffset, formattedShort]);
 
-  // Initial Work Orders & Sub-operations tailored to Panasonic Manufacturing Indonesia lines
-  const [workOrders, setWorkOrders] = useState<WorkOrderItem[]>([
-    {
-      id: "WO-2041",
-      model: "PROD-AC-S10 · AC Split Standard 1PK (CS-PN10WKJ) (×300)",
-      shortName: "AC Split Standard 1PK",
-      clientOrDept: "AC Production Line 1",
-      dateRange: "Nov 7 – Nov 17",
-      rush: false,
-      status: "In progress",
-      startDay: 0,
-      durationDays: 7,
-      expanded: false,
-      note: "High-volume assembly run for Standard Split AC CS-PN10WKJ. Ensure tube brazing seal integrity and run test compliance.",
-      operations: [
-        {
-          id: "op-2041-1",
-          name: "Copper tube bending & flaring",
-          techInitial: "FW",
-          techName: "Felix Wagner",
-          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 0,
-          durationDays: 2,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 7 – Nov 8",
-          workCenter: "WC-AC-01 · AC Tube Bending & Heat Exchanger",
-        },
-        {
-          id: "op-2041-2",
-          name: "Aluminum fin matrix expansion",
-          techInitial: "AT",
-          techName: "Aiko Tanaka",
-          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-          startDay: 2,
-          durationDays: 2,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 9 – Nov 10",
-          workCenter: "WC-AC-01 · AC Tube Bending & Heat Exchanger",
-        },
-        {
-          id: "op-2041-3",
-          name: "R32 evacuation & charging",
-          techInitial: "JB",
-          techName: "Jonas Berg",
-          techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
-          startDay: 4,
-          durationDays: 2,
-          progress: 60,
-          colorScheme: "blue",
-          statusText: "Nov 11 – Nov 12",
-          workCenter: "WC-AC-02 · Inverter & Refrigerant Vacuum Bay",
-        },
-        {
-          id: "op-2041-4",
-          name: "Acoustic noise & cooling run test",
-          techInitial: "DA",
-          techName: "Diego Alvarez",
-          techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
-          startDay: 6,
-          durationDays: 1,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 13 – Nov 14",
-          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
-        },
-      ],
-    },
-    {
-      id: "WO-2042",
-      model: "PROD-AC-I10 · AC Split Inverter 1PK (CS-XU10WKPJ) (×200)",
-      shortName: "AC Split Inverter 1PK",
-      clientOrDept: "AC Inverter Line 2",
-      dateRange: "Nov 9 – Nov 15",
-      rush: false,
-      status: "In progress",
-      startDay: 1,
-      durationDays: 6,
-      expanded: true,
-      note: "Premium Inverter Split AC with nanoe™ X generator. 100% helium mass-spectrometer leak detection required.",
-      operations: [
-        {
-          id: "op-2042-1",
-          name: "Inverter PCB wiring & heat sink",
-          techInitial: "FW",
-          techName: "Felix Wagner",
-          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 1,
-          durationDays: 2,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 9 – Nov 10",
-          workCenter: "WC-AC-02 · Inverter & Refrigerant Vacuum Bay",
-        },
-        {
-          id: "op-2042-2",
-          name: "Rotary compressor hermetic brazing",
-          techInitial: "AT",
-          techName: "Aiko Tanaka",
-          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-          startDay: 3,
-          durationDays: 2,
-          progress: 55,
-          colorScheme: "blue",
-          statusText: "Nov 11 – Nov 12",
-          workCenter: "WC-AC-01 · AC Tube Bending & Heat Exchanger",
-        },
-        {
-          id: "op-2042-3",
-          name: "Ultrasonic helium leak testing",
-          techInitial: "LV",
-          techName: "Lena Vogel",
-          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
-          startDay: 5,
-          durationDays: 1,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 13 – Nov 14",
-          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
-        },
-      ],
-    },
-    {
-      id: "WO-2043",
-      model: "PROD-RF-2DR · Refrigerator 2-Door 268L (NR-BP303VS) (×150)",
-      shortName: "Refrigerator 2-Door 268L",
-      clientOrDept: "Refrigerator Line 1",
-      dateRange: "Nov 10 – Nov 17",
-      rush: true,
-      status: "In progress",
-      startDay: 2,
-      durationDays: 4,
-      expanded: true,
-      note: "Prime Fresh 2-door refrigerator with ECONAVI sensors. Uniform polyurethane insulation density mandatory.",
-      operations: [
-        {
-          id: "op-2043-1",
-          name: "Outer steel cabinet roll forming",
-          techInitial: "FW",
-          techName: "Felix Wagner",
-          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 2,
-          durationDays: 2,
-          progress: 70,
-          colorScheme: "blue",
-          statusText: "Nov 10 – Nov 11",
-          rush: true,
-          workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming",
-        },
-        {
-          id: "op-2043-2",
-          name: "HIPS inner liner vacuum forming",
-          techInitial: "FW",
-          techName: "Felix Wagner",
-          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 4,
-          durationDays: 1,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 12",
-          workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming",
-        },
-        {
-          id: "op-2043-3",
-          name: "Rigid PU foam high-pressure injection",
-          techInitial: "AT",
-          techName: "Aiko Tanaka",
-          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-          startDay: 5,
-          durationDays: 2,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 13 – Nov 14",
-          workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming",
-        },
-      ],
-    },
-    {
-      id: "WO-2044",
-      model: "PROD-WM-TT7 · Washing Machine Top Load 7kg (NA-F70A9) (×120)",
-      shortName: "Washing Machine Top Load 7kg",
-      clientOrDept: "Washing Machine Assembly",
-      dateRange: "Nov 9 – Nov 13",
-      rush: true,
-      status: "In progress",
-      startDay: 1,
-      durationDays: 3,
-      expanded: true,
-      note: "StainMaster top-load model. Dynamic spin balancing must pass strict vibration thresholds at 800 RPM.",
-      operations: [
-        {
-          id: "op-2044-1",
-          name: "PP outer tub injection molding",
-          techInitial: "JB",
-          techName: "Jonas Berg",
-          techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
-          startDay: 1,
-          durationDays: 2,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 9 – Nov 10",
-          rush: true,
-          workCenter: "WC-WM-01 · Washing Machine Drum & Motor Integration",
-        },
-        {
-          id: "op-2044-2",
-          name: "Stainless steel wash drum seaming",
-          techInitial: "BA",
-          techName: "Bo Andersen",
-          techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
-          startDay: 3,
-          durationDays: 1,
-          progress: 50,
-          colorScheme: "blue",
-          statusText: "Nov 11 – Nov 12",
-          workCenter: "WC-WM-01 · Washing Machine Drum & Motor Integration",
-        },
-        {
-          id: "op-2044-3",
-          name: "Centrifugal spin balance & water test",
-          techInitial: "DA",
-          techName: "Diego Alvarez",
-          techColor: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
-          startDay: 4,
-          durationDays: 1,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 12 – Nov 13",
-          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
-        },
-      ],
-    },
-    {
-      id: "WO-2045",
-      model: "PROD-TV-32H · LED TV 32-inch HD Ready (TH-32LS600G) (×500)",
-      shortName: "LED TV 32-inch HD Ready",
-      clientOrDept: "Display Electronics Line",
-      dateRange: "Nov 9 – Nov 15",
-      rush: false,
-      status: "In progress",
-      startDay: 1,
-      durationDays: 6,
-      expanded: true,
-      note: "Android TV smart platform series. 100% automatic optical inspection (AOI) on mainboard solder joints.",
-      operations: [
-        {
-          id: "op-2045-1",
-          name: "SMT mainboard pick & place",
-          techInitial: "AO",
-          techName: "Amara Okafor",
-          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
-          startDay: 1,
-          durationDays: 2,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 9 – Nov 10",
-          workCenter: "WC-TV-01 · SMT & Display Panel Lamination",
-        },
-        {
-          id: "op-2045-2",
-          name: "Backlight matrix cleanroom bonding",
-          techInitial: "HK",
-          techName: "Hana Kim",
-          techColor: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200",
-          startDay: 3,
-          durationDays: 2,
-          progress: 55,
-          colorScheme: "blue",
-          statusText: "Nov 11 – Nov 12",
-          workCenter: "WC-TV-01 · SMT & Display Panel Lamination",
-        },
-        {
-          id: "op-2045-3",
-          name: "Continuous 4-hour video burn-in test",
-          techInitial: "BA",
-          techName: "Bo Andersen",
-          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-          startDay: 6,
-          durationDays: 1,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 14",
-          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
-        },
-      ],
-    },
-    {
-      id: "WO-2046",
-      model: "PROD-RF-1DR · Refrigerator 1-Door 100L (NR-AP188VS) (×180)",
-      shortName: "Refrigerator 1-Door 100L",
-      clientOrDept: "Refrigerator Line 2",
-      dateRange: "Nov 12 – Nov 18",
-      rush: false,
-      status: "In progress",
-      startDay: 3,
-      durationDays: 5,
-      expanded: true,
-      note: "Single-door compact refrigerator with direct-cooling evaporator. Pull-down temp must reach 3°C within 45 min.",
-      operations: [
-        {
-          id: "op-2046-1",
-          name: "Cabinet sheet punching & bending",
-          techInitial: "FW",
-          techName: "Felix Wagner",
-          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 3,
-          durationDays: 1,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 12",
-          workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming",
-        },
-        {
-          id: "op-2046-2",
-          name: "Roll-bond evaporator loop brazing",
-          techInitial: "KM",
-          techName: "Kwame Mensah",
-          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
-          startDay: 4,
-          durationDays: 2,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 14 – Nov 16",
-          workCenter: "WC-RF-01 · Refrigerator Cabinet & PU Foaming",
-        },
-        {
-          id: "op-2046-3",
-          name: "Thermodynamic cooling pull-down QA",
-          techInitial: "JB",
-          techName: "Jonas Berg",
-          techColor: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200",
-          startDay: 6,
-          durationDays: 2,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 17 – Nov 18",
-          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
-        },
-      ],
-    },
-    {
-      id: "WO-2047",
-      model: "PROD-WM-FL8 · Washing Machine Front Load 8kg (NA-V80FG3) (×80)",
-      shortName: "Washing Machine Front Load 8kg",
-      clientOrDept: "Washing Machine Premium Line",
-      dateRange: "Nov 6 – Nov 13",
-      rush: false,
-      status: "Done",
-      startDay: 0,
-      durationDays: 7,
-      expanded: false,
-      note: "HydroActive inverter front-load washer. Complete batch passed waterproof and dynamic vibration release.",
-      operations: [
-        {
-          id: "op-2047-0",
-          name: "Tub suspension damper installation",
-          techInitial: "FW",
-          techName: "Felix Wagner",
-          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 0,
-          durationDays: 1,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 6",
-          workCenter: "WC-WM-01 · Washing Machine Drum & Motor Integration",
-        },
-        {
-          id: "op-2047-1",
-          name: "Inverter BLDC motor torque & seal QA",
-          techInitial: "KM",
-          techName: "Kwame Mensah",
-          techColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
-          startDay: 1,
-          durationDays: 2,
-          progress: 100,
-          colorScheme: "emerald",
-          statusText: "Nov 7 – Nov 8",
-          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
-        },
-      ],
-    },
-    {
-      id: "WO-2048",
-      model: "PROD-TV-43F · LED TV 43-inch Full HD (TH-43LX800G) (×250)",
-      shortName: "LED TV 43-inch Full HD",
-      clientOrDept: "Display Electronics Line 2",
-      dateRange: "Nov 14 – Nov 18",
-      rush: false,
-      status: "On hold",
-      startDay: 4,
-      durationDays: 4,
-      expanded: false,
-      note: "Vivid Digital Pro processor panel assembly. On hold pending final optical filter batch release.",
-      operations: [
-        {
-          id: "op-2048-1",
-          name: "Bezel stamping & cosmetic inspection",
-          techInitial: "FW",
-          techName: "Felix Wagner",
-          techColor: "bg-slate-200 text-slate-800 dark:bg-stone-800 dark:text-stone-200",
-          startDay: 4,
-          durationDays: 1,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 14 – Nov 15",
-          workCenter: "WC-TV-01 · SMT & Display Panel Lamination",
-        },
-        {
-          id: "op-2048-2",
-          name: "Internal wire harness & speaker mount",
-          techInitial: "AT",
-          techName: "Aiko Tanaka",
-          techColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-          startDay: 5,
-          durationDays: 2,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 16 – Nov 17",
-          workCenter: "WC-TV-01 · SMT & Display Panel Lamination",
-        },
-        {
-          id: "op-2048-3",
-          name: "High-voltage dielectric insulation test",
-          techInitial: "LV",
-          techName: "Lena Vogel",
-          techColor: "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-200",
-          startDay: 6,
-          durationDays: 1,
-          progress: 0,
-          colorScheme: "stone",
-          statusText: "Nov 18",
-          workCenter: "WC-QC-01 · High-Voltage Dielectric Gate",
-        },
-      ],
-    },
-  ]);
+  // Initial Work Orders synchronized with real-time schedule and backend orders
+  const [workOrders, setWorkOrders] = useState<WorkOrderItem[]>(() => generateScheduleOrders(orders));
 
-  // Synchronize real backend production orders if provided
+  // Keep Work Orders schedule synchronized whenever orders are loaded, refreshed, or newly created
   useEffect(() => {
     if (!orders || orders.length === 0) return;
-
-    setWorkOrders((prev) => {
-      return prev.map((wo, idx) => {
-        const matchingDbOrder = orders[idx % orders.length];
-        if (!matchingDbOrder) return wo;
-
-        const rawName = String(matchingDbOrder.product_name || "");
-        const sku = matchingDbOrder.product_sku || wo.model.split(" · ")[0];
-        const name = rawName || wo.shortName;
-        const qty = matchingDbOrder.planned_quantity || 100;
-
-        return {
-          ...wo,
-          model: `${sku} · ${name} (×${qty})`,
-          shortName: name || wo.shortName,
-        };
-      });
-    });
+    setWorkOrders((prev) => syncOrdersWithSchedule(orders, prev));
   }, [orders]);
 
   // Trigger feedback notification toast
@@ -945,12 +734,15 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
     }
 
     if (granularity === "Week") {
-      // 21 days capacity: Week 1 (Nov 8-14), Week 2 (Nov 15-21), Week 3 (Nov 22-28)
-      return [
-        3, 5, 5, 3, 5, 3, 3, // Week 1 (Nov 8 – 14)
-        2, 4, 4, 2, 1, 0, 0, // Week 2 (Nov 15 – 21)
-        0, 0, 0, 0, 0, 0, 0, // Week 3 (Nov 22 – 28: Empty schedule)
-      ];
+      const load = new Array(21).fill(0);
+      visibleWorkOrders.forEach((wo) => {
+        wo.operations.forEach((op) => {
+          for (let d = op.startDay; d < op.startDay + op.durationDays; d++) {
+            if (d >= 0 && d < 21) load[d] += 1;
+          }
+        });
+      });
+      return load;
     }
 
     if (granularity === "Month") {
@@ -2143,14 +1935,14 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                   <div className="p-2.5 rounded-2xl bg-stone-50 dark:bg-stone-900/40 border border-stone-100 dark:border-stone-800">
                     <span className="text-[10px] text-stone-400 block font-medium">Starts</span>
                     <span className="font-semibold text-slate-800 dark:text-stone-200">
-                      Nov {8 + inspectedData.op.startDay}
+                      {formatGanttDate(inspectedData.op.startDay)}
                     </span>
                   </div>
 
                   <div className="p-2.5 rounded-2xl bg-stone-50 dark:bg-stone-900/40 border border-stone-100 dark:border-stone-800">
                     <span className="text-[10px] text-stone-400 block font-medium">Finishes</span>
                     <span className="font-semibold text-slate-800 dark:text-stone-200">
-                      Nov {8 + inspectedData.op.startDay + inspectedData.op.durationDays}
+                      {formatGanttDate(inspectedData.op.startDay + inspectedData.op.durationDays - 1)}
                     </span>
                   </div>
 
@@ -2535,7 +2327,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                             {wo.clientOrDept || "OEM Studio"}
                           </span>
                           <span className="shrink-0 text-[10px] text-stone-400 dark:text-stone-500 font-medium">
-                            {wo.dateRange || "Nov 8 – Nov 15"}
+                            {wo.dateRange || `${formatGanttDate(wo.startDay)} – ${formatGanttDate(wo.startDay + wo.durationDays - 1)}`}
                           </span>
                         </div>
                       </div>
@@ -2821,14 +2613,14 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                   <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-100 dark:border-stone-800">
                     <span className="text-[10px] text-stone-400 block font-medium">Starts</span>
                     <span className="font-bold text-sm text-slate-800 dark:text-stone-200">
-                      Nov {8 + selectedWorkOrderModal.startDay}
+                      {formatGanttDate(selectedWorkOrderModal.startDay)}
                     </span>
                   </div>
 
                   <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-100 dark:border-stone-800">
                     <span className="text-[10px] text-stone-400 block font-medium">Finishes</span>
                     <span className="font-bold text-sm text-slate-800 dark:text-stone-200">
-                      Nov {8 + selectedWorkOrderModal.startDay + selectedWorkOrderModal.durationDays}
+                      {formatGanttDate(selectedWorkOrderModal.startDay + selectedWorkOrderModal.durationDays - 1)}
                     </span>
                   </div>
 
@@ -3014,14 +2806,14 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
               <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-100 dark:border-stone-800">
                 <span className="text-[10px] text-stone-400 block font-medium">Starts</span>
                 <span className="font-bold text-sm text-slate-800 dark:text-stone-200">
-                  Nov {8 + selectedOpModal.op.startDay}, 2026
+                  {formatGanttDate(selectedOpModal.op.startDay, true)}
                 </span>
               </div>
 
               <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-100 dark:border-stone-800">
                 <span className="text-[10px] text-stone-400 block font-medium">Finishes</span>
                 <span className="font-bold text-sm text-slate-800 dark:text-stone-200">
-                  Nov {8 + selectedOpModal.op.startDay + selectedOpModal.op.durationDays}, 2026
+                  {formatGanttDate(selectedOpModal.op.startDay + selectedOpModal.op.durationDays - 1, true)}
                 </span>
               </div>
 
@@ -3055,7 +2847,7 @@ export function InteractiveGanttSchedule({ orders, onNavigateToOrders }: Interac
                   <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                   <div>
                     <p className="font-bold text-slate-800 dark:text-stone-200">Laser Sheet Metal Cutting</p>
-                    <p className="text-[11px] text-stone-400">ends Nov 9</p>
+                    <p className="text-[11px] text-stone-400">ends {formatGanttDate(selectedOpModal.op.startDay)}</p>
                   </div>
                 </div>
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
