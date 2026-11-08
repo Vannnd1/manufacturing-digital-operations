@@ -1,18 +1,30 @@
 import { mockStore } from "./mockData";
 
 export function handleMockRequest(url: string, method: string = "get", data?: any): any {
-  const normMethod = method.toLowerCase();
+  const normMethod = (method || "get").toLowerCase();
   // Strip origin and leading /api
-  let path = url.replace(/^https?:\/\/[^/]+/, "");
+  let path = (url || "").replace(/^https?:\/\/[^/]+/, "");
   if (path.startsWith("/api")) {
     path = path.slice(4);
   }
   const [pathname, queryString] = path.split("?");
   const query = new URLSearchParams(queryString || "");
 
+  // Safely parse JSON data if passed as string (e.g. from Axios transformRequest or raw payload)
+  let payload: any = data;
+  if (typeof data === "string") {
+    try {
+      payload = JSON.parse(data);
+    } catch {
+      payload = {};
+    }
+  } else if (!payload || typeof payload !== "object") {
+    payload = {};
+  }
+
   // 1. Auth
   if (pathname === "/auth/login" && normMethod === "post") {
-    return mockStore.login(data || {});
+    return mockStore.login(payload);
   }
   if (pathname === "/auth/seed-demo-users") {
     return { message: "Demo users ready" };
@@ -25,12 +37,12 @@ export function handleMockRequest(url: string, method: string = "get", data?: an
       return mockStore.getMaterials(includeInactive);
     }
     if (normMethod === "post") {
-      return mockStore.createMaterial(data || {});
+      return mockStore.createMaterial(payload);
     }
   }
   const matMatch = pathname.match(/^\/materials\/([^/]+)$/);
   if (matMatch && normMethod === "patch") {
-    return mockStore.updateMaterial(matMatch[1], data || {});
+    return mockStore.updateMaterial(matMatch[1], payload);
   }
 
   // 3. Inventory
@@ -38,7 +50,7 @@ export function handleMockRequest(url: string, method: string = "get", data?: an
     return mockStore.getInventory();
   }
   if (pathname === "/inventory/transaction" && normMethod === "post") {
-    return mockStore.adjustInventory(data || {});
+    return mockStore.adjustInventory(payload);
   }
   if (pathname === "/inventory/transactions" && normMethod === "get") {
     return mockStore.getInventoryTransactions();
@@ -47,22 +59,22 @@ export function handleMockRequest(url: string, method: string = "get", data?: an
   // 4. Procurement
   if (pathname === "/suppliers") {
     if (normMethod === "get") return mockStore.getSuppliers();
-    if (normMethod === "post") return mockStore.createSupplier(data || {});
+    if (normMethod === "post") return mockStore.createSupplier(payload);
   }
   if (pathname === "/procurement/pr") {
     if (normMethod === "get") return mockStore.getPRs();
-    if (normMethod === "post") return mockStore.createPR(data || {});
+    if (normMethod === "post") return mockStore.createPR(payload);
   }
   const prApproveMatch = pathname.match(/^\/procurement\/pr\/([^/]+)\/approve$/);
   if (prApproveMatch && normMethod === "patch") {
-    return mockStore.approvePR(prApproveMatch[1], data?.status || "Approved");
+    return mockStore.approvePR(prApproveMatch[1], payload?.status || "Approved");
   }
   if (pathname === "/procurement/po") {
     if (normMethod === "get") return mockStore.getPOs();
-    if (normMethod === "post") return mockStore.createPO(data || {});
+    if (normMethod === "post") return mockStore.createPO(payload);
   }
   if (pathname === "/procurement/gr" && normMethod === "post") {
-    return mockStore.createGR(data || {});
+    return mockStore.createGR(payload);
   }
 
   // 5. Products
@@ -73,7 +85,7 @@ export function handleMockRequest(url: string, method: string = "get", data?: an
   // 6. Production
   if (pathname === "/production") {
     if (normMethod === "get") return mockStore.getProductionOrders();
-    if (normMethod === "post") return mockStore.createProductionOrder(data || {});
+    if (normMethod === "post") return mockStore.createProductionOrder(payload);
   }
   const availMatch = pathname.match(/^\/production\/([^/]+)\/availability$/);
   if (availMatch && normMethod === "get") {
@@ -85,7 +97,7 @@ export function handleMockRequest(url: string, method: string = "get", data?: an
   }
   const recMatch = pathname.match(/^\/production\/([^/]+)\/record$/);
   if (recMatch && normMethod === "post") {
-    return mockStore.recordProduction(recMatch[1], Number(data?.actual_quantity_produced) || 1);
+    return mockStore.recordProduction(recMatch[1], Number(payload?.actual_quantity_produced) || 1);
   }
   const cancelMatch = pathname.match(/^\/production\/([^/]+)\/cancel$/);
   if (cancelMatch && normMethod === "post") {
@@ -95,7 +107,7 @@ export function handleMockRequest(url: string, method: string = "get", data?: an
   // 7. Quality
   if (pathname === "/quality") {
     if (normMethod === "get") return mockStore.getInspections();
-    if (normMethod === "post") return mockStore.createInspection(data || {});
+    if (normMethod === "post") return mockStore.createInspection(payload);
   }
   if (pathname === "/quality/pending" && normMethod === "get") {
     return mockStore.getPendingInspections();

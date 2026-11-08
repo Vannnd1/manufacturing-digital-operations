@@ -2328,14 +2328,14 @@ export function Settings() {
               {selectedRoleModal.members
                 .filter((m) => {
                   if (!roleMemberSearch.trim()) return true;
-                  const q = roleMemberSearch.toLowerCase();
+                  const q = (roleMemberSearch || "").toLowerCase();
                   return (
-                    m.name.toLowerCase().includes(q) ||
-                    m.employeeId.toLowerCase().includes(q) ||
-                    m.jobTitle.toLowerCase().includes(q) ||
-                    m.department.toLowerCase().includes(q) ||
-                    m.email.toLowerCase().includes(q) ||
-                    m.workCenter.toLowerCase().includes(q)
+                    (m.name || "").toLowerCase().includes(q) ||
+                    (m.employeeId || "").toLowerCase().includes(q) ||
+                    (m.jobTitle || "").toLowerCase().includes(q) ||
+                    (m.department || "").toLowerCase().includes(q) ||
+                    (m.email || "").toLowerCase().includes(q) ||
+                    (m.workCenter || "").toLowerCase().includes(q)
                   );
                 })
                 .map((m) => (
@@ -2407,11 +2407,11 @@ export function Settings() {
 
               {selectedRoleModal.members.filter((m) => {
                 if (!roleMemberSearch.trim()) return true;
-                const q = roleMemberSearch.toLowerCase();
+                const q = (roleMemberSearch || "").toLowerCase();
                 return (
-                  m.name.toLowerCase().includes(q) ||
-                  m.employeeId.toLowerCase().includes(q) ||
-                  m.jobTitle.toLowerCase().includes(q)
+                  (m.name || "").toLowerCase().includes(q) ||
+                  (m.employeeId || "").toLowerCase().includes(q) ||
+                  (m.jobTitle || "").toLowerCase().includes(q)
                 );
               }).length === 0 && (
                 <div className="py-8 text-center text-xs text-stone-400">

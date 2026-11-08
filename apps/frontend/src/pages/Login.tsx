@@ -22,7 +22,9 @@ export function Login() {
     setLoading(true);
 
     try {
-      const { data } = await apiClient.post("/auth/login", { email, password });
+      const cleanEmail = (email || "").trim();
+      const cleanPassword = (password || "").trim();
+      const { data } = await apiClient.post("/auth/login", { email: cleanEmail, password: cleanPassword });
       setAuth(data.token, data.user);
       navigate("/");
     } catch (err: any) {

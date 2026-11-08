@@ -444,7 +444,19 @@ export class MockDataStore {
 
   // ── Route Handlers ──
 
-  login(body: { email: string }) {
+  login(body: any) {
+    let parsedBody = body;
+    if (typeof body === "string") {
+      try {
+        parsedBody = JSON.parse(body);
+      } catch {
+        parsedBody = {};
+      }
+    }
+
+    const rawEmail = (parsedBody?.email ?? "").toString().trim();
+    const cleanEmail = rawEmail.toLowerCase();
+
     const roleMap: Record<string, { role: string; name: string }> = {
       "admin@mfg.com": { role: "Admin", name: "System Administrator" },
       "manager@mfg.com": { role: "Manager", name: "Plant Supervisor" },
@@ -454,16 +466,17 @@ export class MockDataStore {
       "qc@mfg.com": { role: "Quality Control", name: "Quality Assurance Inspector" },
     };
 
-    const user = roleMap[body.email.toLowerCase()] || {
+    const usernamePart = cleanEmail && cleanEmail.includes("@") ? cleanEmail.split("@")[0] : (cleanEmail || "admin");
+    const user = roleMap[cleanEmail] || {
       role: "Admin",
-      name: body.email.split("@")[0] || "User",
+      name: usernamePart ? usernamePart.charAt(0).toUpperCase() + usernamePart.slice(1) : "Demo User",
     };
 
     return {
       token: "demo-jwt-token-" + Date.now(),
       user: {
-        id: "usr-" + body.email.split("@")[0],
-        email: body.email,
+        id: "usr-" + (usernamePart || "admin"),
+        email: cleanEmail || "admin@mfg.com",
         name: user.name,
         role: user.role,
       },

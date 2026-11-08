@@ -34,9 +34,10 @@ export class AuthController {
       const newUsers = [];
       
       for (const role of roles) {
-        if (role.name === "Admin") continue;
+        const roleName = (role.name || "").toLowerCase();
+        if (!roleName || roleName === "admin") continue;
         
-        const email = `${role.name.toLowerCase()}@mfg.com`;
+        const email = `${roleName}@mfg.com`;
         const existing = await db("users").where({ email }).first();
         if (!existing) {
           newUsers.push({
