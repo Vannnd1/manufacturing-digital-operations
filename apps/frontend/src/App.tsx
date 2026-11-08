@@ -73,6 +73,31 @@ function MainLayout() {
     localStorage.setItem("mfg-theme-mode", themeMode);
   }, [themeMode]);
 
+  // Sync and listen to brand accent color changes
+  const [accentColor, setAccentColor] = useState<string>(() => {
+    return localStorage.getItem("mfg-accent-color") || "amber";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-accent", accentColor);
+    localStorage.setItem("mfg-accent-color", accentColor);
+  }, [accentColor]);
+
+  useEffect(() => {
+    const handleAccentChange = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      const newColor = customEvent.detail || localStorage.getItem("mfg-accent-color") || "amber";
+      setAccentColor(newColor);
+      document.documentElement.setAttribute("data-accent", newColor);
+    };
+    window.addEventListener("mfg-accent-change", handleAccentChange);
+    window.addEventListener("storage", handleAccentChange);
+    return () => {
+      window.removeEventListener("mfg-accent-change", handleAccentChange);
+      window.removeEventListener("storage", handleAccentChange);
+    };
+  }, []);
+
   const toggleThemeMode = () => {
     const next = themeMode === "light" ? "dark" : "light";
     setThemeMode(next);

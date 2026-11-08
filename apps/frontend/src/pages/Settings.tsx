@@ -671,10 +671,16 @@ export function Settings() {
     localStorage.setItem("mfg-theme-mode", themeMode);
   }, [themeMode]);
 
+  useEffect(() => {
+    document.documentElement.setAttribute("data-accent", accentColor);
+  }, [accentColor]);
+
   const handleAccentChange = (color: "amber" | "ocean" | "mono" | "sage" | "coral") => {
     setAccentColor(color);
     localStorage.setItem("mfg-accent-color", color);
-    showToast(`Accent color set to ${color.toUpperCase()}`);
+    document.documentElement.setAttribute("data-accent", color);
+    window.dispatchEvent(new CustomEvent("mfg-accent-change", { detail: color }));
+    showToast(`Accent color set to ${color.toUpperCase()} · Brand highlights updated.`);
   };
 
   const handleDensityChange = (d: "comfortable" | "compact") => {
@@ -1796,11 +1802,11 @@ export function Settings() {
 
                 <div className="flex flex-wrap items-center gap-3">
                   {[
-                    { id: "amber", name: "Amber", sub: "Warm industrial (default)", bg: "bg-amber-600" },
-                    { id: "ocean", name: "Ocean", sub: "Calm precision blue", bg: "bg-blue-600" },
-                    { id: "mono", name: "Mono", sub: "Black and graphite", bg: "bg-stone-900" },
-                    { id: "sage", name: "Sage", sub: "Cleanroom soft green", bg: "bg-emerald-600" },
-                    { id: "coral", name: "Coral", sub: "High-alert red", bg: "bg-rose-600" }
+                    { id: "amber", name: "Amber", sub: "Warm industrial (default)", hex: "#EA580C" },
+                    { id: "ocean", name: "Ocean", sub: "Calm precision blue", hex: "#2563EB" },
+                    { id: "mono", name: "Mono", sub: "Black and graphite", hex: "#18181B" },
+                    { id: "sage", name: "Sage", sub: "Cleanroom soft green", hex: "#059669" },
+                    { id: "coral", name: "Coral", sub: "High-alert red", hex: "#E11D48" }
                   ].map((c) => (
                     <button
                       key={c.id}
@@ -1808,11 +1814,14 @@ export function Settings() {
                       onClick={() => handleAccentChange(c.id as any)}
                       className={`flex items-center gap-2.5 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                         accentColor === c.id
-                          ? "border-slate-900 dark:border-white bg-stone-50 dark:bg-stone-800/80 shadow-xs"
+                          ? "border-slate-900 dark:border-white bg-stone-50 dark:bg-stone-800/80 shadow-xs ring-2 ring-stone-900/10 dark:ring-white/20"
                           : "border-stone-200 dark:border-stone-800 hover:border-stone-300"
                       }`}
                     >
-                      <div className={`w-3.5 h-3.5 rounded-full ${c.bg} shrink-0 flex items-center justify-center`}>
+                      <div 
+                        style={{ backgroundColor: c.hex }} 
+                        className="w-3.5 h-3.5 rounded-full shrink-0 flex items-center justify-center shadow-xs"
+                      >
                         {accentColor === c.id && <Check className="w-2.5 h-2.5 text-white" />}
                       </div>
                       <div className="text-left">
@@ -2241,6 +2250,8 @@ export function Settings() {
                         setProfile(DEFAULT_COMPANY);
                         setPermissions(INITIAL_PERMISSIONS);
                         setAccentColor("amber");
+                        document.documentElement.setAttribute("data-accent", "amber");
+                        window.dispatchEvent(new CustomEvent("mfg-accent-change", { detail: "amber" }));
                         setDensity("comfortable");
                         setWeekStart("monday");
                         showToast("Workspace demo data restored to Wednesday morning baseline.");

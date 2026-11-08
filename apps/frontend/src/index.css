@@ -196,4 +196,262 @@ html.dark body {
   background: #71717a;
 }
 
+/* ── Dynamic Platform Accent Color System ────────────────────────── */
+:root {
+  --color-brand-accent: #EA580C;
+  --color-brand-accent-hover: #C2410C;
+  --color-brand-accent-light: #FFF7ED;
+  --color-brand-accent-border: #FED7AA;
+  --color-brand-accent-text: #C2410C;
+}
+
+html[data-accent="amber"] {
+  --color-brand-accent: #EA580C;
+  --color-brand-accent-hover: #C2410C;
+  --color-brand-accent-light: #FFF7ED;
+  --color-brand-accent-border: #FED7AA;
+  --color-brand-accent-text: #C2410C;
+}
+
+html[data-accent="ocean"] {
+  --color-brand-accent: #2563EB;
+  --color-brand-accent-hover: #1D4ED8;
+  --color-brand-accent-light: #EFF6FF;
+  --color-brand-accent-border: #BFDBFE;
+  --color-brand-accent-text: #1D4ED8;
+}
+
+html[data-accent="mono"] {
+  --color-brand-accent: #18181B;
+  --color-brand-accent-hover: #27272A;
+  --color-brand-accent-light: #F4F4F5;
+  --color-brand-accent-border: #E4E4E7;
+  --color-brand-accent-text: #18181B;
+}
+
+html[data-accent="sage"] {
+  --color-brand-accent: #059669;
+  --color-brand-accent-hover: #047857;
+  --color-brand-accent-light: #ECFDF5;
+  --color-brand-accent-border: #A7F3D0;
+  --color-brand-accent-text: #047857;
+}
+
+html[data-accent="coral"] {
+  --color-brand-accent: #E11D48;
+  --color-brand-accent-hover: #BE123C;
+  --color-brand-accent-light: #FFF1F2;
+  --color-brand-accent-border: #FECDD3;
+  --color-brand-accent-text: #BE123C;
+}
+
+/* Dark mode variations */
+html[data-accent="amber"].dark {
+  --color-brand-accent: #F97316;
+  --color-brand-accent-hover: #EA580C;
+  --color-brand-accent-light: rgba(234, 88, 12, 0.15);
+  --color-brand-accent-border: rgba(234, 88, 12, 0.35);
+  --color-brand-accent-text: #FB923C;
+}
+
+html[data-accent="ocean"].dark {
+  --color-brand-accent: #3B82F6;
+  --color-brand-accent-hover: #2563EB;
+  --color-brand-accent-light: rgba(37, 99, 235, 0.18);
+  --color-brand-accent-border: rgba(37, 99, 235, 0.4);
+  --color-brand-accent-text: #60A5FA;
+}
+
+html[data-accent="mono"].dark {
+  --color-brand-accent: #F4F4F5;
+  --color-brand-accent-hover: #E4E4E7;
+  --color-brand-accent-light: rgba(255, 255, 255, 0.1);
+  --color-brand-accent-border: rgba(255, 255, 255, 0.25);
+  --color-brand-accent-text: #FAFAFA;
+}
+
+html[data-accent="sage"].dark {
+  --color-brand-accent: #10B981;
+  --color-brand-accent-hover: #059669;
+  --color-brand-accent-light: rgba(5, 150, 105, 0.18);
+  --color-brand-accent-border: rgba(5, 150, 105, 0.4);
+  --color-brand-accent-text: #34D399;
+}
+
+html[data-accent="coral"].dark {
+  --color-brand-accent: #F43F5E;
+  --color-brand-accent-hover: #E11D48;
+  --color-brand-accent-light: rgba(225, 29, 72, 0.18);
+  --color-brand-accent-border: rgba(225, 29, 72, 0.4);
+  --color-brand-accent-text: #FB7185;
+}
+
+/* ── Universal Accent Overrides for Non-Status Brand Highlights ───── */
+html[data-accent="ocean"] .bg-amber-600,
+html[data-accent="mono"] .bg-amber-600,
+html[data-accent="sage"] .bg-amber-600,
+html[data-accent="coral"] .bg-amber-600 {
+  background-color: var(--color-brand-accent) !important;
+}
+
+html[data-accent="ocean"].dark .dark\:bg-amber-600,
+html[data-accent="mono"].dark .dark\:bg-amber-600,
+html[data-accent="sage"].dark .dark\:bg-amber-600,
+html[data-accent="coral"].dark .dark\:bg-amber-600 {
+  background-color: var(--color-brand-accent) !important;
+}
+
+html[data-accent="ocean"] .hover\:bg-amber-700:hover,
+html[data-accent="mono"] .hover\:bg-amber-700:hover,
+html[data-accent="sage"] .hover\:bg-amber-700:hover,
+html[data-accent="coral"] .hover\:bg-amber-700:hover,
+html[data-accent="ocean"] .hover\:bg-amber-600:hover,
+html[data-accent="mono"] .hover\:bg-amber-600:hover,
+html[data-accent="sage"] .hover\:bg-amber-600:hover,
+html[data-accent="coral"] .hover\:bg-amber-600:hover {
+  background-color: var(--color-brand-accent-hover) !important;
+}
+
+html[data-accent="ocean"].dark .dark\:hover\:bg-amber-500:hover,
+html[data-accent="mono"].dark .dark\:hover\:bg-amber-500:hover,
+html[data-accent="sage"].dark .dark\:hover\:bg-amber-500:hover,
+html[data-accent="coral"].dark .dark\:hover\:bg-amber-500:hover {
+  background-color: var(--color-brand-accent-hover) !important;
+}
+
+/* Contrast adjustment for Mono dark mode buttons */
+html[data-accent="mono"].dark .bg-amber-600,
+html[data-accent="mono"].dark .dark\:bg-amber-600 {
+  color: #18181B !important;
+}
+html[data-accent="mono"].dark .bg-amber-600 svg,
+html[data-accent="mono"].dark .dark\:bg-amber-600 svg {
+  color: #18181B !important;
+}
+
+/* Subtle light and dark tint backgrounds */
+html[data-accent="ocean"] .bg-amber-50,
+html[data-accent="ocean"] .bg-amber-50\/80,
+html[data-accent="ocean"] .bg-amber-50\/50,
+html[data-accent="ocean"] .bg-amber-50\/20,
+html[data-accent="mono"] .bg-amber-50,
+html[data-accent="mono"] .bg-amber-50\/80,
+html[data-accent="mono"] .bg-amber-50\/50,
+html[data-accent="mono"] .bg-amber-50\/20,
+html[data-accent="sage"] .bg-amber-50,
+html[data-accent="sage"] .bg-amber-50\/80,
+html[data-accent="sage"] .bg-amber-50\/50,
+html[data-accent="sage"] .bg-amber-50\/20,
+html[data-accent="coral"] .bg-amber-50,
+html[data-accent="coral"] .bg-amber-50\/80,
+html[data-accent="coral"] .bg-amber-50\/50,
+html[data-accent="coral"] .bg-amber-50\/20 {
+  background-color: var(--color-brand-accent-light) !important;
+}
+
+html[data-accent="ocean"].dark .dark\:bg-amber-950\/40,
+html[data-accent="ocean"].dark .dark\:bg-amber-950\/60,
+html[data-accent="ocean"].dark .dark\:bg-amber-950\/70,
+html[data-accent="ocean"].dark .dark\:bg-amber-950\/80,
+html[data-accent="ocean"].dark .dark\:bg-amber-950\/20,
+html[data-accent="mono"].dark .dark\:bg-amber-950\/40,
+html[data-accent="mono"].dark .dark\:bg-amber-950\/60,
+html[data-accent="mono"].dark .dark\:bg-amber-950\/70,
+html[data-accent="mono"].dark .dark\:bg-amber-950\/80,
+html[data-accent="mono"].dark .dark\:bg-amber-950\/20,
+html[data-accent="sage"].dark .dark\:bg-amber-950\/40,
+html[data-accent="sage"].dark .dark\:bg-amber-950\/60,
+html[data-accent="sage"].dark .dark\:bg-amber-950\/70,
+html[data-accent="sage"].dark .dark\:bg-amber-950\/80,
+html[data-accent="sage"].dark .dark\:bg-amber-950\/20,
+html[data-accent="coral"].dark .dark\:bg-amber-950\/40,
+html[data-accent="coral"].dark .dark\:bg-amber-950\/60,
+html[data-accent="coral"].dark .dark\:bg-amber-950\/70,
+html[data-accent="coral"].dark .dark\:bg-amber-950\/80,
+html[data-accent="coral"].dark .dark\:bg-amber-950\/20 {
+  background-color: var(--color-brand-accent-light) !important;
+}
+
+/* Border tints */
+html[data-accent="ocean"] .border-amber-200,
+html[data-accent="ocean"] .border-amber-200\/80,
+html[data-accent="mono"] .border-amber-200,
+html[data-accent="mono"] .border-amber-200\/80,
+html[data-accent="sage"] .border-amber-200,
+html[data-accent="sage"] .border-amber-200\/80,
+html[data-accent="coral"] .border-amber-200,
+html[data-accent="coral"] .border-amber-200\/80 {
+  border-color: var(--color-brand-accent-border) !important;
+}
+
+html[data-accent="ocean"].dark .dark\:border-amber-800,
+html[data-accent="ocean"].dark .dark\:border-amber-800\/80,
+html[data-accent="ocean"].dark .dark\:border-amber-800\/60,
+html[data-accent="mono"].dark .dark\:border-amber-800,
+html[data-accent="mono"].dark .dark\:border-amber-800\/80,
+html[data-accent="mono"].dark .dark\:border-amber-800\/60,
+html[data-accent="sage"].dark .dark\:border-amber-800,
+html[data-accent="sage"].dark .dark\:border-amber-800\/80,
+html[data-accent="sage"].dark .dark\:border-amber-800\/60,
+html[data-accent="coral"].dark .dark\:border-amber-800,
+html[data-accent="coral"].dark .dark\:border-amber-800\/80,
+html[data-accent="coral"].dark .dark\:border-amber-800\/60 {
+  border-color: var(--color-brand-accent-border) !important;
+}
+
+/* Text highlights */
+html[data-accent="ocean"] .text-amber-900,
+html[data-accent="ocean"] .text-amber-800,
+html[data-accent="ocean"] .text-amber-700,
+html[data-accent="mono"] .text-amber-900,
+html[data-accent="mono"] .text-amber-800,
+html[data-accent="mono"] .text-amber-700,
+html[data-accent="sage"] .text-amber-900,
+html[data-accent="sage"] .text-amber-800,
+html[data-accent="sage"] .text-amber-700,
+html[data-accent="coral"] .text-amber-900,
+html[data-accent="coral"] .text-amber-800,
+html[data-accent="coral"] .text-amber-700 {
+  color: var(--color-brand-accent-text) !important;
+}
+
+html[data-accent="ocean"].dark .dark\:text-amber-300,
+html[data-accent="ocean"].dark .dark\:text-amber-400,
+html[data-accent="mono"].dark .dark\:text-amber-300,
+html[data-accent="mono"].dark .dark\:text-amber-400,
+html[data-accent="sage"].dark .dark\:text-amber-300,
+html[data-accent="sage"].dark .dark\:text-amber-400,
+html[data-accent="coral"].dark .dark\:text-amber-300,
+html[data-accent="coral"].dark .dark\:text-amber-400 {
+  color: var(--color-brand-accent-text) !important;
+}
+
+/* Form focus border & rings */
+html[data-accent="ocean"] .focus\:border-amber-600:focus,
+html[data-accent="mono"] .focus\:border-amber-600:focus,
+html[data-accent="sage"] .focus\:border-amber-600:focus,
+html[data-accent="coral"] .focus\:border-amber-600:focus {
+  border-color: var(--color-brand-accent) !important;
+}
+
+html[data-accent="ocean"] .border-amber-500,
+html[data-accent="ocean"] .border-amber-600,
+html[data-accent="mono"] .border-amber-500,
+html[data-accent="mono"] .border-amber-600,
+html[data-accent="sage"] .border-amber-500,
+html[data-accent="sage"] .border-amber-600,
+html[data-accent="coral"] .border-amber-500,
+html[data-accent="coral"] .border-amber-600 {
+  border-color: var(--color-brand-accent) !important;
+}
+
+/* Dots, indicators, badges */
+html[data-accent="ocean"] .bg-amber-500,
+html[data-accent="mono"] .bg-amber-500,
+html[data-accent="sage"] .bg-amber-500,
+html[data-accent="coral"] .bg-amber-500 {
+  background-color: var(--color-brand-accent) !important;
+}
+
+
 
