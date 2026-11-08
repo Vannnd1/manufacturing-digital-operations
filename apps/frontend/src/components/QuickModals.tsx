@@ -400,6 +400,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <span className="font-medium text-emerald-700 dark:text-emerald-400">Production Ready</span>
             </div>
           </div>
+
+          <div className="pt-1">
+            <button
+              onClick={() => {
+                onClose();
+                navigate("/settings");
+              }}
+              className="w-full py-2 px-3 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-slate-800 dark:text-stone-200 font-semibold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer border border-stone-200 dark:border-stone-700"
+            >
+              <Settings className="w-3.5 h-3.5 text-amber-600" />
+              Open Full Platform Settings
+            </button>
+          </div>
         </div>
 
         <div className="mt-5 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between">

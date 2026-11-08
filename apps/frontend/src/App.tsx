@@ -12,6 +12,7 @@ import { AuditTrail } from "./pages/AuditTrail";
 import { Reports } from "./pages/Reports";
 import { Staff } from "./pages/Staff";
 import { Support } from "./pages/Support";
+import { Settings as SettingsPage } from "./pages/Settings";
 import { 
   LogOut, 
   Target, 
@@ -119,6 +120,7 @@ function MainLayout() {
     if (location.pathname === "/reports") return "Reports & Insights";
     if (location.pathname === "/audit") return "Audit & Traceability";
     if (location.pathname === "/support") return "Support & Help Center";
+    if (location.pathname === "/settings") return "Settings";
     return "Operations";
   })();
 
@@ -143,6 +145,9 @@ function MainLayout() {
     }
     if (location.pathname === "/audit") {
       return { name: "Audit & Traceability", path: "/audit" };
+    }
+    if (location.pathname === "/settings") {
+      return { name: "System Settings", path: "/settings" };
     }
     return null;
   })();
@@ -218,15 +223,25 @@ function MainLayout() {
           </div>
         </div>
 
-        {/* 5. Settings (Gear) */}
-        <button
-          onClick={() => setSettingsModalOpen(true)}
-          className="p-2 hover:text-white hover:bg-stone-800 rounded-full transition-colors cursor-pointer text-stone-300"
-          title="Settings & System Preferences"
-          aria-label="Settings"
-        >
-          <Settings className="w-4 h-4" />
-        </button>
+        {/* 5. Settings (Gear with dedicated /settings route) */}
+        <div className="relative group">
+          <Link
+            to="/settings"
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shadow-xs cursor-pointer ${
+              location.pathname === "/settings"
+                ? "bg-amber-600 text-white"
+                : "text-stone-300 hover:text-white hover:bg-stone-800"
+            }`}
+            title="Settings & System Preferences"
+            aria-label="Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </Link>
+          <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-white dark:bg-stone-800 text-slate-900 dark:text-white font-semibold text-xs rounded-xl shadow-lg border border-stone-200/90 dark:border-stone-700 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 flex items-center">
+            Settings
+            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-white dark:border-r-stone-800" />
+          </div>
+        </div>
       </aside>
 
       {/* ── Main Content Area (Full-width canvas) ── */}
@@ -535,6 +550,7 @@ function MainLayout() {
               <Route path="/reports" element={<Reports />} />
               <Route path="/audit" element={<AuditTrail />} />
               <Route path="/support" element={<Support />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </div>
         </div>
