@@ -37,7 +37,9 @@ import {
   Sparkles,
   X,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  UserPlus
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -553,6 +555,11 @@ export function Settings() {
   // Role Members Dialog State
   const [selectedRoleModal, setSelectedRoleModal] = useState<RoleDefinition | null>(null);
   const [roleMemberSearch, setRoleMemberSearch] = useState("");
+
+  // Assign Role Modal State
+  const [assignRoleModalOpen, setAssignRoleModalOpen] = useState(false);
+  const [assignedPerson, setAssignedPerson] = useState("Sam Whitfield · Automation & Maintenance Tech");
+  const [assignedRole, setAssignedRole] = useState("Shop Floor");
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -1264,10 +1271,11 @@ export function Settings() {
                     </p>
                   </div>
                   <button
-                    onClick={() => showToast("Role assignment drawer opened.")}
-                    className="px-3.5 py-1.5 rounded-full bg-slate-900 dark:bg-amber-600 text-white font-semibold text-xs hover:bg-slate-800 dark:hover:bg-amber-500 flex items-center gap-1.5 self-start sm:self-center transition-colors cursor-pointer"
+                    type="button"
+                    onClick={() => setAssignRoleModalOpen(true)}
+                    className="px-3.5 py-1.5 rounded-full bg-slate-900 dark:bg-amber-600 text-white font-semibold text-xs hover:bg-slate-800 dark:hover:bg-amber-500 flex items-center gap-1.5 self-start sm:self-center transition-colors cursor-pointer shadow-xs"
                   >
-                    <Plus className="w-3.5 h-3.5" />
+                    <UserPlus className="w-3.5 h-3.5" />
                     Assign a role
                   </button>
                 </div>
@@ -2424,6 +2432,135 @@ export function Settings() {
                 Done
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Assign a Role Modal (Exact Reference UI) ── */}
+      {assignRoleModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setAssignRoleModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg bg-white dark:bg-[#18181B] border border-stone-200/90 dark:border-stone-800 rounded-3xl shadow-2xl p-7 relative animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-stone-100">
+                  Assign a role
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
+                  A person holds one role. Moving them takes effect at their next page load.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAssignRoleModalOpen(false)}
+                className="w-8 h-8 rounded-full border border-stone-200 dark:border-stone-700 flex items-center justify-center text-stone-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer shrink-0 ml-3"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setAssignRoleModalOpen(false);
+                showToast(`Role updated: ${assignedPerson.split("·")[0].trim()} has been assigned to ${assignedRole}. Takes effect at next page load.`);
+              }}
+              className="space-y-4"
+            >
+              {/* Field 1: Person */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-stone-300 mb-1.5">
+                  Person
+                </label>
+                <div className="relative">
+                  <select
+                    value={assignedPerson}
+                    onChange={(e) => setAssignedPerson(e.target.value)}
+                    className="w-full px-4 py-2.5 text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-900/60 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 appearance-none pr-9 cursor-pointer"
+                  >
+                    <option value="Sam Whitfield · Showroom associate">Sam Whitfield · Showroom associate</option>
+                    <option value="Sam Whitfield · Automation & Maintenance Tech">Sam Whitfield · Automation & Maintenance Tech</option>
+                    <option value="Marcus Vance · Plant Operations Supervisor">Marcus Vance · Plant Operations Supervisor</option>
+                    <option value="Marcus Gallagher · Plant Operations Manager">Marcus Gallagher · Plant Operations Manager</option>
+                    <option value="Victoria Park · Deputy Superintendent">Victoria Park · Deputy Superintendent</option>
+                    <option value="Priya Sharma · Sourcing Lead">Priya Sharma · Sourcing Lead</option>
+                    <option value="Eric Lin · Vendor Relations Specialist">Eric Lin · Vendor Relations Specialist</option>
+                    <option value="Taufik Nugroho · Direct Materials Buyer">Taufik Nugroho · Direct Materials Buyer</option>
+                    <option value="Kenji Watanabe · Strategic Commodity Lead">Kenji Watanabe · Strategic Commodity Lead</option>
+                    <option value="William Ibrahim · Warehouse Logistics Supervisor">William Ibrahim · Warehouse Logistics Supervisor</option>
+                    <option value="James Chen · Inbound Goods Receipt Clerk">James Chen · Inbound Goods Receipt Clerk</option>
+                    <option value="Devi Kuncoro · FIFO Stock Controller">Devi Kuncoro · FIFO Stock Controller</option>
+                    <option value="Tomás Silva · Shipping Coordinator">Tomás Silva · Shipping Coordinator</option>
+                    <option value="Ravi Patel · Customs Compliance Officer">Ravi Patel · Customs Compliance Officer</option>
+                    <option value="Yusuf Kaya · Heavy Material Handler">Yusuf Kaya · Heavy Material Handler</option>
+                    <option value="Oliver Fischer · Stamping Press Operator">Oliver Fischer · Stamping Press Operator</option>
+                    <option value="Tommy Lawson · TIG Welding Tech">Tommy Lawson · TIG Welding Tech</option>
+                    <option value="Reza Pratama · Final Assembly Operator">Reza Pratama · Final Assembly Operator</option>
+                    <option value="Felix Wagner · CNC Tube Bending Specialist">Felix Wagner · CNC Tube Bending Specialist</option>
+                    <option value="Aiko Tanaka · Refrigerant Brazing Lead">Aiko Tanaka · Refrigerant Brazing Lead</option>
+                    <option value="Jonas Berg · Vacuum & Charging Tech">Jonas Berg · Vacuum & Charging Tech</option>
+                    <option value="Lena Vogel · Inverter Drive Specialist">Lena Vogel · Inverter Drive Specialist</option>
+                    <option value="Kwame Mensah · PU Foam Injection Tech">Kwame Mensah · PU Foam Injection Tech</option>
+                    <option value="Bo Andersen · Washer Drum Mechanics Lead">Bo Andersen · Washer Drum Mechanics Lead</option>
+                    <option value="Diego Alvarez · Motor Integration Tech">Diego Alvarez · Motor Integration Tech</option>
+                    <option value="Amara Okafor · SMT Cleanroom Lead">Amara Okafor · SMT Cleanroom Lead</option>
+                    <option value="Hana Kim · Display Optical Bonding Tech">Hana Kim · Display Optical Bonding Tech</option>
+                    <option value="Quinn Caldwell · Head of Quality Assurance">Quinn Caldwell · Head of Quality Assurance</option>
+                    <option value="Elena Rostova · QC Tolerance Inspector">Elena Rostova · QC Tolerance Inspector</option>
+                    <option value="Satria Vardhan · Electrical Safety Inspector">Satria Vardhan · Electrical Safety Inspector</option>
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Field 2: Role */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-stone-300 mb-1.5">
+                  Role
+                </label>
+                <div className="relative">
+                  <select
+                    value={assignedRole}
+                    onChange={(e) => setAssignedRole(e.target.value)}
+                    className="w-full px-4 py-2.5 text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-900/60 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 appearance-none pr-9 cursor-pointer"
+                  >
+                    <option value="Sales & showroom">Sales & showroom</option>
+                    <option value="Shop Floor">Shop Floor</option>
+                    <option value="Administrator">Administrator</option>
+                    <option value="Plant Manager">Plant Manager</option>
+                    <option value="Purchasing">Purchasing</option>
+                    <option value="Warehouse">Warehouse</option>
+                    <option value="Quality Control">Quality Control</option>
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="mt-8 pt-2 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setAssignRoleModalOpen(false)}
+                  className="px-5 py-2 rounded-full border border-stone-200 dark:border-stone-700 text-xs font-semibold text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 rounded-full bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-stone-100 font-semibold text-xs shadow-xs transition-colors cursor-pointer"
+                >
+                  Assign
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
