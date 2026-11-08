@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { SearchModal, QuickCreateModal, SupportModal, SettingsModal } from "./components/QuickModals";
 import { LiveTelemetryPill } from "./components/LiveTelemetryPill";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((state) => state.token);
@@ -564,19 +565,21 @@ function MainLayout() {
               <LiveTelemetryPill />
             </div>
 
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/materials" element={<Materials />} />
-              <Route path="/inventory" element={<Inventory />} />
-              <Route path="/procurement" element={<Procurement />} />
-              <Route path="/production" element={<Production />} />
-              <Route path="/quality" element={<Quality />} />
-              <Route path="/staff" element={<Staff />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/audit" element={<AuditTrail />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Routes>
+            <ErrorBoundary fallbackTitle="Modul Operasional Terkendala">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/materials" element={<Materials />} />
+                <Route path="/inventory" element={<Inventory />} />
+                <Route path="/procurement" element={<Procurement />} />
+                <Route path="/production" element={<Production />} />
+                <Route path="/quality" element={<Quality />} />
+                <Route path="/staff" element={<Staff />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/audit" element={<AuditTrail />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Routes>
+            </ErrorBoundary>
           </div>
         </div>
       </main>

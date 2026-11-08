@@ -711,9 +711,11 @@ export class MockDataStore {
     return this.state.productionOrders
       .filter((o) => o.status === "Completed")
       .map((o) => ({
+        id: "rec-" + o.id,
         production_record_id: "rec-" + o.id,
         production_order_id: o.id,
         product_name: o.product_name,
+        product_sku: o.product_sku || "PROD-AC-S10",
         actual_quantity_produced: o.planned_quantity,
         completion_date: new Date().toISOString().split("T")[0],
       }));
