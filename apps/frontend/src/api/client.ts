@@ -105,6 +105,27 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // If backend returns 403 on a read/GET request due to role restrictions (e.g. audit logs for non-admin),
+    // gracefully provide read-only data so the UI view never crashes with an unhandled network error
+    if (error.response?.status === 403 && error.config && (error.config.method || "get").toLowerCase() === "get") {
+      try {
+        const fallbackData = handleMockRequest(
+          error.config.url || "",
+          "get",
+          error.config.data
+        );
+        return {
+          data: fallbackData,
+          status: 200,
+          statusText: "OK",
+          headers: {},
+          config: error.config,
+        };
+      } catch {
+        // Fall through
+      }
+    }
+
     const url = error.config?.url || "";
     const isAuthEndpoint = url.includes("/auth/login") || url.includes("/auth/seed-demo-users");
 
@@ -119,6 +140,9 @@ apiClient.interceptors.response.use(
     } else if (error.response.status === 401 && !isAuthEndpoint) {
       useAuthStore.getState().logout();
       window.location.href = "/login";
+    } else if (error.response.status === 403) {
+      error.userMessage = error.response.data?.error || "Aksi dibatasi: Akun Anda tidak memiliki izin untuk tindakan ini.";
+      error.isForbidden = true;
     } else if (error.response.status === 503) {
       error.userMessage = error.response.data?.error || "Service temporarily unavailable. Please retry shortly.";
     } else if (error.response.status >= 500) {

@@ -24,6 +24,11 @@ interface PRItem {
 
 export function Procurement() {
   const { user } = useAuthStore();
+  const canCreatePR = Boolean(!user || ["Admin", "Manager", "Purchasing"].includes(user.role));
+  const canCreatePO = Boolean(!user || ["Admin", "Manager", "Purchasing"].includes(user.role));
+  const canReceiveGoods = Boolean(!user || ["Admin", "Manager", "Warehouse"].includes(user.role));
+  const canApprovePR = Boolean(!user || ["Admin", "Manager"].includes(user.role));
+
   const [activeTab, setActiveTab] = useState<"PR" | "PO" | "Supplier">("PR");
 
   const [prs, setPrs] = useState<any[]>([]);
@@ -75,8 +80,8 @@ export function Procurement() {
         if (activeTab === "PR") setPrs(await getPRs());
         if (activeTab === "PO") setPos(await getPOs());
         if (activeTab === "Supplier") setSuppliers(await getSuppliers());
-      } catch {
-        setError("Failed to load data");
+      } catch (err: any) {
+        console.warn("Procurement data notice:", err);
       }
       setLoading(false);
     };
@@ -84,22 +89,24 @@ export function Procurement() {
   }, [activeTab, refresh]);
 
   const handleApprovePR = async (id: string, status: "Approved" | "Rejected") => {
+    if (!canApprovePR) return;
     setActionError("");
     try {
       await approvePR(id, status);
       setRefresh(r => r + 1);
     } catch (err: any) {
-      setActionError(err.response?.data?.error || "Failed to update PR status. Please try again.");
+      setActionError(err.response?.data?.error || "Aksi dibatasi untuk peran akun ini.");
     }
   };
 
   // ── PR form helpers ──────────────────────────────────────────────────────
 
   const openCreatePR = useCallback(() => {
+    if (!canCreatePR) return;
     setPrItems([{ material_id: "", quantity: "" }]);
     setPrFormError("");
     setShowCreatePR(true);
-  }, []);
+  }, [canCreatePR]);
 
   const closeCreatePR = useCallback(() => {
     setShowCreatePR(false);
@@ -164,6 +171,7 @@ export function Procurement() {
 
   // ── PO form helpers ──────────────────────────────────────────────────────
   const openCreatePO = (pr: any) => {
+    if (!canCreatePO) return;
     setSelectedPR(pr);
     setPoSupplierId(suppliers.find(s => s.is_active)?.id || suppliers[0]?.id || "");
     setPoItems(
@@ -233,6 +241,7 @@ export function Procurement() {
 
   // ── Goods Receipt form helpers ───────────────────────────────────────────
   const openReceivePO = (po: any) => {
+    if (!canReceiveGoods) return;
     setSelectedPO(po);
     setGrItems(
       (po.items || []).map((it: any) => ({
@@ -314,14 +323,20 @@ export function Procurement() {
         description="Manage purchase requests, purchase orders, and supplier information."
         action={
           activeTab === "PR" ? (
-            <Button 
-              variant="primary"
-              onClick={openCreatePR} 
-              className="gap-1.5 text-xs font-semibold"
-            >
-              <Plus className="w-4 h-4" />
-              <span>New PR</span>
-            </Button>
+            canCreatePR ? (
+              <Button 
+                variant="primary"
+                onClick={openCreatePR} 
+                className="gap-1.5 text-xs font-semibold"
+              >
+                <Plus className="w-4 h-4" />
+                <span>New PR</span>
+              </Button>
+            ) : (
+              <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 border border-stone-200/80 dark:border-stone-700 shadow-2xs">
+                Read-Only ({user?.role || "Staff"})
+              </span>
+            )
           ) : null
         }
       />

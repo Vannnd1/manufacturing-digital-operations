@@ -362,6 +362,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
   // ── Quality Handlers ───────────────────────────────────────────────────
 
   const openInspect = (record: any) => {
+    if (!canInspect) return;
     setSelectedInspectionRecord(record);
     setPassQty(Number(record.actual_quantity_produced));
     setFailQty(0);
@@ -437,6 +438,7 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
   });
 
   const canCreate = user?.role === "Admin" || user?.role === "Manager" || user?.role === "Production";
+  const canInspect = Boolean(!user || ["Admin", "Manager", "QC", "Quality Control"].includes(user.role));
 
   const subPageTitles = {
     scheduling: "Production Scheduling",
@@ -906,13 +908,19 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
                               {Number(record.actual_quantity_produced).toLocaleString()} <span className="text-[10px] font-normal text-slate-400">units</span>
                             </td>
                             <td className="py-3.5 px-4 text-right">
-                              <button 
-                                type="button"
-                                onClick={() => openInspect(record)} 
-                                className="py-1.5 px-3.5 text-xs font-semibold rounded-full bg-slate-900 dark:bg-amber-600 text-white hover:bg-slate-800 dark:hover:bg-amber-500 transition-colors shadow-2xs cursor-pointer"
-                              >
-                                Inspect Lot
-                              </button>
+                              {canInspect ? (
+                                <button 
+                                  type="button"
+                                  onClick={() => openInspect(record)} 
+                                  className="py-1.5 px-3.5 text-xs font-semibold rounded-full bg-slate-900 dark:bg-amber-600 text-white hover:bg-slate-800 dark:hover:bg-amber-500 transition-colors shadow-2xs cursor-pointer"
+                                >
+                                  Inspect Lot
+                                </button>
+                              ) : (
+                                <span className="text-[11px] text-stone-400 dark:text-stone-500 italic">
+                                  Pending QA Release
+                                </span>
+                              )}
                             </td>
                           </tr>
                         );

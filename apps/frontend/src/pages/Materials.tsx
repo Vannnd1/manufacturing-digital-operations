@@ -6,8 +6,11 @@ import { PageHeader, Card, Table, Th, Td, Input, Label, Badge, Button } from "..
 import { sanitizeNumberInput } from "../utils/number";
 import { UnitSelect } from "../components/UnitSelect";
 import { isCanonicalUnit } from "../constants/uom";
+import { useAuthStore } from "../store/useAuthStore";
 
 export function Materials() {
+  const { user } = useAuthStore();
+  const canEditMaterials = Boolean(!user || ["Admin", "Manager", "Warehouse", "Purchasing"].includes(user.role));
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -46,6 +49,7 @@ export function Materials() {
   }, [refresh, showInactive]);
 
   const openForm = (material?: any) => {
+    if (!canEditMaterials) return;
     if (material) {
       setEditingId(material.id);
       setOriginalUnit(material.unit);
@@ -113,14 +117,20 @@ export function Materials() {
         title="Material Master" 
         description="Manage raw materials, components, and tracking thresholds." 
         action={
-          <Button 
-            variant="primary"
-            onClick={() => openForm()} 
-            className="gap-1.5 text-xs font-semibold"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Material</span>
-          </Button>
+          canEditMaterials ? (
+            <Button 
+              variant="primary"
+              onClick={() => openForm()} 
+              className="gap-1.5 text-xs font-semibold"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Material</span>
+            </Button>
+          ) : (
+            <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 border border-stone-200/80 dark:border-stone-700 shadow-2xs">
+              Read-Only ({user?.role || "Staff"})
+            </span>
+          )
         }
       />
 
@@ -204,9 +214,13 @@ export function Materials() {
                     </Badge>
                   </Td>
                   <Td className="text-right">
-                    <button onClick={() => openForm(m)} className="text-slate-400 dark:text-stone-500 hover:text-amber-600 dark:hover:text-amber-400 transition-colors p-1 cursor-pointer" title="Edit Material">
-                      <Edit className="w-4 h-4" />
-                    </button>
+                    {canEditMaterials ? (
+                      <button onClick={() => openForm(m)} className="text-slate-400 dark:text-stone-500 hover:text-amber-600 dark:hover:text-amber-400 transition-colors p-1 cursor-pointer" title="Edit Material">
+                        <Edit className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <span className="text-[11px] text-stone-300 dark:text-stone-700 font-mono">—</span>
+                    )}
                   </Td>
                 </tr>
               ))
