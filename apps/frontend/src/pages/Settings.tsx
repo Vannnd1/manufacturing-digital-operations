@@ -39,7 +39,8 @@ import {
   ExternalLink,
   ChevronRight,
   ChevronDown,
-  UserPlus
+  UserPlus,
+  ShieldAlert
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -548,6 +549,7 @@ const ROLE_DEFINITIONS: RoleDefinition[] = [
 
 export function Settings() {
   const { user } = useAuthStore();
+  const isAdmin = user?.role === "Admin";
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<SettingsTab>("company");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -581,11 +583,19 @@ export function Settings() {
 
   const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAdmin) {
+      showToast("Akses Ditolak: Hanya Administrator yang berwenang mengubah profil legal perusahaan.");
+      return;
+    }
     localStorage.setItem("mfg-company-profile", JSON.stringify(profile));
     showToast("Company profile saved and updated on official document templates.");
   };
 
   const handleProfileRevert = () => {
+    if (!isAdmin) {
+      showToast("Akses Ditolak: Hanya Administrator yang berwenang mengembalikan profil perusahaan.");
+      return;
+    }
     setProfile(DEFAULT_COMPANY);
     localStorage.setItem("mfg-company-profile", JSON.stringify(DEFAULT_COMPANY));
     showToast("Company profile reverted to system default.");
@@ -605,6 +615,10 @@ export function Settings() {
   });
 
   const cyclePermission = (rowIndex: number, roleKey: keyof Omit<ModulePermission, "module" | "admin">) => {
+    if (!isAdmin) {
+      showToast("Akses Ditolak: Hanya Administrator yang berwenang mengubah matriks izin sistem.");
+      return;
+    }
     // Admin always stays "edit"
     setPermissions((prev) => {
       const next = [...prev];
@@ -796,6 +810,21 @@ export function Settings() {
         <div className="fixed top-20 right-8 z-50 bg-[#18181B] text-white text-xs px-4 py-2.5 rounded-full shadow-2xl border border-stone-700/80 flex items-center gap-2.5 animate-in slide-in-from-top-2 duration-200">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span className="font-medium">{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Non-Admin Role Alert Banner */}
+      {!isAdmin && (
+        <div className="p-3.5 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200/90 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <div>
+              <span className="font-bold">Mode Pembatasan Hak Akses ({user?.role || "Staff"}):</span> Anda masuk dengan akun non-administrator. Konfigurasi perusahaan, penugasan role, dan reset platform berstatus <strong>Read-Only</strong> untuk peran ini.
+            </div>
+          </div>
+          <span className="shrink-0 px-2.5 py-0.5 rounded-full bg-amber-200/70 dark:bg-amber-900/60 text-amber-950 dark:text-amber-200 text-[10px] font-mono font-bold uppercase tracking-wider self-start sm:self-center">
+            Certified Read-Only
+          </span>
         </div>
       )}
 
@@ -1098,14 +1127,25 @@ export function Settings() {
                   <div className="pt-4 border-t border-stone-100 dark:border-stone-800 flex items-center justify-end gap-2.5">
                     <button
                       type="button"
+                      disabled={!isAdmin}
                       onClick={handleProfileRevert}
-                      className="px-4 py-2 rounded-full text-xs font-semibold text-stone-500 hover:text-slate-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                      className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors ${
+                        isAdmin
+                          ? "text-stone-500 hover:text-slate-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
+                          : "text-stone-300 dark:text-stone-600 cursor-not-allowed"
+                      }`}
                     >
                       Revert
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 rounded-full bg-slate-900 dark:bg-amber-600 text-white font-semibold text-xs hover:bg-slate-800 dark:hover:bg-amber-500 flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                      disabled={!isAdmin}
+                      className={`px-4 py-2 rounded-full font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors ${
+                        isAdmin
+                          ? "bg-slate-900 dark:bg-amber-600 text-white hover:bg-slate-800 dark:hover:bg-amber-500 cursor-pointer"
+                          : "bg-stone-200 dark:bg-stone-800 text-stone-400 dark:text-stone-500 cursor-not-allowed opacity-80"
+                      }`}
+                      title={isAdmin ? "Save profile" : "Hanya Administrator yang berwenang"}
                     >
                       <Check className="w-3.5 h-3.5" />
                       Save profile
@@ -1278,8 +1318,19 @@ export function Settings() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setAssignRoleModalOpen(true)}
-                    className="px-3.5 py-1.5 rounded-full bg-slate-900 dark:bg-amber-600 text-white font-semibold text-xs hover:bg-slate-800 dark:hover:bg-amber-500 flex items-center gap-1.5 self-start sm:self-center transition-colors cursor-pointer shadow-xs"
+                    onClick={() => {
+                      if (!isAdmin) {
+                        showToast("Akses Ditolak: Hanya Administrator yang berwenang menugaskan role.");
+                        return;
+                      }
+                      setAssignRoleModalOpen(true);
+                    }}
+                    className={`px-3.5 py-1.5 rounded-full font-semibold text-xs flex items-center gap-1.5 self-start sm:self-center transition-colors shadow-xs ${
+                      isAdmin
+                        ? "bg-slate-900 dark:bg-amber-600 text-white hover:bg-slate-800 dark:hover:bg-amber-500 cursor-pointer"
+                        : "bg-stone-200 dark:bg-stone-800 text-stone-400 dark:text-stone-500 cursor-not-allowed opacity-80"
+                    }`}
+                    title={isAdmin ? "Assign a role" : "Hanya Administrator yang berwenang"}
                   >
                     <UserPlus className="w-3.5 h-3.5" />
                     Assign a role
@@ -1302,13 +1353,14 @@ export function Settings() {
                     <tbody className="divide-y divide-stone-100 dark:divide-stone-800/60 font-medium">
                       {permissions.map((row, idx) => {
                         const renderBadge = (level: PermissionLevel, isLocked = false, onClick?: () => void) => {
+                          const effectivelyLocked = isLocked || !isAdmin;
                           if (level === "edit") {
                             return (
                               <button
                                 type="button"
-                                disabled={isLocked}
+                                disabled={effectivelyLocked}
                                 onClick={onClick}
-                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 transition-all ${isLocked ? "opacity-75 cursor-default" : "hover:scale-105 cursor-pointer"}`}
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 transition-all ${effectivelyLocked ? "opacity-75 cursor-default" : "hover:scale-105 cursor-pointer"}`}
                               >
                                 <Edit3 className="w-2.5 h-2.5" />
                                 Edit
@@ -1319,9 +1371,9 @@ export function Settings() {
                             return (
                               <button
                                 type="button"
-                                disabled={isLocked}
+                                disabled={effectivelyLocked}
                                 onClick={onClick}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 transition-all hover:scale-105 cursor-pointer"
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 transition-all ${effectivelyLocked ? "opacity-75 cursor-default" : "hover:scale-105 cursor-pointer"}`}
                               >
                                 <Eye className="w-2.5 h-2.5" />
                                 View
@@ -1331,9 +1383,9 @@ export function Settings() {
                           return (
                             <button
                               type="button"
-                              disabled={isLocked}
+                              disabled={effectivelyLocked}
                               onClick={onClick}
-                              className="inline-flex items-center justify-center text-[11px] text-stone-400 dark:text-stone-500 font-mono hover:text-slate-900 dark:hover:text-white px-2 py-0.5 rounded cursor-pointer"
+                              className={`inline-flex items-center justify-center text-[11px] text-stone-400 dark:text-stone-500 font-mono px-2 py-0.5 rounded ${effectivelyLocked ? "cursor-default" : "hover:text-slate-900 dark:hover:text-white cursor-pointer"}`}
                             >
                               — No access
                             </button>
@@ -2241,6 +2293,10 @@ export function Settings() {
                   <button
                     type="button"
                     onClick={() => {
+                      if (!isAdmin) {
+                        showToast("Akses Ditolak: Hanya Administrator yang berwenang mereset data demo sistem.");
+                        return;
+                      }
                       if (window.confirm("Reset demo data back to Wednesday morning? Every order, goods receipt, approval, and setting you changed will be undone. Your theme choice stays.")) {
                         localStorage.removeItem("mfg-company-profile");
                         localStorage.removeItem("mfg-permissions-matrix");
@@ -2257,7 +2313,12 @@ export function Settings() {
                         showToast("Workspace demo data restored to Wednesday morning baseline.");
                       }
                     }}
-                    className="px-4 py-2 rounded-full bg-[#B91C1C] hover:bg-[#991B1B] text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                    className={`px-4 py-2 rounded-full font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors ${
+                      isAdmin
+                        ? "bg-[#B91C1C] hover:bg-[#991B1B] text-white cursor-pointer"
+                        : "bg-stone-200 dark:bg-stone-800 text-stone-400 dark:text-stone-500 cursor-not-allowed opacity-80"
+                    }`}
+                    title={isAdmin ? "Reset everything" : "Hanya Administrator yang berwenang"}
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     Reset everything
