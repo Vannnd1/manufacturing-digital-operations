@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Building2, 
   ShieldCheck, 
@@ -19,21 +20,24 @@ import {
   Mail, 
   Sliders, 
   Download, 
-  FileText,
-  Radio,
-  Lock,
-  Server,
-  Users,
-  Contact,
-  Package,
-  Factory,
-  Tag,
-  ShoppingCart,
-  Receipt,
-  BookOpen,
-  Truck,
-  Calendar,
-  Sparkles
+  FileText, 
+  Radio, 
+  Lock, 
+  Server, 
+  Users, 
+  Contact, 
+  Package, 
+  Factory, 
+  Tag, 
+  ShoppingCart, 
+  Receipt, 
+  BookOpen, 
+  Truck, 
+  Calendar, 
+  Sparkles,
+  X,
+  ExternalLink,
+  ChevronRight
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -89,10 +93,466 @@ const INITIAL_PERMISSIONS: ModulePermission[] = [
   { module: "System Settings", admin: "edit", manager: "view", purchasing: "none", warehouse: "none", production: "none", quality: "none" }
 ];
 
+export interface RoleMember {
+  id: string;
+  name: string;
+  employeeId: string;
+  email: string;
+  jobTitle: string;
+  department: string;
+  workCenter: string;
+  shift: string;
+  status: "present" | "remote" | "leave";
+  initials: string;
+  tenure: string;
+}
+
+export interface RoleDefinition {
+  title: string;
+  count: number;
+  desc: string;
+  color: string;
+  accentBar: string;
+  initials: string[];
+  members: RoleMember[];
+}
+
+const ROLE_DEFINITIONS: RoleDefinition[] = [
+  {
+    title: "Administrator",
+    count: 1,
+    desc: "Everything, including audit & settings.",
+    color: "bg-red-500",
+    accentBar: "#EF4444",
+    initials: ["AD"],
+    members: [
+      {
+        id: "st-1",
+        name: "Lead Operations Admin",
+        employeeId: "PMI-OPS-001",
+        email: "admin@mfg.com",
+        jobTitle: "Plant Operations Supervisor & System Administrator",
+        department: "Plant Operations",
+        workCenter: "Central Control & MES Dispatch",
+        shift: "General Shift (08:00 – 17:00 WIB)",
+        status: "present",
+        initials: "AD",
+        tenure: "5.0 yrs"
+      }
+    ]
+  },
+  {
+    title: "Plant Manager",
+    count: 2,
+    desc: "Production KPIs, shift approvals, analytics.",
+    color: "bg-amber-500",
+    accentBar: "#F59E0B",
+    initials: ["MG", "VP"],
+    members: [
+      {
+        id: "st-19",
+        name: "Marcus Gallagher",
+        employeeId: "PMI-OPS-019",
+        email: "marcus.g@mfg.internal",
+        jobTitle: "Plant Operations Manager & MPS Lead",
+        department: "Plant Operations",
+        workCenter: "Central Control Office",
+        shift: "General Shift (08:00 – 17:00 WIB)",
+        status: "present",
+        initials: "MG",
+        tenure: "2.8 yrs"
+      },
+      {
+        id: "st-6",
+        name: "Victoria Park",
+        employeeId: "PMI-OPS-006",
+        email: "victoria.p@mfg.internal",
+        jobTitle: "Deputy Plant Operations Superintendent",
+        department: "Plant Operations",
+        workCenter: "Plant 2 Operations Office",
+        shift: "General Shift (08:00 – 17:00 WIB)",
+        status: "present",
+        initials: "VP",
+        tenure: "6.6 yrs"
+      }
+    ]
+  },
+  {
+    title: "Purchasing",
+    count: 4,
+    desc: "Purchase requests, vendor POs, RFQs.",
+    color: "bg-blue-500",
+    accentBar: "#3B82F6",
+    initials: ["PS", "EL", "TN", "KW"],
+    members: [
+      {
+        id: "st-17",
+        name: "Priya Sharma",
+        employeeId: "PMI-PRC-017",
+        email: "priya.s@mfg.internal",
+        jobTitle: "Procurement & Sourcing Lead",
+        department: "Procurement & Sourcing",
+        workCenter: "Administrative Procurement Office",
+        shift: "General Shift (08:00 – 17:00 WIB)",
+        status: "present",
+        initials: "PS",
+        tenure: "4.4 yrs"
+      },
+      {
+        id: "st-18",
+        name: "Eric Lin",
+        employeeId: "PMI-PRC-018",
+        email: "eric.lin@mfg.internal",
+        jobTitle: "Vendor Relations & PO Specialist",
+        department: "Procurement & Sourcing",
+        workCenter: "Supplier Relations Hub",
+        shift: "General Shift (08:00 – 17:00 WIB)",
+        status: "remote",
+        initials: "EL",
+        tenure: "1.3 yrs"
+      },
+      {
+        id: "st-23",
+        name: "Taufik Nugroho",
+        employeeId: "PMI-PRC-023",
+        email: "taufik.n@mfg.internal",
+        jobTitle: "Direct Raw Materials & Coil Buyer",
+        department: "Procurement & Sourcing",
+        workCenter: "Procurement Floor Desk",
+        shift: "General Shift (08:00 – 17:00 WIB)",
+        status: "present",
+        initials: "TN",
+        tenure: "3.2 yrs"
+      },
+      {
+        id: "st-24",
+        name: "Kenji Watanabe",
+        employeeId: "PMI-PRC-024",
+        email: "kenji.w@mfg.internal",
+        jobTitle: "Strategic Commodity Sourcing Manager",
+        department: "Procurement & Sourcing",
+        workCenter: "Executive Sourcing Office",
+        shift: "General Shift (08:00 – 17:00 WIB)",
+        status: "present",
+        initials: "KW",
+        tenure: "5.1 yrs"
+      }
+    ]
+  },
+  {
+    title: "Warehouse",
+    count: 6,
+    desc: "Goods receipts, pallet bins, stock reorder.",
+    color: "bg-emerald-500",
+    accentBar: "#10B981",
+    initials: ["WI", "JC", "DK"],
+    members: [
+      {
+        id: "st-14",
+        name: "William Ibrahim",
+        employeeId: "PMI-LOG-014",
+        email: "william.i@mfg.internal",
+        jobTitle: "Warehouse Logistics Supervisor",
+        department: "Warehouse & Logistics",
+        workCenter: "Warehouse Bay 1 · Raw Material Hub",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "WI",
+        tenure: "3.7 yrs"
+      },
+      {
+        id: "st-25",
+        name: "James Chen",
+        employeeId: "PMI-LOG-015",
+        email: "james.chen@mfg.internal",
+        jobTitle: "Inbound Dock Goods Receipt Clerk",
+        department: "Warehouse & Logistics",
+        workCenter: "Dock 3 Receiving Bay",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "JC",
+        tenure: "2.0 yrs"
+      },
+      {
+        id: "st-26",
+        name: "Devi Kuncoro",
+        employeeId: "PMI-LOG-016",
+        email: "devi.k@mfg.internal",
+        jobTitle: "FIFO Stock Controller & Bin Stager",
+        department: "Warehouse & Logistics",
+        workCenter: "Central Component Stockroom",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "DK",
+        tenure: "4.2 yrs"
+      },
+      {
+        id: "st-27",
+        name: "Tomás Silva",
+        employeeId: "PMI-LOG-025",
+        email: "tomas.s@mfg.internal",
+        jobTitle: "Outbound Pallet Shipping Coordinator",
+        department: "Warehouse & Logistics",
+        workCenter: "Logistics Hub Bay 1",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "TS",
+        tenure: "3.5 yrs"
+      },
+      {
+        id: "st-15",
+        name: "Ravi Patel",
+        employeeId: "PMI-LOG-026",
+        email: "ravi.p@mfg.internal",
+        jobTitle: "Customs & Trade Compliance Officer",
+        department: "Warehouse & Logistics",
+        workCenter: "Warehouse Bay 2 · Bonded Customs Zone",
+        shift: "General Shift (08:00 – 17:00 WIB)",
+        status: "present",
+        initials: "RP",
+        tenure: "1.5 yrs"
+      },
+      {
+        id: "st-16",
+        name: "Yusuf Kaya",
+        employeeId: "PMI-LOG-027",
+        email: "yusuf.k@mfg.internal",
+        jobTitle: "Heavy Material Handler & Forklift Lead",
+        department: "Warehouse & Logistics",
+        workCenter: "Warehouse Bay 3 · Heavy Coil Staging",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "YK",
+        tenure: "10 mo"
+      }
+    ]
+  },
+  {
+    title: "Shop Floor",
+    count: 12,
+    desc: "Work orders, line executions, run logs.",
+    color: "bg-purple-500",
+    accentBar: "#8B5CF6",
+    initials: ["OF", "TL", "RE", "+9"],
+    members: [
+      {
+        id: "st-28",
+        name: "Oliver Fischer",
+        employeeId: "PMI-PROD-002",
+        email: "oliver.f@mfg.internal",
+        jobTitle: "Stamping Press Master Operator",
+        department: "AC Manufacturing",
+        workCenter: "Press Bay 4 · Sheet Forming",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "OF",
+        tenure: "3.9 yrs"
+      },
+      {
+        id: "st-29",
+        name: "Tommy Lawson",
+        employeeId: "PMI-PROD-003",
+        email: "tommy.l@mfg.internal",
+        jobTitle: "TIG Welding & Frame Assembly Tech",
+        department: "AC Manufacturing",
+        workCenter: "Frame Welding Station 2",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "TL",
+        tenure: "2.6 yrs"
+      },
+      {
+        id: "st-30",
+        name: "Reza Pratama",
+        employeeId: "PMI-PROD-004",
+        email: "reza.p@mfg.internal",
+        jobTitle: "Final Assembly Station Line Operator",
+        department: "Refrigerator Line",
+        workCenter: "Line A Final Staging",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "RE",
+        tenure: "1.2 yrs"
+      },
+      {
+        id: "st-2",
+        name: "Felix Wagner",
+        employeeId: "PMI-AC-005",
+        email: "felix.w@mfg.internal",
+        jobTitle: "CNC Tube Bending & Heat Exchanger Specialist",
+        department: "AC Manufacturing",
+        workCenter: "WC-AC-01 · AC Tube Bending Bay",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "FW",
+        tenure: "4.1 yrs"
+      },
+      {
+        id: "st-3",
+        name: "Aiko Tanaka",
+        employeeId: "PMI-AC-006",
+        email: "aiko.t@mfg.internal",
+        jobTitle: "Refrigerant Brazing Lead",
+        department: "AC Manufacturing",
+        workCenter: "WC-AC-01 · Copper Brazing Cell",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "AT",
+        tenure: "3.1 yrs"
+      },
+      {
+        id: "st-4",
+        name: "Jonas Berg",
+        employeeId: "PMI-AC-007",
+        email: "jonas.b@mfg.internal",
+        jobTitle: "Vacuum Evacuation & Refrigerant Charging Tech",
+        department: "AC Manufacturing",
+        workCenter: "WC-AC-02 · Vacuum Charging Bay",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "JB",
+        tenure: "1.8 yrs"
+      },
+      {
+        id: "st-5",
+        name: "Lena Vogel",
+        employeeId: "PMI-AC-008",
+        email: "lena.v@mfg.internal",
+        jobTitle: "Inverter Drive & PCB Specialist",
+        department: "AC Manufacturing",
+        workCenter: "WC-AC-02 · PCB Inverter Desk",
+        shift: "Shift 2 (15:30 – 23:00 WIB)",
+        status: "present",
+        initials: "LV",
+        tenure: "2.7 yrs"
+      },
+      {
+        id: "st-7",
+        name: "Kwame Mensah",
+        employeeId: "PMI-RF-009",
+        email: "kwame.m@mfg.internal",
+        jobTitle: "Rigid PU Foam Injection Tech",
+        department: "Refrigerator Line",
+        workCenter: "WC-RF-01 · Cabinet PU Station",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "KM",
+        tenure: "2.1 yrs"
+      },
+      {
+        id: "st-8",
+        name: "Bo Andersen",
+        employeeId: "PMI-WM-010",
+        email: "bo.a@mfg.internal",
+        jobTitle: "Washer Drum Mechanics Specialist",
+        department: "Washing Machine Line",
+        workCenter: "WC-WM-01 · Drum Integration",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "BA",
+        tenure: "2.4 yrs"
+      },
+      {
+        id: "st-9",
+        name: "Diego Alvarez",
+        employeeId: "PMI-WM-011",
+        email: "diego.a@mfg.internal",
+        jobTitle: "Motor & Vibration Damper Tech",
+        department: "Washing Machine Line",
+        workCenter: "WC-WM-01 · Assembly Station",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "DA",
+        tenure: "1.1 yrs"
+      },
+      {
+        id: "st-10",
+        name: "Amara Okafor",
+        employeeId: "PMI-TV-012",
+        email: "amara.o@mfg.internal",
+        jobTitle: "SMT Mainboard Cleanroom Lead",
+        department: "Display & TV Line",
+        workCenter: "WC-TV-01 · SMT Bay 1",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "AO",
+        tenure: "3.5 yrs"
+      },
+      {
+        id: "st-11",
+        name: "Hana Kim",
+        employeeId: "PMI-TV-013",
+        email: "hana.k@mfg.internal",
+        jobTitle: "Display Panel & Optical Bonding Tech",
+        department: "Display & TV Line",
+        workCenter: "WC-TV-01 · Optical Cleanroom",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "HK",
+        tenure: "2.0 yrs"
+      }
+    ]
+  },
+  {
+    title: "Quality Control",
+    count: 3,
+    desc: "Defect inspection, tolerance, release.",
+    color: "bg-teal-500",
+    accentBar: "#14B8A6",
+    initials: ["QC", "ER", "SV"],
+    members: [
+      {
+        id: "st-12",
+        name: "Quinn Caldwell",
+        employeeId: "PMI-QAC-012",
+        email: "quinn.c@mfg.internal",
+        jobTitle: "Head of Quality Assurance & Metrology",
+        department: "Quality Assurance",
+        workCenter: "Central QC Testing Lab",
+        shift: "General Shift (08:00 – 17:00 WIB)",
+        status: "present",
+        initials: "QC",
+        tenure: "7.2 yrs"
+      },
+      {
+        id: "st-31",
+        name: "Elena Rostova",
+        employeeId: "PMI-QAC-013",
+        email: "elena.r@mfg.internal",
+        jobTitle: "QC Dimensional & Tolerance Inspector",
+        department: "Quality Assurance",
+        workCenter: "Inspection Station 1",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "ER",
+        tenure: "4.5 yrs"
+      },
+      {
+        id: "st-13",
+        name: "Satria Vardhan",
+        employeeId: "PMI-QAC-030",
+        email: "satria.v@mfg.internal",
+        jobTitle: "High-Voltage Safety & Dielectric Inspector",
+        department: "Quality Assurance",
+        workCenter: "WC-QC-01 · Dielectric Hi-Pot Gate",
+        shift: "Shift 1 (07:00 – 15:30 WIB)",
+        status: "present",
+        initials: "SV",
+        tenure: "3.4 yrs"
+      }
+    ]
+  }
+];
+
 export function Settings() {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<SettingsTab>("company");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Role Members Dialog State
+  const [selectedRoleModal, setSelectedRoleModal] = useState<RoleDefinition | null>(null);
+  const [roleMemberSearch, setRoleMemberSearch] = useState("");
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -736,36 +1196,57 @@ export function Settings() {
             <div className="space-y-6">
               {/* Top Roles Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-                {[
-                  { title: "Administrator", count: 1, desc: "Everything, including audit & settings.", color: "bg-red-500", initials: ["AD"] },
-                  { title: "Plant Manager", count: 2, desc: "Production KPIs, shift approvals, analytics.", color: "bg-amber-500", initials: ["MG", "VP"] },
-                  { title: "Purchasing", count: 4, desc: "Purchase requests, vendor POs, RFQs.", color: "bg-blue-500", initials: ["PS", "EL", "TN", "KW"] },
-                  { title: "Warehouse", count: 6, desc: "Goods receipts, pallet bins, stock reorder.", color: "bg-emerald-500", initials: ["WH", "JC", "DK"] },
-                  { title: "Shop Floor", count: 12, desc: "Work orders, line executions, run logs.", color: "bg-purple-500", initials: ["OP", "TL", "RB", "+9"] },
-                  { title: "Quality Control", count: 3, desc: "Defect inspection, tolerance, release.", color: "bg-teal-500", initials: ["QC", "ER", "SV"] }
-                ].map((r) => (
-                  <div key={r.title} className="bg-white dark:bg-[#18181B] border border-stone-200/90 dark:border-stone-800 rounded-xl p-3 shadow-2xs flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{r.title}</span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-full">{r.count}</span>
+                {ROLE_DEFINITIONS.map((r) => {
+                  const isSelected = selectedRoleModal?.title === r.title;
+                  return (
+                    <div
+                      key={r.title}
+                      onClick={() => {
+                        setSelectedRoleModal(r);
+                        setRoleMemberSearch("");
+                      }}
+                      className={`bg-white dark:bg-[#18181B] border rounded-xl p-3 shadow-2xs flex flex-col justify-between cursor-pointer transition-all duration-150 group select-none ${
+                        isSelected
+                          ? "border-amber-500 ring-2 ring-amber-500/30 bg-amber-50/20 dark:bg-amber-950/20 shadow-xs"
+                          : "border-stone-200/90 dark:border-stone-800 hover:border-amber-500/70 dark:hover:border-amber-500/70 hover:shadow-md hover:-translate-y-0.5"
+                      }`}
+                      title={`Click to view all ${r.count} ${r.title} members`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                            {r.title}
+                          </span>
+                          <span className="text-[10px] font-mono px-1.5 py-0.2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-full group-hover:bg-amber-100 dark:group-hover:bg-amber-950 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
+                            {r.count}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-stone-500 dark:text-stone-400 leading-tight line-clamp-2">
+                          {r.desc}
+                        </p>
                       </div>
-                      <p className="text-[10px] text-stone-500 dark:text-stone-400 leading-tight line-clamp-2">
-                        {r.desc}
-                      </p>
-                    </div>
-                    <div className="mt-3 pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between">
-                      <div className="flex -space-x-1.5 overflow-hidden">
-                        {r.initials.map((init, idx) => (
-                          <div key={idx} className="w-5 h-5 rounded-full bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-200 text-[9px] font-bold flex items-center justify-center border border-white dark:border-stone-900">
-                            {init}
-                          </div>
-                        ))}
+
+                      <div className="mt-3 pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between">
+                        <div className="flex -space-x-1.5 overflow-hidden">
+                          {r.initials.map((init, idx) => (
+                            <div
+                              key={idx}
+                              className="w-5 h-5 rounded-full bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-200 text-[9px] font-bold flex items-center justify-center border border-white dark:border-stone-900 shadow-2xs"
+                            >
+                              {init}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[9px] font-semibold text-amber-600 dark:text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center">
+                            View <ChevronRight className="w-2.5 h-2.5 ml-0.5" />
+                          </span>
+                          <div className={`h-1 w-6 rounded-full ${r.color}`} />
+                        </div>
                       </div>
-                      <div className={`h-1 w-8 rounded-full ${r.color}`} />
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Permissions Table Matrix */}
@@ -1769,6 +2250,183 @@ export function Settings() {
 
         </div>
       </div>
+
+      {/* ── Role Members Detail Modal ── */}
+      {selectedRoleModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setSelectedRoleModal(null)}
+        >
+          <div
+            className="w-full max-w-2xl bg-white dark:bg-[#18181B] border border-stone-200/90 dark:border-stone-800 rounded-2xl shadow-2xl p-6 relative max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-stone-100 dark:border-stone-800">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-xs ${selectedRoleModal.color}`}>
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-900 dark:text-stone-100">
+                      {selectedRoleModal.title} Personnel
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-mono text-xs font-bold">
+                      {selectedRoleModal.members.length} {selectedRoleModal.members.length === 1 ? "member" : "members"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                    {selectedRoleModal.desc}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedRoleModal(null)}
+                className="p-1.5 text-stone-400 hover:text-slate-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Search Bar for Members */}
+            <div className="pt-3.5 pb-2">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                <input
+                  type="text"
+                  value={roleMemberSearch}
+                  onChange={(e) => setRoleMemberSearch(e.target.value)}
+                  placeholder={`Search ${selectedRoleModal.title} by name, employee ID, or position...`}
+                  className="w-full pl-8 pr-3.5 py-1.5 text-xs rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-900/60 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600"
+                />
+              </div>
+            </div>
+
+            {/* Members List (Scrollable) */}
+            <div className="flex-1 overflow-y-auto space-y-2.5 py-2 pr-1 divide-y divide-stone-100 dark:divide-stone-800/60">
+              {selectedRoleModal.members
+                .filter((m) => {
+                  if (!roleMemberSearch.trim()) return true;
+                  const q = roleMemberSearch.toLowerCase();
+                  return (
+                    m.name.toLowerCase().includes(q) ||
+                    m.employeeId.toLowerCase().includes(q) ||
+                    m.jobTitle.toLowerCase().includes(q) ||
+                    m.department.toLowerCase().includes(q) ||
+                    m.email.toLowerCase().includes(q) ||
+                    m.workCenter.toLowerCase().includes(q)
+                  );
+                })
+                .map((m) => (
+                  <div
+                    key={m.id}
+                    className="pt-2.5 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl hover:bg-stone-50/80 dark:hover:bg-stone-900/50 transition-colors border border-transparent hover:border-stone-200/60 dark:hover:border-stone-800"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Avatar with status indicator dot */}
+                      <div className="relative shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-slate-900 dark:bg-stone-700 text-white font-bold text-xs flex items-center justify-center border border-stone-300 dark:border-stone-600 shadow-2xs">
+                          {m.initials}
+                        </div>
+                        <span
+                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-[#18181B] ${
+                            m.status === "present"
+                              ? "bg-emerald-500"
+                              : m.status === "remote"
+                              ? "bg-amber-500"
+                              : "bg-stone-400"
+                          }`}
+                          title={`Status: ${m.status}`}
+                        />
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-slate-900 dark:text-stone-100 truncate">
+                            {m.name}
+                          </span>
+                          <span className="text-[10px] font-mono font-semibold px-1.5 py-0.2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-sm">
+                            {m.employeeId}
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full uppercase tracking-wider ${
+                              m.status === "present"
+                                ? "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/80"
+                                : m.status === "remote"
+                                ? "bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/80"
+                                : "bg-stone-100 dark:bg-stone-800 text-stone-500"
+                            }`}
+                          >
+                            {m.status}
+                          </span>
+                        </div>
+                        <div className="text-[11px] font-medium text-amber-700 dark:text-amber-400 mt-0.5 truncate">
+                          {m.jobTitle}
+                        </div>
+                        <div className="text-[10px] text-stone-500 dark:text-stone-400 flex items-center gap-2 mt-0.5 flex-wrap">
+                          <span>{m.department}</span>
+                          <span>•</span>
+                          <span className="truncate">{m.workCenter}</span>
+                          <span>•</span>
+                          <span className="font-mono">{m.shift}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center sm:flex-col sm:items-end justify-between shrink-0 gap-1 pt-1 sm:pt-0 border-t sm:border-t-0 border-stone-100 dark:border-stone-800">
+                      <span className="text-[10px] font-mono text-stone-400 dark:text-stone-500">
+                        {m.email}
+                      </span>
+                      <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium">
+                        Tenure: <span className="font-mono text-slate-700 dark:text-stone-300 font-semibold">{m.tenure}</span>
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
+              {selectedRoleModal.members.filter((m) => {
+                if (!roleMemberSearch.trim()) return true;
+                const q = roleMemberSearch.toLowerCase();
+                return (
+                  m.name.toLowerCase().includes(q) ||
+                  m.employeeId.toLowerCase().includes(q) ||
+                  m.jobTitle.toLowerCase().includes(q)
+                );
+              }).length === 0 && (
+                <div className="py-8 text-center text-xs text-stone-400">
+                  No personnel matching &ldquo;{roleMemberSearch}&rdquo; in {selectedRoleModal.title}.
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRoleModal(null);
+                  navigate("/staff");
+                }}
+                className="text-xs text-stone-600 dark:text-stone-300 hover:text-amber-600 dark:hover:text-amber-400 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>Open in Staff Directory</span>
+                <ExternalLink className="w-3 h-3 opacity-70" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedRoleModal(null)}
+                className="px-4 py-1.5 rounded-full bg-slate-900 dark:bg-amber-600 hover:bg-slate-800 dark:hover:bg-amber-500 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
