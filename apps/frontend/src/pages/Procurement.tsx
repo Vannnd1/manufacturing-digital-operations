@@ -25,7 +25,8 @@ interface PRItem {
 
 export function Procurement() {
   const { user } = useAuthStore();
-  const canEditModule = usePermissionsStore((state) => state.canEdit(user?.role, "Procurement & POs"));
+  const { canEdit } = usePermissionsStore();
+  const canEditModule = canEdit(user?.role, "Procurement & POs");
   const canCreatePR = canEditModule && Boolean(!user || ["Admin", "Manager", "Purchasing"].includes(user.role));
   const canCreatePO = canEditModule && Boolean(!user || ["Admin", "Manager", "Purchasing"].includes(user.role));
   const canReceiveGoods = Boolean(!user || ["Admin", "Manager", "Warehouse"].includes(user.role));

@@ -169,3 +169,31 @@ export const usePermissionsStore = create<PermissionsState>((set, get) => ({
     set({ matrix: DEFAULT_PERMISSIONS_MATRIX });
   },
 }));
+
+/**
+ * Convenient reactive hook for checking permissions for a specific module
+ * Automatically re-renders whenever the permissions matrix is edited in Settings!
+ */
+export function useModulePermission(moduleName: string) {
+  const matrix = usePermissionsStore((state) => state.matrix);
+
+  const check = (role?: string | null) => {
+    // Explicitly reference matrix to guarantee dependency tracking
+    const roleKey = normalizeRoleKey(role);
+    if (roleKey === "admin") return "edit" as PermissionLevel;
+
+    const row = matrix.find((m) => m.module.toLowerCase() === moduleName.toLowerCase());
+    if (!row) return "view" as PermissionLevel;
+    return (row[roleKey] || "none") as PermissionLevel;
+  };
+
+  return {
+    matrix,
+    getPermissionFor: check,
+    canAccessFor: (role?: string | null) => {
+      const level = check(role);
+      return level === "view" || level === "edit";
+    },
+    canEditFor: (role?: string | null) => check(role) === "edit",
+  };
+}

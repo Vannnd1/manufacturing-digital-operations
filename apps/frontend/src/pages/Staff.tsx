@@ -22,7 +22,8 @@ import { usePermissionsStore } from "../store/usePermissionsStore";
 
 export function Staff() {
   const { user } = useAuthStore();
-  const canEditStaff = usePermissionsStore((state) => state.canEdit(user?.role, "Staff & Shifts"));
+  const { canEdit } = usePermissionsStore();
+  const canEditStaff = canEdit(user?.role, "Staff & Shifts");
   const { staff, updateStatus, syncCurrentUser, resetStaff } = useStaffStore();
   const [activeTab, setActiveTab] = useState<"all" | "present" | "shift1" | "shift2" | "offfloor">("all");
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");

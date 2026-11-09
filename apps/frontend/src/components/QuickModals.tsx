@@ -45,7 +45,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   if (!isOpen) return null;
 
   const { user } = useAuthStore();
-  const canAccess = usePermissionsStore((state) => state.canAccess);
+  const { canAccess } = usePermissionsStore();
 
   const quickLinks = [
     { label: "Dashboard", path: "/", desc: "Operational KPIs, floor status, and real-time ledger", icon: Layers, tag: "Page" },
@@ -162,7 +162,7 @@ interface QuickCreateModalProps {
 export function QuickCreateModal({ isOpen, onClose }: QuickCreateModalProps) {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const canEdit = usePermissionsStore((state) => state.canEdit);
+  const { canEdit } = usePermissionsStore();
 
   if (!isOpen) return null;
 

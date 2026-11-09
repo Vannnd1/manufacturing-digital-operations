@@ -46,7 +46,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function MainLayout() {
   const { user, logout } = useAuthStore();
-  const canAccess = usePermissionsStore((state) => state.canAccess);
+  const { canAccess } = usePermissionsStore();
   const location = useLocation();
 
   const notifRef = useRef<HTMLDivElement>(null);

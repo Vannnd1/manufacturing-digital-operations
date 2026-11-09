@@ -445,8 +445,9 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
     return o.status.toLowerCase() === filterStatus.toLowerCase();
   });
 
-  const canEditProduction = usePermissionsStore((state) => state.canEdit(user?.role, "Production Orders"));
-  const canEditQuality = usePermissionsStore((state) => state.canEdit(user?.role, "Quality Control"));
+  const { canEdit } = usePermissionsStore();
+  const canEditProduction = canEdit(user?.role, "Production Orders");
+  const canEditQuality = canEdit(user?.role, "Quality Control");
 
   const canCreate = canEditProduction;
   const canInspect = canEditQuality;

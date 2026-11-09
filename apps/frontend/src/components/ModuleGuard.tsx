@@ -11,10 +11,11 @@ interface ModuleGuardProps {
 
 export function ModuleGuard({ moduleName, children }: ModuleGuardProps) {
   const { user } = useAuthStore();
-  const canAccess = usePermissionsStore((state) => state.canAccess(user?.role, moduleName));
-  const permission = usePermissionsStore((state) => state.getPermission(user?.role, moduleName));
+  const { canAccess, getPermission } = usePermissionsStore();
+  const hasAccess = canAccess(user?.role, moduleName);
+  const permission = getPermission(user?.role, moduleName);
 
-  if (!canAccess) {
+  if (!hasAccess) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white dark:bg-[#18181B] border border-amber-200 dark:border-amber-900/60 rounded-2xl p-8 text-center shadow-lg space-y-5 animate-in fade-in duration-200">

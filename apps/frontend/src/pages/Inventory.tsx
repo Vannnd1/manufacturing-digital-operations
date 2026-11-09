@@ -9,7 +9,8 @@ import { usePermissionsStore } from "../store/usePermissionsStore";
 
 export function Inventory() {
   const { user } = useAuthStore();
-  const canManageStock = usePermissionsStore((state) => state.canEdit(user?.role, "Inventory & Stock"));
+  const { canEdit } = usePermissionsStore();
+  const canManageStock = canEdit(user?.role, "Inventory & Stock");
 
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

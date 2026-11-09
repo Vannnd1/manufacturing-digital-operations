@@ -11,7 +11,8 @@ import { usePermissionsStore } from "../store/usePermissionsStore";
 
 export function Materials() {
   const { user } = useAuthStore();
-  const canEditMaterials = usePermissionsStore((state) => state.canEdit(user?.role, "Materials Master"));
+  const { canEdit } = usePermissionsStore();
+  const canEditMaterials = canEdit(user?.role, "Materials Master");
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
