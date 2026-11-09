@@ -406,13 +406,13 @@ function MainLayout() {
             {/* Quick Search Button */}
             <button
               onClick={() => setSearchModalOpen(true)}
-              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs text-stone-500 dark:text-stone-400 hover:text-slate-900 dark:hover:text-white transition-colors shadow-2xs cursor-pointer"
+              className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs text-stone-500 dark:text-stone-400 hover:text-slate-900 dark:hover:text-white transition-colors shadow-2xs cursor-pointer"
               title="Quick Search (Ctrl+K)"
               aria-label="Search operations"
             >
               <Search className="w-3.5 h-3.5" />
-              <span>Search</span>
-              <kbd className="px-1.5 py-0.2 text-[10px] bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded text-stone-500 dark:text-stone-400 font-mono">⌘K</kbd>
+              <span className="hidden sm:inline">Search</span>
+              <kbd className="hidden sm:inline-block px-1.5 py-0.2 text-[10px] bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded text-stone-500 dark:text-stone-400 font-mono">⌘K</kbd>
             </button>
 
             {/* Operational Notification Center */}
@@ -602,10 +602,12 @@ function MainLayout() {
       </main>
 
       {/* ── Utility Modals ── */}
-      <SearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
-      <QuickCreateModal isOpen={quickCreateOpen} onClose={() => setQuickCreateOpen(false)} />
-      <SupportModal isOpen={supportModalOpen} onClose={() => setSupportModalOpen(false)} />
-      <SettingsModal isOpen={settingsModalOpen} onClose={() => setSettingsModalOpen(false)} />
+      <ErrorBoundary>
+        <SearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+        <QuickCreateModal isOpen={quickCreateOpen} onClose={() => setQuickCreateOpen(false)} />
+        <SupportModal isOpen={supportModalOpen} onClose={() => setSupportModalOpen(false)} />
+        <SettingsModal isOpen={settingsModalOpen} onClose={() => setSettingsModalOpen(false)} />
+      </ErrorBoundary>
 
       {/* ── Theme Mode Indicator Toast ── */}
       {themeToast && (

@@ -31,50 +31,76 @@ interface SearchModalProps {
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const { canAccess } = usePermissionsStore();
 
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 50);
     } else {
       setQuery("");
+      setSelectedIndex(0);
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [query]);
 
-  const { user } = useAuthStore();
-  const { canAccess } = usePermissionsStore();
+  // Global Escape key listener
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   const quickLinks = [
-    { label: "Dashboard", path: "/", desc: "Operational KPIs, floor status, and real-time ledger", icon: Layers, tag: "Page" },
-    { label: "Material Master", path: "/materials", desc: "SKU catalog, safety thresholds, and units", icon: Box, tag: "Catalog" },
-    { label: "Inventory Management", path: "/inventory", desc: "Current stock, allocated units, and warehouse ledger", icon: Archive, tag: "Stock" },
-    { label: "Procurement", path: "/procurement", desc: "Purchase requests, supplier orders, and goods receipts", icon: ShoppingCart, tag: "Purchasing" },
-    { label: "Production Orders", path: "/production", desc: "Assembly work orders, batch tracking, and yield", icon: Target, tag: "Manufacturing" },
-    { label: "Quality Control", path: "/quality", desc: "Batch inspection, defect rates, and pass records", icon: ShieldCheck, tag: "Quality" },
-    { label: "People & Staff", path: "/staff", desc: "Shop floor operators, shift attendance, and staff directory", icon: Users, tag: "Personnel" },
-    { label: "Reports & Insights", path: "/reports", desc: "Yield meters, defect analytics, and spend commitment", icon: BarChart3, tag: "Analytics" },
-    { label: "Audit & Traceability", path: "/audit", desc: "Chain-of-custody, system audit logs, and genealogy", icon: History, tag: "Audit" },
+    { label: "Dashboard", path: "/", desc: "Operational KPIs, floor status, and real-time ledger", icon: Layers, tag: "Page", keywords: "home overview telemetry status real-time operations" },
+    { label: "Material Master", path: "/materials", desc: "SKU catalog, safety thresholds, and units", icon: Box, tag: "Catalog", keywords: "sku inventory materials threshold uom parts components" },
+    { label: "Inventory Management", path: "/inventory", desc: "Current stock, allocated units, and warehouse ledger", icon: Archive, tag: "Stock", keywords: "stock warehouse levels adjust bin ledger reorder storage" },
+    { label: "Procurement", path: "/procurement", desc: "Purchase requests, supplier orders, and goods receipts", icon: ShoppingCart, tag: "Purchasing", keywords: "po pr purchasing supplier vendor purchase request goods receipt rfq orders" },
+    { label: "Production Orders", path: "/production", desc: "Assembly work orders, batch tracking, and yield", icon: Target, tag: "Manufacturing", keywords: "manufacturing work orders wo assembly batch execution schedule run routing" },
+    { label: "Quality Control", path: "/quality", desc: "Batch inspection, defect rates, and pass records", icon: ShieldCheck, tag: "Quality", keywords: "qc quality inspection defects tolerance pass fail gate compliance" },
+    { label: "People & Staff", path: "/staff", desc: "Shop floor operators, shift attendance, and staff directory", icon: Users, tag: "Personnel", keywords: "staff roster shift attendance operators workers employee team directory" },
+    { label: "Reports & Insights", path: "/reports", desc: "Yield meters, defect analytics, and spend commitment", icon: BarChart3, tag: "Analytics", keywords: "reports analytics oee insights spend commitment metrics graphs" },
+    { label: "Audit & Traceability", path: "/audit", desc: "Chain-of-custody, system audit logs, and genealogy", icon: History, tag: "Audit", keywords: "audit logs traceability history genealogy timeline compliance ledger" },
+    { label: "System Settings", path: "/settings", desc: "Permissions matrix, roles, company profile, and appearance", icon: Settings, tag: "Admin", keywords: "settings permissions matrix role admin company preferences theme configuration" },
+    { label: "Support & Help Center", path: "/support", desc: "Operational SOPs, shop floor guide, and contacts", icon: LifeBuoy, tag: "Support", keywords: "support help sops procedures guidelines contacts hotline faq" },
   ].filter((item) => canAccess(user?.role, getModuleForPath(item.path)));
 
-  const filtered = quickLinks.filter(
-    (item) =>
-      item.label.toLowerCase().includes(query.toLowerCase()) ||
-      item.desc.toLowerCase().includes(query.toLowerCase()) ||
-      item.tag.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = quickLinks.filter((item) => {
+    const q = query.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      item.label.toLowerCase().includes(q) ||
+      item.desc.toLowerCase().includes(q) ||
+      item.tag.toLowerCase().includes(q) ||
+      item.keywords.toLowerCase().includes(q)
+    );
+  });
 
   const handleSelect = (path: string) => {
     navigate(path);
     onClose();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+      onClick={onClose}
+    >
       <div 
-        className="w-full max-w-xl bg-white dark:bg-[#18181B] border border-stone-200/90 dark:border-stone-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        className="w-full max-w-xl bg-white dark:bg-[#18181B] border border-stone-200/90 dark:border-stone-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar with Cross Button */}
@@ -88,8 +114,21 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             placeholder="Search operations, materials, orders, or jump to page..."
             className="flex-1 bg-transparent text-sm text-slate-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none"
             onKeyDown={(e) => {
-              if (e.key === "Escape") onClose();
-              if (e.key === "Enter" && filtered.length > 0) handleSelect(filtered[0].path);
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setSelectedIndex((prev) => (filtered.length > 0 ? (prev + 1) % filtered.length : 0));
+              } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setSelectedIndex((prev) => (filtered.length > 0 ? (prev - 1 + filtered.length) % filtered.length : 0));
+              } else if (e.key === "Enter") {
+                e.preventDefault();
+                if (filtered.length > 0 && filtered[selectedIndex]) {
+                  handleSelect(filtered[selectedIndex].path);
+                }
+              } else if (e.key === "Escape") {
+                e.preventDefault();
+                onClose();
+              }
             }}
           />
           <div className="flex items-center gap-2 shrink-0">
@@ -114,16 +153,26 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               No matching modules or operations found for "{query}".
             </div>
           ) : (
-            filtered.map((item) => {
+            filtered.map((item, idx) => {
               const Icon = item.icon;
+              const isSelected = idx === selectedIndex;
               return (
                 <button
                   key={item.path}
                   onClick={() => handleSelect(item.path)}
-                  className="w-full p-3 rounded-xl flex items-center justify-between text-left hover:bg-stone-100/70 dark:hover:bg-stone-800/60 transition-colors group cursor-pointer"
+                  onMouseEnter={() => setSelectedIndex(idx)}
+                  className={`w-full p-3 rounded-xl flex items-center justify-between text-left transition-colors group cursor-pointer ${
+                    isSelected 
+                      ? "bg-stone-100 dark:bg-stone-800 ring-1 ring-amber-500/30" 
+                      : "hover:bg-stone-100/70 dark:hover:bg-stone-800/60"
+                  }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 text-slate-700 dark:text-stone-300 flex items-center justify-center shrink-0 border border-stone-200/80 dark:border-stone-700 group-hover:bg-slate-900 dark:group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
+                      isSelected 
+                        ? "bg-slate-900 dark:bg-amber-600 text-white border-transparent"
+                        : "bg-stone-100 dark:bg-stone-800 text-slate-700 dark:text-stone-300 border-stone-200/80 dark:border-stone-700 group-hover:bg-slate-900 dark:group-hover:bg-amber-600 group-hover:text-white"
+                    }`}>
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="truncate">
@@ -136,7 +185,11 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       <p className="text-[11px] text-stone-400 dark:text-stone-500 truncate mt-0.5">{item.desc}</p>
                     </div>
                   </div>
-                  <ArrowRight className="w-3.5 h-3.5 text-stone-300 dark:text-stone-600 group-hover:text-slate-900 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                  <ArrowRight className={`w-3.5 h-3.5 transition-all shrink-0 ml-2 ${
+                    isSelected 
+                      ? "text-slate-900 dark:text-white translate-x-0.5" 
+                      : "text-stone-300 dark:text-stone-600 group-hover:text-slate-900 dark:group-hover:text-white group-hover:translate-x-0.5"
+                  }`} />
                 </button>
               );
             })
@@ -145,7 +198,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
         {/* Footer tip */}
         <div className="p-3 bg-stone-50 dark:bg-stone-900/80 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-[11px] text-stone-400 dark:text-stone-500 px-4">
-          <span>Tip: Press <kbd className="font-mono font-semibold">Ctrl+K</kbd> anytime to open quick search</span>
+          <div className="flex items-center gap-3">
+            <span>Use <kbd className="font-mono font-semibold">↑</kbd> <kbd className="font-mono font-semibold">↓</kbd> to navigate</span>
+            <span><kbd className="font-mono font-semibold">Enter</kbd> to select</span>
+          </div>
           <span className="font-medium text-slate-600 dark:text-stone-400">Quick Launcher</span>
         </div>
       </div>
@@ -163,6 +219,15 @@ export function QuickCreateModal({ isOpen, onClose }: QuickCreateModalProps) {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { canEdit } = usePermissionsStore();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -207,9 +272,12 @@ export function QuickCreateModal({ isOpen, onClose }: QuickCreateModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+      onClick={onClose}
+    >
       <div 
-        className="w-full max-w-md bg-white dark:bg-[#18181B] border border-stone-200/90 dark:border-stone-800 rounded-2xl shadow-2xl p-6 relative"
+        className="w-full max-w-md bg-white dark:bg-[#18181B] border border-stone-200/90 dark:border-stone-800 rounded-2xl shadow-2xl p-6 relative cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800 mb-4">
@@ -268,12 +336,24 @@ interface SupportModalProps {
 }
 
 export function SupportModal({ isOpen, onClose }: SupportModalProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+      onClick={onClose}
+    >
       <div 
-        className="w-full max-w-lg bg-white dark:bg-[#18181B] border border-stone-200/90 dark:border-stone-800 rounded-2xl shadow-2xl p-6 relative max-h-[85vh] overflow-y-auto"
+        className="w-full max-w-lg bg-white dark:bg-[#18181B] border border-stone-200/90 dark:border-stone-800 rounded-2xl shadow-2xl p-6 relative max-h-[85vh] overflow-y-auto cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800 mb-4">
@@ -369,12 +449,24 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+      onClick={onClose}
+    >
       <div 
-        className="w-full max-w-sm bg-white dark:bg-[#18181B] border border-stone-200/90 dark:border-stone-800 rounded-2xl shadow-2xl p-6 relative"
+        className="w-full max-w-sm bg-white dark:bg-[#18181B] border border-stone-200/90 dark:border-stone-800 rounded-2xl shadow-2xl p-6 relative cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800 mb-4">
