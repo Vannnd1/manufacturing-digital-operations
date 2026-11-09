@@ -756,11 +756,82 @@ export class MockDataStore {
   }
 
   getReportsSummary() {
+    const lowStock = this.state.inventory.filter((i) => i.available_stock > 0 && i.available_stock < i.min_stock_threshold).length;
+    const outOfStock = this.state.inventory.filter((i) => i.available_stock <= 0).length;
+    const pendingPRs = this.state.prs.filter((p) => p.status === "Pending").length;
+
+    let totalSpend = 0;
+    for (const po of this.state.pos) {
+      for (const it of po.items) {
+        totalSpend += (Number(it.quantity) || 0) * (Number(it.unit_price) || 0);
+      }
+    }
+
+    let totalPlanned = 0;
+    let totalActual = 0;
+    let completedOrders = 0;
+    let activeOrders = 0;
+    for (const o of this.state.productionOrders) {
+      totalPlanned += Number(o.planned_quantity) || 0;
+      if (o.status === "Completed") {
+        completedOrders++;
+        totalActual += Number(o.planned_quantity) || 0;
+      } else if (o.status === "In_Progress" || o.status === "Ready") {
+        activeOrders++;
+      }
+    }
+    const yieldRate = totalPlanned > 0 ? Number(((totalActual / totalPlanned) * 100).toFixed(2)) : 98.8;
+
+    let totalPass = 0;
+    let totalFail = 0;
+    for (const qi of this.state.qcInspections) {
+      totalPass += Number(qi.pass_quantity) || 0;
+      totalFail += Number(qi.fail_quantity) || 0;
+    }
+    const totalInsp = totalPass + totalFail;
+    const defectRate = totalInsp > 0 ? Number(((totalFail / totalInsp) * 100).toFixed(2)) : 1.2;
+
     return {
-      yieldRate: 98.8,
-      totalSpend: 14250,
+      period: {
+        range: "30d",
+        start_date: null,
+        end_date: null,
+      },
+      inventory: {
+        total_materials: this.state.materials.length,
+        low_stock_count: lowStock,
+        out_of_stock_count: outOfStock,
+        transaction_count: 48,
+        net_quantity_movement: 1250,
+      },
+      procurement: {
+        total_prs: this.state.prs.length,
+        pending_prs: pendingPRs,
+        total_pos: this.state.pos.length,
+        total_spend_commitment: totalSpend || 14250,
+        total_goods_receipts: this.state.pos.filter((p) => p.status === "Completed").length,
+      },
+      production: {
+        total_orders: this.state.productionOrders.length,
+        completed_orders: completedOrders,
+        active_orders: activeOrders,
+        total_planned_quantity: totalPlanned || 760,
+        total_actual_quantity: totalActual || 750,
+        yield_rate_percent: yieldRate || 98.8,
+      },
+      quality: {
+        total_inspections: this.state.qcInspections.length,
+        total_inspected_quantity: totalInsp || 750,
+        total_passed_quantity: totalPass || 741,
+        total_failed_quantity: totalFail || 9,
+        defect_rate_percent: defectRate,
+        quality_incident_count: this.state.qcInspections.filter((q) => (Number(q.fail_quantity) || 0) > 0).length,
+      },
+      // Backward compatibility fields
+      yieldRate: yieldRate || 98.8,
+      totalSpend: totalSpend || 14250,
       totalMovements: 48,
-      totalDefects: 3,
+      totalDefects: totalFail || 9,
       topDefects: [
         { reason: "Refrigerant leak at flare joint", count: 2 },
         { reason: "Fan blade imbalance", count: 1 },
@@ -770,6 +841,189 @@ export class MockDataStore {
         { supplier: "PT Daikin Compressor Indonesia", spend: 4200 },
         { supplier: "Nippon Steel Indonesia", spend: 2900 },
       ],
+    };
+  }
+
+  getInventoryReport() {
+    const stockLevels = this.state.inventory.map((inv) => {
+      let status: "OUT_OF_STOCK" | "LOW_STOCK" | "HEALTHY" = "HEALTHY";
+      if (inv.available_stock <= 0) {
+        status = "OUT_OF_STOCK";
+      } else if (inv.available_stock < inv.min_stock_threshold) {
+        status = "LOW_STOCK";
+      }
+      return {
+        id: inv.material_id,
+        sku: inv.sku,
+        name: inv.name,
+        unit: inv.unit,
+        available_stock: inv.available_stock,
+        reserved_stock: inv.reserved_stock,
+        total_stock: inv.available_stock + inv.reserved_stock,
+        min_stock_threshold: inv.min_stock_threshold,
+        status,
+      };
+    });
+
+    const lowStock = stockLevels.filter((s) => s.status === "LOW_STOCK").length;
+    const outOfStock = stockLevels.filter((s) => s.status === "OUT_OF_STOCK").length;
+
+    return {
+      period: { range: "30d", start_date: null, end_date: null },
+      summary: {
+        total_materials: stockLevels.length,
+        low_stock_count: lowStock,
+        out_of_stock_count: outOfStock,
+        healthy_stock_count: stockLevels.length - lowStock - outOfStock,
+        transaction_count: 48,
+        total_receipts_qty: 3500,
+        total_consumptions_qty: 2250,
+        total_adjustments_qty: 0,
+        net_movement_qty: 1250,
+      },
+      stock_levels: stockLevels,
+      recent_transactions: (this.state.transactions || []).slice(0, 50),
+    };
+  }
+
+  getProcurementReport() {
+    const prStatusCounts: Record<string, number> = { Draft: 0, Pending: 0, Approved: 0, Rejected: 0, Fulfilled: 0 };
+    for (const pr of this.state.prs) {
+      prStatusCounts[pr.status] = (prStatusCounts[pr.status] || 0) + 1;
+    }
+
+    const supplierSpendMap: Record<string, { supplier_name: string; po_count: number; total_spend: number }> = {};
+    let totalSpend = 0;
+
+    const posWithDetails = this.state.pos.map((po) => {
+      const poTotal = po.items.reduce((acc, it) => acc + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0), 0);
+      totalSpend += poTotal;
+
+      const supName = po.supplier_name || "Supplier";
+      if (!supplierSpendMap[po.supplier_id]) {
+        supplierSpendMap[po.supplier_id] = { supplier_name: supName, po_count: 0, total_spend: 0 };
+      }
+      supplierSpendMap[po.supplier_id].po_count += 1;
+      supplierSpendMap[po.supplier_id].total_spend += poTotal;
+
+      return {
+        id: po.id,
+        supplier_id: po.supplier_id,
+        supplier_name: supName,
+        status: po.status,
+        issue_date: po.issue_date,
+        total_amount: poTotal,
+        item_count: po.items.length,
+      };
+    });
+
+    const supplierSpend = Object.values(supplierSpendMap).sort((a, b) => b.total_spend - a.total_spend);
+
+    return {
+      period: { range: "30d", start_date: null, end_date: null },
+      summary: {
+        total_prs: this.state.prs.length,
+        pending_prs: prStatusCounts["Pending"] || 0,
+        approved_prs: prStatusCounts["Approved"] || 0,
+        rejected_prs: prStatusCounts["Rejected"] || 0,
+        fulfilled_prs: prStatusCounts["Fulfilled"] || 0,
+        total_pos: this.state.pos.length,
+        total_procurement_spend: totalSpend || 14250,
+        total_goods_receipts: this.state.pos.filter((p) => p.status === "Completed").length,
+      },
+      pr_status_breakdown: prStatusCounts,
+      supplier_spend: supplierSpend.length > 0 ? supplierSpend : [
+        { supplier_name: "Kobe Steel Copper Products Asia", po_count: 1, total_spend: 7150 },
+        { supplier_name: "PT Daikin Compressor Indonesia", po_count: 1, total_spend: 4200 },
+        { supplier_name: "Nippon Steel Indonesia (Krakatau NS)", po_count: 1, total_spend: 2900 },
+      ],
+      purchase_orders: posWithDetails.slice(0, 50),
+    };
+  }
+
+  getProductionReport() {
+    let totalPlanned = 0;
+    let totalActual = 0;
+    const statusCounts: Record<string, number> = { Planned: 0, Ready: 0, In_Progress: 0, Completed: 0, Cancelled: 0 };
+
+    const orders = this.state.productionOrders.map((o) => {
+      statusCounts[o.status] = (statusCounts[o.status] || 0) + 1;
+      const planned = Number(o.planned_quantity) || 0;
+      totalPlanned += planned;
+      const actual = o.status === "Completed" ? planned : 0;
+      totalActual += actual;
+      return {
+        prodo_id: o.id,
+        product_id: o.product_id,
+        product_sku: o.product_sku || "PRD-AC-001",
+        product_name: o.product_name || "Inverter AC Premium",
+        product_unit: "units",
+        planned_quantity: planned,
+        actual_quantity_produced: actual,
+        status: o.status,
+        completion_date: o.status === "Completed" ? new Date().toISOString() : null,
+      };
+    });
+
+    const yieldRate = totalPlanned > 0 ? Number(((totalActual / totalPlanned) * 100).toFixed(2)) : 98.8;
+
+    return {
+      period: { range: "30d", start_date: null, end_date: null },
+      summary: {
+        total_orders: orders.length,
+        completed_orders: statusCounts["Completed"] || 0,
+        active_orders: (statusCounts["Ready"] || 0) + (statusCounts["In_Progress"] || 0),
+        planned_orders: statusCounts["Planned"] || 0,
+        cancelled_orders: statusCounts["Cancelled"] || 0,
+        total_planned_quantity: totalPlanned || 760,
+        total_actual_quantity: totalActual || 750,
+        yield_rate_percent: yieldRate || 98.8,
+      },
+      status_breakdown: statusCounts,
+      orders: orders.slice(0, 50),
+    };
+  }
+
+  getQualityReport() {
+    let totalPass = 0;
+    let totalFail = 0;
+    const inspections = this.state.qcInspections.map((qi) => {
+      const p = Number(qi.pass_quantity) || 0;
+      const f = Number(qi.fail_quantity) || 0;
+      totalPass += p;
+      totalFail += f;
+      return {
+        id: qi.id,
+        inspection_date: qi.inspection_date || new Date().toISOString(),
+        pass_quantity: p,
+        fail_quantity: f,
+        product_sku: "PRD-AC-001",
+        product_name: qi.product_name || "Inverter AC Premium",
+        inspector_name: qi.inspector_name || "QC Lead",
+        prodo_id: qi.production_record_id,
+      };
+    });
+
+    const totalInspected = totalPass + totalFail;
+    const defectRate = totalInspected > 0 ? Number(((totalFail / totalInspected) * 100).toFixed(2)) : 1.2;
+
+    const defectBreakdown = [
+      { reason: "Refrigerant leak at flare joint", quantity: 6, occurrences: 2, share_percent: 66.67 },
+      { reason: "Fan blade imbalance", quantity: 3, occurrences: 1, share_percent: 33.33 },
+    ];
+
+    return {
+      period: { range: "30d", start_date: null, end_date: null },
+      summary: {
+        total_inspections: inspections.length,
+        total_inspected_quantity: totalInspected || 750,
+        total_passed_quantity: totalPass || 741,
+        total_failed_quantity: totalFail || 9,
+        defect_rate_percent: defectRate,
+        recent_incident_count: inspections.filter((i) => i.fail_quantity > 0).length,
+      },
+      defect_breakdown: defectBreakdown,
+      inspections: inspections.slice(0, 50),
     };
   }
 

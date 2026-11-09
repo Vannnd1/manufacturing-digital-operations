@@ -299,7 +299,7 @@ export function Reports() {
                 <ShoppingCart className="w-4 h-4 text-slate-500" />
               </div>
               <div className="text-3xl font-bold text-slate-900 tabular-nums">
-                ${(summaryData.procurement?.total_spend_commitment ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${(Number(summaryData.procurement?.total_spend_commitment) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
               <div className="text-xs text-slate-500 mt-2 flex items-center gap-2">
                 <span>{summaryData.procurement?.total_pos ?? 0} POs issued</span>
@@ -426,21 +426,21 @@ export function Reports() {
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Tracked</span>
-              <div className="text-2xl font-bold text-slate-900 mt-1">{inventoryData.summary.total_materials}</div>
+              <div className="text-2xl font-bold text-slate-900 mt-1">{inventoryData?.summary?.total_materials ?? 0}</div>
             </Card>
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Low / Out of Stock</span>
               <div className="text-2xl font-bold text-amber-600 mt-1">
-                {inventoryData.summary.low_stock_count + inventoryData.summary.out_of_stock_count}
+                {(inventoryData?.summary?.low_stock_count ?? 0) + (inventoryData?.summary?.out_of_stock_count ?? 0)}
               </div>
             </Card>
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Period Receipts</span>
-              <div className="text-2xl font-bold text-emerald-600 mt-1">+{inventoryData.summary.total_receipts_qty}</div>
+              <div className="text-2xl font-bold text-emerald-600 mt-1">+{inventoryData?.summary?.total_receipts_qty ?? 0}</div>
             </Card>
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Period Consumption</span>
-              <div className="text-2xl font-bold text-slate-700 mt-1">-{inventoryData.summary.total_consumptions_qty}</div>
+              <div className="text-2xl font-bold text-slate-700 mt-1">-{inventoryData?.summary?.total_consumptions_qty ?? 0}</div>
             </Card>
           </div>
 
@@ -459,7 +459,7 @@ export function Reports() {
                 </tr>
               </thead>
               <tbody>
-                {inventoryData.stock_levels.length === 0 ? (
+                {(!inventoryData.stock_levels || inventoryData.stock_levels.length === 0) ? (
                   <tr>
                     <Td colSpan={7} className="text-center text-slate-400 italic py-8">
                       No materials cataloged in system.
@@ -498,21 +498,21 @@ export function Reports() {
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Orders</span>
-              <div className="text-2xl font-bold text-slate-900 mt-1">{procurementData.summary.total_pos}</div>
+              <div className="text-2xl font-bold text-slate-900 mt-1">{procurementData?.summary?.total_pos ?? 0}</div>
             </Card>
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total PO Spend</span>
               <div className="text-2xl font-bold text-slate-900 mt-1">
-                ${procurementData.summary.total_procurement_spend.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                ${(Number(procurementData?.summary?.total_procurement_spend) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </div>
             </Card>
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending PRs</span>
-              <div className="text-2xl font-bold text-amber-600 mt-1">{procurementData.summary.pending_prs}</div>
+              <div className="text-2xl font-bold text-amber-600 mt-1">{procurementData?.summary?.pending_prs ?? 0}</div>
             </Card>
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Goods Receipts</span>
-              <div className="text-2xl font-bold text-emerald-600 mt-1">{procurementData.summary.total_goods_receipts}</div>
+              <div className="text-2xl font-bold text-emerald-600 mt-1">{procurementData?.summary?.total_goods_receipts ?? 0}</div>
             </Card>
           </div>
 
@@ -529,7 +529,7 @@ export function Reports() {
                   </tr>
                 </thead>
                 <tbody>
-                  {procurementData.supplier_spend.length === 0 ? (
+                  {(!procurementData.supplier_spend || procurementData.supplier_spend.length === 0) ? (
                     <tr>
                       <Td colSpan={3} className="text-center text-slate-400 italic py-6">
                         No purchase orders in this period.
@@ -541,7 +541,7 @@ export function Reports() {
                         <Td className="font-medium text-slate-900">{sup.supplier_name}</Td>
                         <Td className="text-right tabular-nums text-slate-600">{sup.po_count}</Td>
                         <Td className="text-right tabular-nums font-bold text-slate-900">
-                          ${sup.total_spend.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          ${(Number(sup.total_spend) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </Td>
                       </tr>
                     ))
@@ -554,14 +554,18 @@ export function Reports() {
             <Card>
               <CardHeader title="Purchase Request Status Breakdown" />
               <div className="p-5 space-y-4">
-                {Object.entries(procurementData.pr_status_breakdown).map(([status, count]: [string, any]) => (
-                  <div key={status} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      {getStatusBadge(status)}
+                {procurementData.pr_status_breakdown ? (
+                  Object.entries(procurementData.pr_status_breakdown).map(([status, count]: [string, any]) => (
+                    <div key={status} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(status)}
+                      </div>
+                      <span className="font-mono font-bold text-slate-800">{count} requests</span>
                     </div>
-                    <span className="font-mono font-bold text-slate-800">{count} requests</span>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-400 italic">No request data available.</p>
+                )}
               </div>
             </Card>
           </div>
@@ -574,19 +578,19 @@ export function Reports() {
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Work Orders</span>
-              <div className="text-2xl font-bold text-slate-900 mt-1">{productionData.summary.total_orders}</div>
+              <div className="text-2xl font-bold text-slate-900 mt-1">{productionData?.summary?.total_orders ?? 0}</div>
             </Card>
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Yield Rate</span>
-              <div className="text-2xl font-bold text-blue-600 mt-1">{productionData.summary.yield_rate_percent}%</div>
+              <div className="text-2xl font-bold text-blue-600 mt-1">{productionData?.summary?.yield_rate_percent ?? 0}%</div>
             </Card>
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Planned Units</span>
-              <div className="text-2xl font-bold text-slate-700 mt-1">{productionData.summary.total_planned_quantity}</div>
+              <div className="text-2xl font-bold text-slate-700 mt-1">{productionData?.summary?.total_planned_quantity ?? 0}</div>
             </Card>
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Recorded Output</span>
-              <div className="text-2xl font-bold text-emerald-600 mt-1">{productionData.summary.total_actual_quantity}</div>
+              <div className="text-2xl font-bold text-emerald-600 mt-1">{productionData?.summary?.total_actual_quantity ?? 0}</div>
             </Card>
           </div>
 
@@ -604,7 +608,7 @@ export function Reports() {
                 </tr>
               </thead>
               <tbody>
-                {productionData.orders.length === 0 ? (
+                {(!productionData.orders || productionData.orders.length === 0) ? (
                   <tr>
                     <Td colSpan={6} className="text-center text-slate-400 italic py-8">
                       No production orders found for the selected period.
@@ -643,19 +647,19 @@ export function Reports() {
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Inspections</span>
-              <div className="text-2xl font-bold text-slate-900 mt-1">{qualityData.summary.total_inspections}</div>
+              <div className="text-2xl font-bold text-slate-900 mt-1">{qualityData?.summary?.total_inspections ?? 0}</div>
             </Card>
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Defect Rate</span>
-              <div className="text-2xl font-bold text-red-600 mt-1">{qualityData.summary.defect_rate_percent}%</div>
+              <div className="text-2xl font-bold text-red-600 mt-1">{qualityData?.summary?.defect_rate_percent ?? 0}%</div>
             </Card>
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Passed Units</span>
-              <div className="text-2xl font-bold text-emerald-600 mt-1">{qualityData.summary.total_passed_quantity}</div>
+              <div className="text-2xl font-bold text-emerald-600 mt-1">{qualityData?.summary?.total_passed_quantity ?? 0}</div>
             </Card>
             <Card className="p-4">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Failed Units</span>
-              <div className="text-2xl font-bold text-red-600 mt-1">{qualityData.summary.total_failed_quantity}</div>
+              <div className="text-2xl font-bold text-red-600 mt-1">{qualityData?.summary?.total_failed_quantity ?? 0}</div>
             </Card>
           </div>
 
@@ -672,7 +676,7 @@ export function Reports() {
                   </tr>
                 </thead>
                 <tbody>
-                  {qualityData.defect_breakdown.length === 0 ? (
+                  {(!qualityData.defect_breakdown || qualityData.defect_breakdown.length === 0) ? (
                     <tr>
                       <Td colSpan={3} className="text-center text-slate-400 italic py-6">
                         No defects logged in this period.
@@ -704,7 +708,7 @@ export function Reports() {
                   </tr>
                 </thead>
                 <tbody>
-                  {qualityData.inspections.length === 0 ? (
+                  {(!qualityData.inspections || qualityData.inspections.length === 0) ? (
                     <tr>
                       <Td colSpan={4} className="text-center text-slate-400 italic py-6">
                         No inspection records in this period.
@@ -714,7 +718,7 @@ export function Reports() {
                     qualityData.inspections.map((i: any) => (
                       <tr key={i.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors">
                         <Td className="font-mono text-xs text-slate-500 whitespace-nowrap">
-                          {new Date(i.inspection_date).toLocaleDateString()}
+                          {i.inspection_date ? new Date(i.inspection_date).toLocaleDateString() : "—"}
                         </Td>
                         <Td>
                           <div className="font-medium text-slate-900">{i.product_name}</div>

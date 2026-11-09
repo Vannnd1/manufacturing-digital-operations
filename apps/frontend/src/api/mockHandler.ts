@@ -124,16 +124,16 @@ export function handleMockRequest(url: string, method: string = "get", data?: an
     return mockStore.getReportsSummary();
   }
   if (pathname.startsWith("/reports/inventory-movements") && normMethod === "get") {
-    return [];
+    return mockStore.getInventoryReport();
   }
   if (pathname.startsWith("/reports/procurement-spend") && normMethod === "get") {
-    return mockStore.getReportsSummary().spendBySupplier;
+    return mockStore.getProcurementReport();
   }
   if (pathname.startsWith("/reports/production-yield") && normMethod === "get") {
-    return [{ date: new Date().toISOString().split("T")[0], yield_rate: 98.8, total_produced: 750 }];
+    return mockStore.getProductionReport();
   }
   if (pathname.startsWith("/reports/quality-defects") && normMethod === "get") {
-    return mockStore.getReportsSummary().topDefects;
+    return mockStore.getQualityReport();
   }
   if (pathname.startsWith("/reports/export")) {
     return "Date,SKU,Material,HS Code,Quantity,Status\n2026-11-02,MAT-COP-001,Copper Tube,7411.10,12000,Normal";

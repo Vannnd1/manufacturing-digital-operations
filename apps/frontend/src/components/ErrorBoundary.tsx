@@ -45,6 +45,17 @@ export class ErrorBoundary extends Component<Props, State> {
               Sistem telah mengisolasi kendala tampilan ini agar tidak memengaruhi navigasi modul lainnya.
             </p>
           </div>
+
+          {this.state.error && (
+            <details className="text-left text-[11px] bg-stone-50 dark:bg-stone-900/80 p-3 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-300 overflow-auto max-h-36">
+              <summary className="font-mono cursor-pointer font-semibold text-amber-700 dark:text-amber-400 select-none">
+                Detail Teknis Kendala ({this.state.error.name || "Error"})
+              </summary>
+              <pre className="mt-2 text-[10px] font-mono whitespace-pre-wrap break-all text-red-600 dark:text-red-400">
+                {this.state.error.message}
+              </pre>
+            </details>
+          )}
           <button
             type="button"
             onClick={this.handleReset}
