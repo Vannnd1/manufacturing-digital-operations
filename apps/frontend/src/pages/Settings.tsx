@@ -70,31 +70,7 @@ const DEFAULT_COMPANY: CompanyProfile = {
   timezone: "America/Los_Angeles (PT)"
 };
 
-// Roles & Matrix Definition
-type PermissionLevel = "none" | "view" | "edit";
-
-interface ModulePermission {
-  module: string;
-  admin: PermissionLevel;
-  manager: PermissionLevel;
-  purchasing: PermissionLevel;
-  warehouse: PermissionLevel;
-  production: PermissionLevel;
-  quality: PermissionLevel;
-}
-
-const INITIAL_PERMISSIONS: ModulePermission[] = [
-  { module: "Dashboard", admin: "edit", manager: "view", purchasing: "view", warehouse: "view", production: "view", quality: "view" },
-  { module: "Procurement & POs", admin: "edit", manager: "edit", purchasing: "edit", warehouse: "view", production: "none", quality: "none" },
-  { module: "Inventory & Stock", admin: "edit", manager: "view", purchasing: "view", warehouse: "edit", production: "view", quality: "view" },
-  { module: "Materials Master", admin: "edit", manager: "edit", purchasing: "edit", warehouse: "view", production: "view", quality: "view" },
-  { module: "Production Orders", admin: "edit", manager: "edit", purchasing: "none", warehouse: "view", production: "edit", quality: "view" },
-  { module: "Quality Control", admin: "edit", manager: "view", purchasing: "none", warehouse: "none", production: "view", quality: "edit" },
-  { module: "Staff & Shifts", admin: "edit", manager: "edit", purchasing: "none", warehouse: "none", production: "none", quality: "none" },
-  { module: "Reporting & OEE", admin: "edit", manager: "edit", purchasing: "view", warehouse: "view", production: "view", quality: "view" },
-  { module: "Audit & Traceability", admin: "edit", manager: "view", purchasing: "none", warehouse: "none", production: "none", quality: "none" },
-  { module: "System Settings", admin: "edit", manager: "view", purchasing: "none", warehouse: "none", production: "none", quality: "none" }
-];
+import { usePermissionsStore, type PermissionLevel, type RoleKey } from "../store/usePermissionsStore";
 
 export interface RoleMember {
   id: string;
@@ -602,39 +578,17 @@ export function Settings() {
   };
 
   // ── Tab 2: Users & Roles Permissions Matrix ──────────────────────────────
-  const [permissions, setPermissions] = useState<ModulePermission[]>(() => {
-    const saved = localStorage.getItem("mfg-permissions-matrix");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return INITIAL_PERMISSIONS;
-      }
-    }
-    return INITIAL_PERMISSIONS;
-  });
+  const { matrix: permissions, cycleCell, resetPermissions } = usePermissionsStore();
 
-  const cyclePermission = (rowIndex: number, roleKey: keyof Omit<ModulePermission, "module" | "admin">) => {
+  const cyclePermission = (rowIndex: number, roleKey: RoleKey) => {
     if (!isAdmin) {
       showToast("Akses Ditolak: Hanya Administrator yang berwenang mengubah matriks izin sistem.");
       return;
     }
-    // Admin always stays "edit"
-    setPermissions((prev) => {
-      const next = [...prev];
-      const current = next[rowIndex][roleKey] as PermissionLevel;
-      const cycle: Record<PermissionLevel, PermissionLevel> = {
-        none: "view",
-        view: "edit",
-        edit: "none"
-      };
-      next[rowIndex] = {
-        ...next[rowIndex],
-        [roleKey]: cycle[current]
-      };
-      localStorage.setItem("mfg-permissions-matrix", JSON.stringify(next));
-      return next;
-    });
+    const row = permissions[rowIndex];
+    if (!row) return;
+    cycleCell(row.module, roleKey);
+    showToast(`Hak akses ${row.module} untuk peran ${roleKey} berhasil diperbarui.`);
   };
 
   // ── Tab 3: Notifications State ────────────────────────────────────────────
@@ -2304,7 +2258,7 @@ export function Settings() {
                         localStorage.removeItem("mfg-ui-density");
                         localStorage.removeItem("mfg-week-start");
                         setProfile(DEFAULT_COMPANY);
-                        setPermissions(INITIAL_PERMISSIONS);
+                        resetPermissions();
                         setAccentColor("amber");
                         document.documentElement.setAttribute("data-accent", "amber");
                         window.dispatchEvent(new CustomEvent("mfg-accent-change", { detail: "amber" }));

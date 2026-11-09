@@ -17,9 +17,11 @@ import {
   CheckCircle2,
   LogOut,
   Building2,
-  Layers
+  Layers,
+  Lock
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
+import { usePermissionsStore, getModuleForPath } from "../store/usePermissionsStore";
 
 // ── 1. Quick Command & Search Modal (Ctrl+K) ──────────────────────────────────
 interface SearchModalProps {
@@ -42,6 +44,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   if (!isOpen) return null;
 
+  const { user } = useAuthStore();
+  const canAccess = usePermissionsStore((state) => state.canAccess);
+
   const quickLinks = [
     { label: "Dashboard", path: "/", desc: "Operational KPIs, floor status, and real-time ledger", icon: Layers, tag: "Page" },
     { label: "Material Master", path: "/materials", desc: "SKU catalog, safety thresholds, and units", icon: Box, tag: "Catalog" },
@@ -52,7 +57,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     { label: "People & Staff", path: "/staff", desc: "Shop floor operators, shift attendance, and staff directory", icon: Users, tag: "Personnel" },
     { label: "Reports & Insights", path: "/reports", desc: "Yield meters, defect analytics, and spend commitment", icon: BarChart3, tag: "Analytics" },
     { label: "Audit & Traceability", path: "/audit", desc: "Chain-of-custody, system audit logs, and genealogy", icon: History, tag: "Audit" },
-  ];
+  ].filter((item) => canAccess(user?.role, getModuleForPath(item.path)));
 
   const filtered = quickLinks.filter(
     (item) =>
@@ -156,6 +161,8 @@ interface QuickCreateModalProps {
 
 export function QuickCreateModal({ isOpen, onClose }: QuickCreateModalProps) {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const canEdit = usePermissionsStore((state) => state.canEdit);
 
   if (!isOpen) return null;
 
@@ -165,30 +172,34 @@ export function QuickCreateModal({ isOpen, onClose }: QuickCreateModalProps) {
       desc: "Raise raw material requisition from approved suppliers",
       icon: ShoppingCart,
       color: "bg-blue-50 text-blue-700 border-blue-200",
-      path: "/procurement"
+      path: "/procurement",
+      module: "Procurement & POs"
     },
     {
       title: "New Production Order",
       desc: "Schedule assembly batch order on the machining center",
       icon: Target,
       color: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      path: "/production"
+      path: "/production",
+      module: "Production Orders"
     },
     {
       title: "New Material Item",
       desc: "Register SKU, unit of measure, and safety thresholds",
       icon: Box,
       color: "bg-amber-50 text-amber-700 border-amber-200",
-      path: "/materials"
+      path: "/materials",
+      module: "Materials Master"
     },
     {
       title: "New Quality Inspection",
       desc: "Record pass/defect counts for finished production record",
       icon: ShieldCheck,
       color: "bg-rose-50 text-rose-700 border-rose-200",
-      path: "/quality"
+      path: "/quality",
+      module: "Quality Control"
     },
-  ];
+  ].filter((act) => canEdit(user?.role, act.module));
 
   const handleAction = (path: string) => {
     navigate(path);
@@ -214,29 +225,37 @@ export function QuickCreateModal({ isOpen, onClose }: QuickCreateModalProps) {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-3">
-          {actions.map((act) => {
-            const Icon = act.icon;
-            return (
-              <button
-                key={act.title}
-                onClick={() => handleAction(act.path)}
-                className="p-3.5 rounded-xl border border-stone-200/80 dark:border-stone-800 hover:border-slate-800/80 dark:hover:border-amber-500/80 bg-white dark:bg-stone-900/60 hover:bg-stone-50/80 dark:hover:bg-stone-800/70 transition-all flex items-center gap-3.5 text-left group cursor-pointer shadow-2xs"
-              >
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${act.color}`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-900 dark:text-stone-100 group-hover:text-blue-600 dark:group-hover:text-amber-400 transition-colors">
-                    {act.title}
-                  </p>
-                  <p className="text-[11px] text-stone-400 dark:text-stone-500 truncate mt-0.5">{act.desc}</p>
-                </div>
-                <ArrowRight className="w-4 h-4 text-stone-300 dark:text-stone-600 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
-              </button>
-            );
-          })}
-        </div>
+        {actions.length === 0 ? (
+          <div className="p-6 text-center text-xs text-stone-500 dark:text-stone-400 bg-stone-50 dark:bg-stone-900/40 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2">
+            <Lock className="w-5 h-5 text-stone-400 mx-auto" />
+            <p className="font-semibold text-slate-800 dark:text-stone-200">Mode Akses Dibatasi</p>
+            <p>Peran Anda ({user?.role || "Staff"}) tidak memiliki izin untuk membuat item baru pada modul apa pun saat ini.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-3">
+            {actions.map((act) => {
+              const Icon = act.icon;
+              return (
+                <button
+                  key={act.title}
+                  onClick={() => handleAction(act.path)}
+                  className="p-3.5 rounded-xl border border-stone-200/80 dark:border-stone-800 hover:border-slate-800/80 dark:hover:border-amber-500/80 bg-white dark:bg-stone-900/60 hover:bg-stone-50/80 dark:hover:bg-stone-800/70 transition-all flex items-center gap-3.5 text-left group cursor-pointer shadow-2xs"
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${act.color}`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-900 dark:text-stone-100 group-hover:text-blue-600 dark:group-hover:text-amber-400 transition-colors">
+                      {act.title}
+                    </p>
+                    <p className="text-[11px] text-stone-400 dark:text-stone-500 truncate mt-0.5">{act.desc}</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-stone-300 dark:text-stone-600 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

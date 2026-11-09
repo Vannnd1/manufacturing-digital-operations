@@ -16,6 +16,7 @@ import {
 import { getProducts } from "../api/product";
 import { getMaterials } from "../api/inventory";
 import { useAuthStore } from "../store/useAuthStore";
+import { usePermissionsStore } from "../store/usePermissionsStore";
 import { 
   X, 
   AlertTriangle, 
@@ -444,8 +445,11 @@ export function Production({ defaultTab = "scheduling" }: ProductionProps) {
     return o.status.toLowerCase() === filterStatus.toLowerCase();
   });
 
-  const canCreate = user?.role === "Admin" || user?.role === "Manager" || user?.role === "Production";
-  const canInspect = Boolean(!user || ["Admin", "Manager", "QC", "Quality Control"].includes(user.role));
+  const canEditProduction = usePermissionsStore((state) => state.canEdit(user?.role, "Production Orders"));
+  const canEditQuality = usePermissionsStore((state) => state.canEdit(user?.role, "Quality Control"));
+
+  const canCreate = canEditProduction;
+  const canInspect = canEditQuality;
 
   const subPageTitles = {
     scheduling: "Production Scheduling",

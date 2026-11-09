@@ -31,6 +31,8 @@ import {
 import { SearchModal, QuickCreateModal, SupportModal, SettingsModal } from "./components/QuickModals";
 import { LiveTelemetryPill } from "./components/LiveTelemetryPill";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { ModuleGuard } from "./components/ModuleGuard";
+import { usePermissionsStore } from "./store/usePermissionsStore";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((state) => state.token);
@@ -44,6 +46,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function MainLayout() {
   const { user, logout } = useAuthStore();
+  const canAccess = usePermissionsStore((state) => state.canAccess);
   const location = useLocation();
 
   const notifRef = useRef<HTMLDivElement>(null);
@@ -250,24 +253,26 @@ function MainLayout() {
         </div>
 
         {/* 5. Settings (Gear with dedicated /settings route) */}
-        <div className="relative group">
-          <Link
-            to="/settings"
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shadow-xs cursor-pointer ${
-              location.pathname === "/settings"
-                ? "bg-amber-600 text-white"
-                : "text-stone-300 hover:text-white hover:bg-stone-800"
-            }`}
-            title="Settings & System Preferences"
-            aria-label="Settings"
-          >
-            <Settings className="w-4 h-4" />
-          </Link>
-          <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-white dark:bg-stone-800 text-slate-900 dark:text-white font-semibold text-xs rounded-xl shadow-lg border border-stone-200/90 dark:border-stone-700 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 flex items-center">
-            Settings
-            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-white dark:border-r-stone-800" />
+        {canAccess(user?.role, "System Settings") && (
+          <div className="relative group">
+            <Link
+              to="/settings"
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shadow-xs cursor-pointer ${
+                location.pathname === "/settings"
+                  ? "bg-amber-600 text-white"
+                  : "text-stone-300 hover:text-white hover:bg-stone-800"
+              }`}
+              title="Settings & System Preferences"
+              aria-label="Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </Link>
+            <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-white dark:bg-stone-800 text-slate-900 dark:text-white font-semibold text-xs rounded-xl shadow-lg border border-stone-200/90 dark:border-stone-700 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 flex items-center">
+              Settings
+              <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-white dark:border-r-stone-800" />
+            </div>
           </div>
-        </div>
+        )}
       </aside>
 
       {/* ── Main Content Area (Full-width canvas) ── */}
@@ -297,79 +302,91 @@ function MainLayout() {
 
             {/* Top Navigation Bar with Pill Choices - Full Left & Spacious */}
             <div className="flex items-center gap-1 bg-stone-100/90 dark:bg-stone-900/90 p-1 rounded-full border border-stone-200/80 dark:border-stone-800 shadow-2xs overflow-x-auto scrollbar-none">
-              <Link
-                to="/"
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                  location.pathname === "/"
-                    ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
-                    : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
-                }`}
-              >
-                Dashboard
-              </Link>
-              <Link
-                to="/procurement"
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                  location.pathname === "/procurement"
-                    ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
-                    : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
-                }`}
-              >
-                <span>Procurement</span>
-                <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${location.pathname === "/procurement" ? "bg-white/20 text-white" : "bg-amber-600 text-white"}`}>
-                  4
-                </span>
-              </Link>
-              <Link
-                to="/inventory"
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                  location.pathname === "/inventory" || location.pathname === "/materials"
-                    ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
-                    : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
-                }`}
-              >
-                <span>Stock</span>
-                <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${location.pathname === "/inventory" || location.pathname === "/materials" ? "bg-white/20 text-white" : "bg-amber-600 text-white"}`}>
-                  6
-                </span>
-              </Link>
-              <Link
-                to="/production"
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                  location.pathname === "/production" || location.pathname === "/quality"
-                    ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
-                    : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
-                }`}
-              >
-                <span>Manufacturing</span>
-                <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${location.pathname === "/production" || location.pathname === "/quality" ? "bg-white/20 text-white" : "bg-amber-600 text-white"}`}>
-                  1
-                </span>
-              </Link>
-              <Link
-                to="/staff"
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                  location.pathname === "/staff"
-                    ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
-                    : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
-                }`}
-              >
-                <span>People</span>
-                <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${location.pathname === "/staff" ? "bg-white/20 text-white" : "bg-stone-500 text-white"}`}>
-                  22
-                </span>
-              </Link>
-              <Link
-                to="/reports"
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                  location.pathname === "/reports"
-                    ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
-                    : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
-                }`}
-              >
-                Reporting
-              </Link>
-              {(user?.role === "Admin" || user?.role === "Manager") && (
+              {canAccess(user?.role, "Dashboard") && (
+                <Link
+                  to="/"
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    location.pathname === "/"
+                      ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                      : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                  }`}
+                >
+                  Dashboard
+                </Link>
+              )}
+              {canAccess(user?.role, "Procurement & POs") && (
+                <Link
+                  to="/procurement"
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                    location.pathname === "/procurement"
+                      ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                      : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                  }`}
+                >
+                  <span>Procurement</span>
+                  <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${location.pathname === "/procurement" ? "bg-white/20 text-white" : "bg-amber-600 text-white"}`}>
+                    4
+                  </span>
+                </Link>
+              )}
+              {(canAccess(user?.role, "Inventory & Stock") || canAccess(user?.role, "Materials Master")) && (
+                <Link
+                  to={canAccess(user?.role, "Inventory & Stock") ? "/inventory" : "/materials"}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                    location.pathname === "/inventory" || location.pathname === "/materials"
+                      ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                      : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                  }`}
+                >
+                  <span>Stock</span>
+                  <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${location.pathname === "/inventory" || location.pathname === "/materials" ? "bg-white/20 text-white" : "bg-amber-600 text-white"}`}>
+                    6
+                  </span>
+                </Link>
+              )}
+              {(canAccess(user?.role, "Production Orders") || canAccess(user?.role, "Quality Control")) && (
+                <Link
+                  to={canAccess(user?.role, "Production Orders") ? "/production" : "/quality"}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                    location.pathname === "/production" || location.pathname === "/quality"
+                      ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                      : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                  }`}
+                >
+                  <span>Manufacturing</span>
+                  <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${location.pathname === "/production" || location.pathname === "/quality" ? "bg-white/20 text-white" : "bg-amber-600 text-white"}`}>
+                    1
+                  </span>
+                </Link>
+              )}
+              {canAccess(user?.role, "Staff & Shifts") && (
+                <Link
+                  to="/staff"
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                    location.pathname === "/staff"
+                      ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                      : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                  }`}
+                >
+                  <span>People</span>
+                  <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${location.pathname === "/staff" ? "bg-white/20 text-white" : "bg-stone-500 text-white"}`}>
+                    22
+                  </span>
+                </Link>
+              )}
+              {canAccess(user?.role, "Reporting & OEE") && (
+                <Link
+                  to="/reports"
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    location.pathname === "/reports"
+                      ? "bg-slate-900 dark:bg-amber-600 text-white shadow-xs font-bold"
+                      : "text-slate-600 dark:text-stone-300 hover:text-slate-900 dark:hover:text-white hover:bg-stone-200/60 dark:hover:bg-stone-800/80"
+                  }`}
+                >
+                  Reporting
+                </Link>
+              )}
+              {canAccess(user?.role, "Audit & Traceability") && (
                 <Link
                   to="/audit"
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
@@ -567,17 +584,17 @@ function MainLayout() {
 
             <ErrorBoundary fallbackTitle="Modul Operasional Terkendala">
               <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/materials" element={<Materials />} />
-                <Route path="/inventory" element={<Inventory />} />
-                <Route path="/procurement" element={<Procurement />} />
-                <Route path="/production" element={<Production />} />
-                <Route path="/quality" element={<Quality />} />
-                <Route path="/staff" element={<Staff />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/audit" element={<AuditTrail />} />
+                <Route path="/" element={<ModuleGuard moduleName="Dashboard"><Dashboard /></ModuleGuard>} />
+                <Route path="/materials" element={<ModuleGuard moduleName="Materials Master"><Materials /></ModuleGuard>} />
+                <Route path="/inventory" element={<ModuleGuard moduleName="Inventory & Stock"><Inventory /></ModuleGuard>} />
+                <Route path="/procurement" element={<ModuleGuard moduleName="Procurement & POs"><Procurement /></ModuleGuard>} />
+                <Route path="/production" element={<ModuleGuard moduleName="Production Orders"><Production /></ModuleGuard>} />
+                <Route path="/quality" element={<ModuleGuard moduleName="Quality Control"><Quality /></ModuleGuard>} />
+                <Route path="/staff" element={<ModuleGuard moduleName="Staff & Shifts"><Staff /></ModuleGuard>} />
+                <Route path="/reports" element={<ModuleGuard moduleName="Reporting & OEE"><Reports /></ModuleGuard>} />
+                <Route path="/audit" element={<ModuleGuard moduleName="Audit & Traceability"><AuditTrail /></ModuleGuard>} />
                 <Route path="/support" element={<Support />} />
-                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/settings" element={<ModuleGuard moduleName="System Settings"><SettingsPage /></ModuleGuard>} />
               </Routes>
             </ErrorBoundary>
           </div>

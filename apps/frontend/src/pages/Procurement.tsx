@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { getSuppliers, getPRs, approvePR, getPOs, createPR, createPO, createGR } from "../api/procurement";
 import { getMaterials } from "../api/inventory";
 import { useAuthStore } from "../store/useAuthStore";
+import { usePermissionsStore } from "../store/usePermissionsStore";
 import { PageHeader, Card, Table, Th, Td, Button, Badge, Input } from "../components/ui";
 import { sanitizeNumberInput } from "../utils/number";
 import { Plus, Trash2, X } from "lucide-react";
@@ -24,10 +25,11 @@ interface PRItem {
 
 export function Procurement() {
   const { user } = useAuthStore();
-  const canCreatePR = Boolean(!user || ["Admin", "Manager", "Purchasing"].includes(user.role));
-  const canCreatePO = Boolean(!user || ["Admin", "Manager", "Purchasing"].includes(user.role));
+  const canEditModule = usePermissionsStore((state) => state.canEdit(user?.role, "Procurement & POs"));
+  const canCreatePR = canEditModule && Boolean(!user || ["Admin", "Manager", "Purchasing"].includes(user.role));
+  const canCreatePO = canEditModule && Boolean(!user || ["Admin", "Manager", "Purchasing"].includes(user.role));
   const canReceiveGoods = Boolean(!user || ["Admin", "Manager", "Warehouse"].includes(user.role));
-  const canApprovePR = Boolean(!user || ["Admin", "Manager"].includes(user.role));
+  const canApprovePR = canEditModule && Boolean(!user || ["Admin", "Manager"].includes(user.role));
 
   const [activeTab, setActiveTab] = useState<"PR" | "PO" | "Supplier">("PR");
 

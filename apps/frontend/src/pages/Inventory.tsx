@@ -5,10 +5,11 @@ import { Search, AlertTriangle, X, PackagePlus, ArrowRight, Layers, CheckCircle2
 import { PageHeader, Card, Table, Th, Td, Button, Input, Label, Badge, StockLevelBar } from "../components/ui";
 import { sanitizeNumberInput } from "../utils/number";
 import { useAuthStore } from "../store/useAuthStore";
+import { usePermissionsStore } from "../store/usePermissionsStore";
 
 export function Inventory() {
   const { user } = useAuthStore();
-  const canManageStock = Boolean(user && ["Admin", "Manager", "Warehouse"].includes(user.role));
+  const canManageStock = usePermissionsStore((state) => state.canEdit(user?.role, "Inventory & Stock"));
 
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

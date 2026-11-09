@@ -18,9 +18,11 @@ import {
 import { PageHeader, Card, Button, Input } from "../components/ui";
 import { useStaffStore, type StaffMember } from "../store/useStaffStore";
 import { useAuthStore } from "../store/useAuthStore";
+import { usePermissionsStore } from "../store/usePermissionsStore";
 
 export function Staff() {
   const { user } = useAuthStore();
+  const canEditStaff = usePermissionsStore((state) => state.canEdit(user?.role, "Staff & Shifts"));
   const { staff, updateStatus, syncCurrentUser, resetStaff } = useStaffStore();
   const [activeTab, setActiveTab] = useState<"all" | "present" | "shift1" | "shift2" | "offfloor">("all");
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
@@ -155,26 +157,28 @@ export function Staff() {
         title="Workforce Directory & Shift Operations"
         description="Monitor staff attendance, shift assignments, active shop-floor work centers, and technical competencies."
         action={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              onClick={resetStaff}
-              className="gap-1.5 text-xs font-semibold"
-              title="Reset roster to factory defaults"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Roster</span>
-            </Button>
+          canEditStaff ? (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                onClick={resetStaff}
+                className="gap-1.5 text-xs font-semibold"
+                title="Reset roster to factory defaults"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Roster</span>
+              </Button>
 
-            <Button
-              variant="primary"
-              onClick={() => setEditingMember(staff[0])}
-              className="gap-1.5 text-xs font-semibold"
-            >
-              <UserCheck className="w-4 h-4" />
-              <span>Update Attendance</span>
-            </Button>
-          </div>
+              <Button
+                variant="primary"
+                onClick={() => setEditingMember(staff[0])}
+                className="gap-1.5 text-xs font-semibold"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>Update Attendance</span>
+              </Button>
+            </div>
+          ) : null
         }
       />
 
@@ -542,13 +546,15 @@ export function Staff() {
                           >
                             Details
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingMember(member)}
-                            className="px-2.5 py-1 rounded-full bg-slate-900 dark:bg-stone-800 hover:bg-slate-800 dark:hover:bg-stone-700 text-white text-[11px] font-semibold transition-colors shadow-2xs cursor-pointer whitespace-nowrap"
-                          >
-                            Update
-                          </button>
+                          {canEditStaff && (
+                            <button
+                              type="button"
+                              onClick={() => setEditingMember(member)}
+                              className="px-2.5 py-1 rounded-full bg-slate-900 dark:bg-stone-800 hover:bg-slate-800 dark:hover:bg-stone-700 text-white text-[11px] font-semibold transition-colors shadow-2xs cursor-pointer whitespace-nowrap"
+                            >
+                              Update
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -685,13 +691,15 @@ export function Staff() {
                   >
                     Details
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingMember(member)}
-                    className="px-3 py-1 rounded-full bg-slate-900 dark:bg-stone-800 hover:bg-slate-800 dark:hover:bg-stone-700 text-white text-[11px] font-semibold transition-colors shadow-2xs cursor-pointer"
-                  >
-                    Update
-                  </button>
+                  {canEditStaff && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingMember(member)}
+                      className="px-3 py-1 rounded-full bg-slate-900 dark:bg-stone-800 hover:bg-slate-800 dark:hover:bg-stone-700 text-white text-[11px] font-semibold transition-colors shadow-2xs cursor-pointer"
+                    >
+                      Update
+                    </button>
+                  )}
                 </div>
               </div>
             </Card>

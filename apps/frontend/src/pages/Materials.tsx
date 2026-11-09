@@ -7,10 +7,11 @@ import { sanitizeNumberInput } from "../utils/number";
 import { UnitSelect } from "../components/UnitSelect";
 import { isCanonicalUnit } from "../constants/uom";
 import { useAuthStore } from "../store/useAuthStore";
+import { usePermissionsStore } from "../store/usePermissionsStore";
 
 export function Materials() {
   const { user } = useAuthStore();
-  const canEditMaterials = Boolean(!user || ["Admin", "Manager", "Warehouse", "Purchasing"].includes(user.role));
+  const canEditMaterials = usePermissionsStore((state) => state.canEdit(user?.role, "Materials Master"));
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
